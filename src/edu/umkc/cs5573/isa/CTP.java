@@ -1,5 +1,11 @@
 package edu.umkc.cs5573.isa;
 
+import java.util.Map;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /*
  * Copyright (c) 1995, 2008, Oracle and/or its affiliates. All rights reserved.
  *
@@ -32,81 +38,117 @@ package edu.umkc.cs5573.isa;
  */
 
 public class CTP {
-	final static String JSON_KEY_REQ_TYPE = "req_type";
-	final static String JSON_KEY_USER = "user";
-	final static String JSON_KEY_IP = "ip";
-	final static String JSON_KEY_MSG_LENGTH = "length";
-	final static String JSON_REQ_USERLIST = "user_list";
-	final static String JSON_REQ_JOINUSER = "join_user";
-	final static String JSON_REQ_LEAVEUSER = "leave_user";
-	final static String JSON_REQ_FILELIST = "file_list";
-	final static String JSON_REQ_FILE = "file";
-	final static String JSON_KEY_RES_TYPE = "res_type";
-	final static String JSON_RES_USERLIST = "user_list";
-	final static String JSON_KEY_RES_MSG = "res_message";
-	final static String JSON_RES_ERROR = "error";
-	final static String JSON_RES_OK = "ok";
+	final static String KEY_REQ_TYPE = "req_type";
+	final static String KEY_USER = "user";
+	final static String KEY_IP = "ip";
+	final static String KEY_MSG_LENGTH = "length";
+	final static String KEY_REQ_MSG = "req_message";
+	final static String KEY_RES_MSG = "res_message";
+	final static String REQ_USERLIST = "user_list";
+	final static String REQ_JOINUSER = "join_user";
+	final static String REQ_LEAVEUSER = "leave_user";
+	final static String REQ_FILELIST = "file_list";
+	final static String REQ_FILE = "file";
+	final static String KEY_RES_TYPE = "res_type";
+	final static String RES_USERLIST = "user_list";
+	final static String RES_ERROR = "error";
+	final static String RES_OK = "ok";
 	
-    private static final int WAITING = 0;
-    private static final int SENTKNOCKKNOCK = 1;
-    private static final int SENTCLUE = 2;
-    private static final int ANOTHER = 3;
- 
-    private static final int NUMJOKES = 5;
- 
-    private int state = WAITING;
-    private int currentJoke = 0;
- 
-    private String[] clues = { "Turnip", "Little Old Lady", "Atch", "Who", "Who" };
-    private String[] answers = { "Turnip the heat, it's cold in here!",
-                                 "I didn't know you could yodel!",
-                                 "Bless you!",
-                                 "Is there an owl in here?",
-                                 "Is there an echo in here?" };
-    private String mWorkingDir;
+	final static int CTP_TYPE_REQ = 0;
+	final static int CTP_TYPE_RES = 1;
+	
     
-    public CTP(String workingDir){
-    	this.mWorkingDir = workingDir;
+    private int ctpType;
+    private String dataType;
+    private String payload;
+    private int msgLength;
+    
+    public CTP(String rawMsg) throws JSONException{
+    	JSONObject jObj = new JSONObject(rawMsg);
+    	if(jObj.has(KEY_REQ_TYPE)) {
+    		ctpType = CTP_TYPE_REQ;
+    		// process request
+    		this.dataType = jObj.getString(KEY_REQ_TYPE);
+    		this.payload = jObj.getString(KEY_REQ_MSG);
+    		this.msgLength = jObj.getInt(KEY_MSG_LENGTH);
+    	}else if(jObj.has(KEY_RES_TYPE)) {
+    		ctpType = CTP_TYPE_RES;
+    		// process request
+    		this.dataType = jObj.getString(KEY_RES_TYPE);    		
+    		this.payload = jObj.getString(KEY_RES_MSG);
+    		this.msgLength = jObj.getInt(KEY_MSG_LENGTH);
+    	}else{
+    		throw new JSONException("Unsupported CTP Type");
+    	}
+    }
+    public int getType(){
+    	return this.ctpType;
+    }
+    public String getDataType(){
+    	return this.dataType;
+    }
+    public static String buildReq_PeerList(){
+    	JSONObject jObj = new JSONObject();
+    	jObj.append(KEY_REQ_TYPE, REQ_USERLIST);
+    	return jObj.toString();
+    }
+    public static String buildReq_JoinUser(String userName, String ipAddress){
+    	JSONObject jObj = new JSONObject();
+    	JSONObject msgObj = new JSONObject();
+    	msgObj.append(KEY_USER, userName);
+    	msgObj.append(KEY_IP, ipAddress);
+    	jObj.append(KEY_REQ_TYPE, REQ_JOINUSER);
+    	jObj.append(KEY_RES_MSG, msgObj);
+    	jObj.append(KEY_MSG_LENGTH, msgObj.toString());
+    	return jObj.toString();
     }
     
-    public String processInput(String theInput) {
-        String theOutput = null;
- 
-        if (state == WAITING) {
-            theOutput = "Knock! Knock!";
-            state = SENTKNOCKKNOCK;
-        } else if (state == SENTKNOCKKNOCK) {
-            if (theInput.equalsIgnoreCase("Who's there?")) {
-                theOutput = clues[currentJoke];
-                state = SENTCLUE;
-            } else {
-                theOutput = "You're supposed to say \"Who's there?\"! " +
-                "Try again. Knock! Knock!";
-            }
-        } else if (state == SENTCLUE) {
-            if (theInput.equalsIgnoreCase(clues[currentJoke] + " who?")) {
-                theOutput = answers[currentJoke] + " Want another? (y/n)";
-                state = ANOTHER;
-            } else {
-                theOutput = "You're supposed to say \"" + 
-                clues[currentJoke] + 
-                " who?\"" + 
-                "! Try again. Knock! Knock!";
-                state = SENTKNOCKKNOCK;
-            }
-        } else if (state == ANOTHER) {
-            if (theInput.equalsIgnoreCase("y")) {
-                theOutput = "Knock! Knock!";
-                if (currentJoke == (NUMJOKES - 1))
-                    currentJoke = 0;
-                else
-                    currentJoke++;
-                state = SENTKNOCKKNOCK;
-            } else {
-                theOutput = "Bye.";
-                state = WAITING;
-            }
-        }
-        return theOutput;
+    public static String buildRes_PeerList(Map<String, String> userList){
+    	JSONArray jArr = new JSONArray();
+		JSONObject obj = new JSONObject();
+		for(Map.Entry<String, String> entry : userList.entrySet()){
+			obj.put(KEY_USER, entry.getKey());
+			obj.put(KEY_IP, entry.getValue());
+			jArr.put(obj);
+		}
+		obj = new JSONObject();
+		obj.append(KEY_RES_TYPE, RES_USERLIST);
+		obj.append(KEY_RES_MSG, jArr);
+		obj.put(KEY_MSG_LENGTH, jArr.toString().length());
+		return obj.toString();
+    }
+    public static String buildErr_Unrecognized(){
+    	return new JSONObject()
+		.append(KEY_RES_TYPE, RES_ERROR)
+		.append(KEY_RES_MSG, "Unrecognized")
+		.append(KEY_MSG_LENGTH, "Unrecognized".length()).toString();
+    }
+    public static String buildRes_Ok(String msg){
+		return new JSONObject()
+				.append(KEY_RES_TYPE, RES_OK)
+				.append(KEY_RES_MSG, msg)
+				.append(KEY_MSG_LENGTH, msg.length()).toString();
+    }
+    
+    public String putPeerList(Map<String, String> userList){
+    	if(msgLength == payload.length()){
+    		try{
+        		JSONArray jArr = new JSONArray(payload);
+        		for(int i=0; i < jArr.length() ; i++){
+        			JSONObject obj = jArr.getJSONObject(i);
+        			if(obj.getString(KEY_IP).split(".").length == 4){
+        				userList.put(obj.getString(KEY_USER), obj.getString(KEY_IP));
+        			}else{
+        				Logger.d("IP Parsing error: " + obj.getString(KEY_IP));
+        			}
+        		}
+        		return buildRes_Ok("Successfully added.");
+    		}
+    		catch (JSONException e){
+    			e.printStackTrace();
+    		}
+    	}
+    	Logger.d("Parsing error");
+    	return null;
     }
 }

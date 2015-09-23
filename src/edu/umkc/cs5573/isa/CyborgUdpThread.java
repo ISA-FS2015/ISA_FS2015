@@ -8,9 +8,7 @@ import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 /**
  * This class manages peer list through UDP broadcasting.
  * @author Younghwan
@@ -19,26 +17,36 @@ import org.json.JSONObject;
 public class CyborgUdpThread extends Thread {
 	protected final static int BUFFER_SIZE = 1024;
 	protected final static int PORT_NO = 55730;
+	private final static String CHARSET_UTF8 = "UTF-8";
 	//protected final static String KEY_USER = "user";
 	protected DatagramSocket socket = null;
     protected BufferedReader in = null;
-    protected boolean isRunning = false;
+    private boolean isRunning = false;
+    private String userName;
     /**
      * For managing peer list. Key will be username and value will be ip address
      */
     protected Map<String, String> userList = null;
     
-    public CyborgUdpThread(String name) throws IOException {
-        super(name);
+    public CyborgUdpThread(String threadName, String userName) throws IOException {
+        super(threadName + "_" + userName);
         socket = new DatagramSocket(PORT_NO);
         isRunning = true;
         userList = new HashMap<String, String>();
+        userList.put(userName, socket.getLocalAddress().getHostAddress());
     }
+    // Getter
 	public boolean isRunning() {
 		return isRunning;
 	}
-	public void setRunning(boolean isRunning) {
-		this.isRunning = isRunning;
+	public Map<String, String> getUserList(){
+		return userList;
+	}
+	public String getIpAddress(String userName){
+		return userList.get(userName);
+	}
+	public boolean isUserExists(String userName){
+		return userList.containsKey(userName);
 	}
 	
 	/**
@@ -53,7 +61,7 @@ public class CyborgUdpThread extends Thread {
 				socket.receive(packet);
 				InetAddress address = packet.getAddress();
 				if(!socket.getLocalAddress().getHostAddress().equals(address.getHostAddress())) {
-					String received = new String(packet.getData());
+					String received = new String(packet.getData(), CHARSET_UTF8);
 					String reply = processInput(received);
 					if(reply != null) {
 						buf = reply.getBytes();
@@ -75,39 +83,21 @@ public class CyborgUdpThread extends Thread {
     
     public String processInput(String input){
     	try {
-        	JSONObject jObj = new JSONObject(input);
-        	if(jObj.has(CTP.JSON_KEY_REQ_TYPE)) {
-        		// process request
-        		String reqType = jObj.getString(CTP.JSON_KEY_REQ_TYPE);
-        		if(CTP.JSON_REQ_USERLIST.equals(reqType)){
-        			JSONArray jArr = new JSONArray();
-        			for(Map.Entry<String, String> entry : userList.entrySet()){
-        				JSONObject obj = new JSONObject();
-        				obj.put(CTP.JSON_KEY_USER, entry.getKey());
-        				obj.put(CTP.JSON_KEY_IP, entry.getValue());
-        				obj.put(CTP.JSON_KEY_MSG_LENGTH, entry.getValue().length());
-        				jArr.put(obj);
-        			}
-        			jObj = new JSONObject();
-        			jObj.append(CTP.JSON_KEY_RES_TYPE, CTP.JSON_RES_USERLIST);
-        			jObj.append(CTP.JSON_KEY_RES_MSG, jArr);
-        			return jObj.toString();
-        		}else if(CTP.JSON_REQ_JOINUSER.equals(reqType)){
-        			return new JSONObject()
-        					.append(CTP.JSON_KEY_RES_TYPE, CTP.JSON_RES_OK)
-        					.append(CTP.JSON_KEY_RES_MSG, "Successfully added.").toString();
+        	CTP ctp = new CTP(input);
+        	if(ctp.getType() == CTP.CTP_TYPE_REQ){
+        		if(CTP.REQ_USERLIST.equals(ctp.getDataType())){
+        			return CTP.buildRes_PeerList(userList);
+        		}else if(CTP.REQ_JOINUSER.equals(ctp.getDataType())){
+        			return CTP.buildRes_PeerList(userList);
         		}else{
-        			return new JSONObject()
-        					.append(CTP.JSON_KEY_RES_TYPE, CTP.JSON_RES_ERROR)
-        					.append(CTP.JSON_KEY_RES_MSG, "Unrecognized").toString();
+        			return CTP.buildErr_Unrecognized();
         		}
-        	}else if (jObj.has(CTP.JSON_KEY_RES_TYPE)) {
-        		// process response
-        		String resType = jObj.getString(CTP.JSON_KEY_RES_TYPE);
-        		if(CTP.JSON_RES_OK.equals(resType)){
+        	}else if (ctp.getType() == CTP.CTP_TYPE_RES){
+        		// process response. return must be null
+        		if(CTP.RES_OK.equals(ctp.getDataType())){
         			
-        		}else if(CTP.JSON_RES_USERLIST.equals(resType)){
-        			putPeerList(jObj.getJSONArray(CTP.JSON_KEY_RES_MSG));
+        		}else if(CTP.RES_USERLIST.equals(ctp.getDataType())){
+        			ctp.putPeerList(userList);
         		}else {
         			
         		}
@@ -121,33 +111,74 @@ public class CyborgUdpThread extends Thread {
 
     }
     
-    public void remoteGetPeerList(){
-    	byte[] buf = new byte[BUFFER_SIZE];
-    	JSONObject jObj = new JSONObject();
-    	jObj.append(CTP.JSON_KEY_REQ_TYPE, CTP.JSON_REQ_USERLIST);
-    	buf = jObj.toString().getBytes();
-        // receive request
-        try {
-        	InetAddress address = InetAddress.getByName("255.255.255.255");
-            DatagramPacket sPacket = new DatagramPacket(buf, buf.length, address, PORT_NO);
-			socket.send(sPacket);
-			DatagramPacket rPacket = new DatagramPacket(buf, buf.length);
-			jObj = new JSONObject(new String(rPacket.getData()));
-			if (jObj.has(CTP.JSON_KEY_RES_TYPE)) {
-				putPeerList(jObj.getJSONArray(CTP.JSON_KEY_RES_MSG));
-			}
-			
-		} catch (IOException | JSONException e) {
-			e.printStackTrace();
-		}
+    
+    
+    // Request Functions
+    public void reqUserList(){
+    	new UdpRequestThread(UdpRequestThread.REQUEST_USER_LIST, socket).start();
+    }
+    public void reqJoinUser(){
+    	new UdpRequestThread(UdpRequestThread.REQUEST_JOIN_USER, socket).start();
     }
     
-    public void putPeerList(JSONArray array) throws JSONException{
-		for(int i=0; i < array.length() ; i++){
-			JSONObject obj = array.getJSONObject(i);
-			if(obj.getInt(CTP.JSON_KEY_MSG_LENGTH) == obj.getString(CTP.JSON_KEY_IP).length()) {
-				userList.put(obj.getString(CTP.JSON_KEY_USER), obj.getString(CTP.JSON_KEY_IP));
-			}
-		}
+    
+    // Outgoing process functions - Start
+
+    // Outgoing process functions - End
+    
+    // Incoming process functions - Start
+
+    // Incoming process functions - End
+    
+    class UdpRequestThread extends Thread{
+    	final static int REQUEST_USER_LIST = 0;
+    	final static int REQUEST_JOIN_USER = 1;
+    	private int reqType;
+    	private DatagramSocket socket = null;
+    	private byte[] buf = null;
+    	public UdpRequestThread(int reqType, DatagramSocket sock){
+        	buf = new byte[BUFFER_SIZE];
+    		this.reqType = reqType;
+    		this.socket = sock;
+    	}
+    	/**
+    	 * Actually runs here!
+    	 */
+        public void run() {
+        	if(!socket.isClosed()){
+        		switch(reqType){
+	        		case REQUEST_USER_LIST:
+	        		{
+	        			reqPeerList();
+		        		break;
+		        	}
+	        		case REQUEST_JOIN_USER:
+	        		{
+	        			joinUser(userName);
+	        			break;
+	        		}
+        		}
+        	}
+        }
+        
+        public void reqPeerList(){
+        	sendPacket(CTP.buildReq_PeerList());
+        }
+        
+        public void joinUser(String userName){
+        	sendPacket(CTP.buildReq_JoinUser(userName, socket.getLocalAddress().getHostAddress()));
+        }
+        
+        public void sendPacket(String packet){
+            try {
+            	buf = packet.getBytes(CHARSET_UTF8);
+            	InetAddress address = InetAddress.getByName("255.255.255.255");
+                DatagramPacket sPacket = new DatagramPacket(buf, buf.length, address, PORT_NO);
+                this.socket.send(sPacket);
+    		} catch (IOException | JSONException e) {
+    			e.printStackTrace();
+    		}
+
+        }
     }
 }

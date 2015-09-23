@@ -9,42 +9,42 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class CyborgSocketManager {
-	Socket mSock;
-	ServerSocket mServerSk;
+	CyborgUdpThread udpThread;
+	
 	
 	public CyborgSocketManager(){
 		
 	}
 	
-	void serverSide(String ip, int portNumber){
-		ServerSocket serverSocket;
-		try {
-			serverSocket = new ServerSocket(portNumber);
-			Socket clientSocket = serverSocket.accept();
-			PrintWriter out =
-			    new PrintWriter(clientSocket.getOutputStream(), true);
-			BufferedReader in = new BufferedReader(
-			    new InputStreamReader(clientSocket.getInputStream()));
-			mSock = serverSocket.accept();
-			String inputLine, outputLine;
-            
-		    // Initiate conversation with client
-		    CTP kkp = new CTP("C:/Test");
-		    outputLine = kkp.processInput(null);
-		    out.println(outputLine);
-
-		    while ((inputLine = in.readLine()) != null) {
-		        outputLine = kkp.processInput(inputLine);
-		        out.println(outputLine);
-		        if (outputLine.equals("Bye."))
-		            break;
-		    }
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
+//	void serverSide(String ip, int portNumber){
+//		ServerSocket serverSocket;
+//		try {
+//			serverSocket = new ServerSocket(portNumber);
+//			Socket clientSocket = serverSocket.accept();
+//			PrintWriter out =
+//			    new PrintWriter(clientSocket.getOutputStream(), true);
+//			BufferedReader in = new BufferedReader(
+//			    new InputStreamReader(clientSocket.getInputStream()));
+//			mSock = serverSocket.accept();
+//			String inputLine, outputLine;
+//            
+//		    // Initiate conversation with client
+//		    CTP kkp = new CTP("C:/Test");
+//		    outputLine = kkp.processInput(null);
+//		    out.println(outputLine);
+//
+//		    while ((inputLine = in.readLine()) != null) {
+//		        outputLine = kkp.processInput(inputLine);
+//		        out.println(outputLine);
+//		        if (outputLine.equals("Bye."))
+//		            break;
+//		    }
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//	}
+//	
 	void clientSice(String hostName, int portNumber){
  
         try (
