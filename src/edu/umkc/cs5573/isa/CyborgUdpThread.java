@@ -10,14 +10,21 @@ import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-
+/**
+ * This class manages peer list through UDP broadcasting.
+ * @author Younghwan
+ *
+ */
 public class CyborgUdpThread extends Thread {
 	protected final static int BUFFER_SIZE = 1024;
-	protected final static int PORT_NO = 55731;
-	protected final static String KEY_USER = "user";
+	protected final static int PORT_NO = 55730;
+	//protected final static String KEY_USER = "user";
 	protected DatagramSocket socket = null;
     protected BufferedReader in = null;
     protected boolean isRunning = false;
+    /**
+     * For managing peer list. Key will be username and value will be ip address
+     */
     protected Map<String, String> userList = null;
     
     public CyborgUdpThread(String name) throws IOException {
@@ -43,12 +50,17 @@ public class CyborgUdpThread extends Thread {
                 // receive request
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
 				socket.receive(packet);
-				String received = new String(packet.getData());
-				String reply = processInput(received);
 				InetAddress address = packet.getAddress();
-                int port = packet.getPort();
-                packet = new DatagramPacket(buf, buf.length, address, port);
-                socket.send(packet);
+				if(!socket.getLocalAddress().getHostAddress().equals(address.getHostAddress())) {
+					String received = new String(packet.getData());
+					String reply = processInput(received);
+					if(reply != null) {
+						buf = reply.getBytes();
+		                int port = packet.getPort();
+		                packet = new DatagramPacket(buf, buf.length, address, port);
+		                socket.send(packet);
+					}
+				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -63,7 +75,8 @@ public class CyborgUdpThread extends Thread {
 			JSONArray jArr = new JSONArray();
 			for(Map.Entry<String, String> entry : userList.entrySet()){
 				JSONObject obj = new JSONObject();
-				obj.put(CTP.JSON_REQ_USERLIST, entry.getValue());
+				obj.put(CTP.JSON_KEY_USER, entry.getKey());
+				obj.put(CTP.JSON_KEY_IP, entry.getValue());
 				jArr.put(obj);
 			}
 			return jArr.toString();
@@ -87,10 +100,10 @@ public class CyborgUdpThread extends Thread {
             DatagramPacket sPacket = new DatagramPacket(buf, buf.length, address, PORT_NO);
 			socket.send(sPacket);
 			DatagramPacket rPacket = new DatagramPacket(buf, buf.length);
-			JSONArray jArr = new JSONArray(new String(buf));
+			JSONArray jArr = new JSONArray(new String(rPacket.getData()));
 			for(int i=0; i < jArr.length() ; i++){
 				JSONObject obj = jArr.getJSONObject(i);
-				userList.put(KEY_USER, obj.getString(CTP.JSON_KEY_USER));
+				userList.put(obj.getString(CTP.JSON_KEY_USER), obj.getString(CTP.JSON_KEY_IP));
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

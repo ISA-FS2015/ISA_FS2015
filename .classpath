@@ -8,5 +8,6 @@
 	<classpathentry kind="lib" path="libs/slf4j-api-1.5.2.jar"/>
 	<classpathentry kind="lib" path="libs/slf4j-log4j12-1.5.2.jar"/>
 	<classpathentry kind="lib" path="libs/log4j-1.2.14.jar"/>
+	<classpathentry kind="lib" path="libs/sqlite/sqlite4java.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
