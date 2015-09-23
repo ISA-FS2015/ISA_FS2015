@@ -30,7 +30,7 @@ package edu.umkc.cs5573.isa;
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
- 
+
 public class CTP {
 	final static String JSON_KEY_REQ_TYPE = "req_type";
 	final static String JSON_KEY_USER = "user";
