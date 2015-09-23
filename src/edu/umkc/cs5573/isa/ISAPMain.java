@@ -1,57 +1,39 @@
 package edu.umkc.cs5573.isa;
 
-import java.io.File;
-
-import org.apache.ftpserver.FtpServer;
-import org.apache.ftpserver.FtpServerFactory;
-import org.apache.ftpserver.ftplet.FtpException;
-import org.apache.ftpserver.ftplet.UserManager;
-import org.apache.ftpserver.listener.ListenerFactory;
-import org.apache.ftpserver.usermanager.PropertiesUserManagerFactory;
-import org.apache.ftpserver.usermanager.impl.BaseUser;
+import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.WatchService;
 
 public class ISAPMain {
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		String tobeHashed = "Test!!";
-		System.out.println("Hash of " + tobeHashed + " : " + SHA256Helper.getHashString(tobeHashed));
+		localPrint("Cyborg test program.");
 
-		// Running FTP server!
-		FtpServerFactory serverFactory = new FtpServerFactory();
-		ListenerFactory factory = new ListenerFactory();
-		// set the port of the listener
-		factory.setPort(2221);
-		// define SSL configuration
-		//SslConfigurationFactory ssl = new SslConfigurationFactory();
-		//ssl.setKeystoreFile(new File("src/test/resources/ftpserver.jks"));
-		//ssl.setKeystorePassword("password");
-		// set the SSL configuration for the listener
-		//factory.setSslConfiguration(ssl.createSslConfiguration());
-		//factory.setImplicitSsl(true);
-		// replace the default listener
-		serverFactory.addListener("default", factory.createListener());
-		PropertiesUserManagerFactory userManagerFactory = new PropertiesUserManagerFactory();
-		userManagerFactory.setFile(new File("res/conf/users.properties"));
-//		UserManager um = userManagerFactory.createUserManager();
-//		BaseUser user = new BaseUser();
-//		user.setName("cyborgman");
-//		user.setPassword("isafs2015");
-//		user.setHomeDirectory("res/home/cyborgman");
-//		try {
-//			um.save(user);
-//		} catch (FtpException e1) {
-//			// TODO Auto-generated catch block
-//			e1.printStackTrace();
-//		}
-		serverFactory.setUserManager(userManagerFactory.createUserManager());
-		// start the server
-		FtpServer server = serverFactory.createServer(); 
+		CyborgUdpThread udpThread;
+		CyborgFtpServer ftpServer;
+		WatchDir watchDir;
+		//String tobeHashed = "Test!!";
+		//System.out.println("Hash of " + tobeHashed + " : " + SHA256Helper.getHashString(tobeHashed));
+		localPrint("Starting FTP server...");
+		ftpServer = new CyborgFtpServer();
+		ftpServer.start();
 		try {
-			server.start();
-		} catch (FtpException e) {
+			localPrint("Starting Directory Watcher...");
+			watchDir = new WatchDir("res/home/cyborgman", true);
+			watchDir.start();
+			localPrint("Starting UDP Service...");
+			udpThread = new CyborgUdpThread("UDPThread", args[1]);
+			udpThread.start();
+			udpThread.reqJoinUser();
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}	
+	
+	public static void localPrint(String msg){
+		System.out.println(msg);
+	}
 }

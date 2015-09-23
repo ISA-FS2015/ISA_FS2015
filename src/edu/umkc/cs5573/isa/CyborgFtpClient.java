@@ -48,6 +48,132 @@ import org.apache.commons.net.util.TrustManagerUtils;
  */
 public final class CyborgFtpClient
 {
+	boolean storeFile = false, binaryTransfer = false, error = false, listFiles = false, listNames = false, hidden = false;
+	boolean localActive = false, useEpsvWithIPv4 = false, feat = false, printHash = false;
+	boolean mlst = false, mlsd = false;
+	boolean lenient = false;
+	long keepAliveTimeout = -1;
+	int controlKeepAliveReplyTimeout = -1;
+	int minParams = 5; // listings require 3 params
+	String protocol = null; // SSL protocol
+	String doCommand = null;
+	String trustmgr = null;
+	String proxyHost = null;
+	int proxyPort = 80;
+	String proxyUser = null;
+	String proxyPassword = null;
+	String username = null;
+	String password = null;
+	String server = null;
+	int port = 0;
+
+	public CyborgFtpClient(String[] args) throws IOException{
+		int base = 0;
+		for (base = 0; base < args.length; base++)
+		{
+		    if (args[base].equals("-s")) {
+		    storeFile = true;
+		}
+		else if (args[base].equals("-a")) {
+		    localActive = true;
+		}
+		else if (args[base].equals("-A")) {
+			username = "anonymous";
+			password = System.getProperty("user.name")+"@"+InetAddress.getLocalHost().getHostName();
+		}
+		else if (args[base].equals("-b")) {
+		    binaryTransfer = true;
+		}
+		else if (args[base].equals("-c")) {
+		    doCommand = args[++base];
+		    minParams = 3;
+		}
+		else if (args[base].equals("-d")) {
+		    mlsd = true;
+		    minParams = 3;
+		}
+		else if (args[base].equals("-e")) {
+		    useEpsvWithIPv4 = true;
+		}
+		else if (args[base].equals("-f")) {
+		    feat = true;
+		    minParams = 3;
+		}
+		else if (args[base].equals("-h")) {
+		    hidden = true;
+		}
+		else if (args[base].equals("-k")) {
+		    keepAliveTimeout = Long.parseLong(args[++base]);
+		}
+		else if (args[base].equals("-l")) {
+		    listFiles = true;
+		    minParams = 3;
+		}
+		else if (args[base].equals("-L")) {
+		    lenient = true;
+		}
+		else if (args[base].equals("-n")) {
+		    listNames = true;
+		    minParams = 3;
+		}
+		else if (args[base].equals("-p")) {
+		    protocol = args[++base];
+		}
+		else if (args[base].equals("-t")) {
+		    mlst = true;
+		    minParams = 3;
+		}
+		else if (args[base].equals("-w")) {
+		    controlKeepAliveReplyTimeout = Integer.parseInt(args[++base]);
+		}
+		else if (args[base].equals("-T")) {
+		    trustmgr = args[++base];
+		}
+		else if (args[base].equals("-PrH")) {
+			proxyHost = args[++base];
+			String parts[] = proxyHost.split(":");
+		    if (parts.length == 2){
+		        proxyHost=parts[0];
+		        proxyPort=Integer.parseInt(parts[1]);
+		    }
+		}
+		else if (args[base].equals("-PrU")) {
+		    proxyUser = args[++base];
+		}
+		else if (args[base].equals("-PrP")) {
+		    proxyPassword = args[++base];
+		}
+		else if (args[base].equals("-#")) {
+		        printHash = true;
+		    }
+		    else {
+		        break;
+		    }
+		}
+		int remain = args.length - base;
+		if (username != null) {
+		    minParams -= 2;
+		}
+		if (remain < minParams) // server, user, pass, remote, local [protocol]
+		{
+		    throw new IOException("More arguments needed!");
+		}	
+		String server = args[base++];
+		int port = 0;
+		String parts[] = server.split(":");
+		if (parts.length == 2){
+		    server=parts[0];
+		    port=Integer.parseInt(parts[1]);
+		}
+		if (username == null) {
+		    username = args[base++];
+		    password = args[base++];
+		}
+	}
+	
+	public static final String getUsage(){
+		return USAGE;
+	}
 
     public static final String USAGE =
         "Usage: ftp [options] <hostname> <username> <password> [<remote file> [<local file>]]\n" +
@@ -77,127 +203,10 @@ public final class CyborgFtpClient
 
 //    public static void main(String[] args) throws UnknownHostException
 //    {
-//        boolean storeFile = false, binaryTransfer = false, error = false, listFiles = false, listNames = false, hidden = false;
-//        boolean localActive = false, useEpsvWithIPv4 = false, feat = false, printHash = false;
-//        boolean mlst = false, mlsd = false;
-//        boolean lenient = false;
-//        long keepAliveTimeout = -1;
-//        int controlKeepAliveReplyTimeout = -1;
-//        int minParams = 5; // listings require 3 params
-//        String protocol = null; // SSL protocol
-//        String doCommand = null;
-//        String trustmgr = null;
-//        String proxyHost = null;
-//        int proxyPort = 80;
-//        String proxyUser = null;
-//        String proxyPassword = null;
-//        String username = null;
-//        String password = null;
+
 //
-//        int base = 0;
-//        for (base = 0; base < args.length; base++)
-//        {
-//            if (args[base].equals("-s")) {
-//                storeFile = true;
-//            }
-//            else if (args[base].equals("-a")) {
-//                localActive = true;
-//            }
-//            else if (args[base].equals("-A")) {
-//                username = "anonymous";
-//                password = System.getProperty("user.name")+"@"+InetAddress.getLocalHost().getHostName();
-//            }
-//            else if (args[base].equals("-b")) {
-//                binaryTransfer = true;
-//            }
-//            else if (args[base].equals("-c")) {
-//                doCommand = args[++base];
-//                minParams = 3;
-//            }
-//            else if (args[base].equals("-d")) {
-//                mlsd = true;
-//                minParams = 3;
-//            }
-//            else if (args[base].equals("-e")) {
-//                useEpsvWithIPv4 = true;
-//            }
-//            else if (args[base].equals("-f")) {
-//                feat = true;
-//                minParams = 3;
-//            }
-//            else if (args[base].equals("-h")) {
-//                hidden = true;
-//            }
-//            else if (args[base].equals("-k")) {
-//                keepAliveTimeout = Long.parseLong(args[++base]);
-//            }
-//            else if (args[base].equals("-l")) {
-//                listFiles = true;
-//                minParams = 3;
-//            }
-//            else if (args[base].equals("-L")) {
-//                lenient = true;
-//            }
-//            else if (args[base].equals("-n")) {
-//                listNames = true;
-//                minParams = 3;
-//            }
-//            else if (args[base].equals("-p")) {
-//                protocol = args[++base];
-//            }
-//            else if (args[base].equals("-t")) {
-//                mlst = true;
-//                minParams = 3;
-//            }
-//            else if (args[base].equals("-w")) {
-//                controlKeepAliveReplyTimeout = Integer.parseInt(args[++base]);
-//            }
-//            else if (args[base].equals("-T")) {
-//                trustmgr = args[++base];
-//            }
-//            else if (args[base].equals("-PrH")) {
-//                proxyHost = args[++base];
-//                String parts[] = proxyHost.split(":");
-//                if (parts.length == 2){
-//                    proxyHost=parts[0];
-//                    proxyPort=Integer.parseInt(parts[1]);
-//                }
-//            }
-//            else if (args[base].equals("-PrU")) {
-//                proxyUser = args[++base];
-//            }
-//            else if (args[base].equals("-PrP")) {
-//                proxyPassword = args[++base];
-//            }
-//            else if (args[base].equals("-#")) {
-//                printHash = true;
-//            }
-//            else {
-//                break;
-//            }
-//        }
-//
-//        int remain = args.length - base;
-//        if (username != null) {
-//            minParams -= 2;
-//        }
-//        if (remain < minParams) // server, user, pass, remote, local [protocol]
-//        {
-//            System.err.println(USAGE);
-//            System.exit(1);
-//        }
-//
-//        String server = args[base++];
-//        int port = 0;
-//        String parts[] = server.split(":");
-//        if (parts.length == 2){
-//            server=parts[0];
-//            port=Integer.parseInt(parts[1]);
-//        }
-//        if (username == null) {
-//            username = args[base++];
-//            password = args[base++];
-//        }
+
+
 //
 //        String remote = null;
 //        if (args.length - base > 0) {

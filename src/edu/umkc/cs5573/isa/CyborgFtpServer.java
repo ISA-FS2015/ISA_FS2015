@@ -8,27 +8,35 @@ import org.apache.ftpserver.ftplet.FtpException;
 import org.apache.ftpserver.listener.ListenerFactory;
 import org.apache.ftpserver.usermanager.PropertiesUserManagerFactory;
 
-public class CyborgFtpServer {
+public class CyborgFtpServer extends Thread{
+	private boolean isRunning = false;
 	public CyborgFtpServer(){
-		
+		super("CyborgFtpServer");
+		isRunning = true;
 	}
+	
+	public void run(){
+		startFtpServer();
+	}
+	
+	
 	public void startFtpServer(){
 		// Running FTP server!
-				FtpServerFactory serverFactory = new FtpServerFactory();
-				ListenerFactory factory = new ListenerFactory();
-				// set the port of the listener
-				factory.setPort(2221);
-				// define SSL configuration
-				//SslConfigurationFactory ssl = new SslConfigurationFactory();
-				//ssl.setKeystoreFile(new File("src/test/resources/ftpserver.jks"));
-				//ssl.setKeystorePassword("password");
-				// set the SSL configuration for the listener
-				//factory.setSslConfiguration(ssl.createSslConfiguration());
-				//factory.setImplicitSsl(true);
-				// replace the default listener
-				serverFactory.addListener("default", factory.createListener());
-				PropertiesUserManagerFactory userManagerFactory = new PropertiesUserManagerFactory();
-				userManagerFactory.setFile(new File("res/conf/users.properties"));
+		FtpServerFactory serverFactory = new FtpServerFactory();
+		ListenerFactory factory = new ListenerFactory();
+		// set the port of the listener
+		factory.setPort(2221);
+		// define SSL configuration
+		//SslConfigurationFactory ssl = new SslConfigurationFactory();
+		//ssl.setKeystoreFile(new File("src/test/resources/ftpserver.jks"));
+		//ssl.setKeystorePassword("password");
+		// set the SSL configuration for the listener
+		//factory.setSslConfiguration(ssl.createSslConfiguration());
+		//factory.setImplicitSsl(true);
+		// replace the default listener
+		serverFactory.addListener("default", factory.createListener());
+		PropertiesUserManagerFactory userManagerFactory = new PropertiesUserManagerFactory();
+		userManagerFactory.setFile(new File("res/conf/users.properties"));
 //				UserManager um = userManagerFactory.createUserManager();
 //				BaseUser user = new BaseUser();
 //				user.setName("cyborgman");
@@ -40,14 +48,14 @@ public class CyborgFtpServer {
 //					// TODO Auto-generated catch block
 //					e1.printStackTrace();
 //				}
-				serverFactory.setUserManager(userManagerFactory.createUserManager());
-				// start the server
-				FtpServer server = serverFactory.createServer(); 
-				try {
-					server.start();
-				} catch (FtpException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+		serverFactory.setUserManager(userManagerFactory.createUserManager());
+		// start the server
+		FtpServer server = serverFactory.createServer(); 
+		try {
+			server.start();
+		} catch (FtpException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }
