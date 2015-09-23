@@ -33,7 +33,10 @@ package edu.umkc.cs5573.isa;
  
 public class CTP {
 	final static String JSON_KEY_REQ_TYPE = "req_type";
-	final static String JSON_REQ_USERS = "users";
+	final static String JSON_KEY_USER = "user";
+	final static String JSON_REQ_USERLIST = "get_users";
+	final static String JSON_REQ_JOINUSER = "join_user";
+	final static String JSON_REQ_LEAVEUSER = "leave_user";
 	final static String JSON_REQ_FILELIST = "file_list";
 	final static String JSON_REQ_FILE = "file";
 	final static String JSON_KEY_RES_TYPE = "res_type";
