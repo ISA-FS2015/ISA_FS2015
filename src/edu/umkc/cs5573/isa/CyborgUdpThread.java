@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 /**
  * This class manages peer list through UDP broadcasting.
@@ -62,34 +63,65 @@ public class CyborgUdpThread extends Thread {
 					}
 				}
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
     	}
+    	socket.close();
+    }
+    
+    public void stopThread() {
+    	isRunning = false;
     }
     
     public String processInput(String input){
-    	JSONObject jObj = new JSONObject(input);
-    	String reqType = jObj.getString(CTP.JSON_KEY_REQ_TYPE);
-		if(CTP.JSON_REQ_USERLIST.equals(reqType)){
-			JSONArray jArr = new JSONArray();
-			for(Map.Entry<String, String> entry : userList.entrySet()){
-				JSONObject obj = new JSONObject();
-				obj.put(CTP.JSON_KEY_USER, entry.getKey());
-				obj.put(CTP.JSON_KEY_IP, entry.getValue());
-				jArr.put(obj);
-			}
-			return jArr.toString();
-		}else if(CTP.JSON_KEY_REQ_TYPE.equals(reqType)){
-		}else{
-			return new JSONObject()
-					.append(CTP.JSON_KEY_RES_TYPE, CTP.JSON_RES_ERROR)
-					.append(CTP.JSON_KEY_RES_MSG, "Unrecognized").toString();
-		}
-		return reqType;
+    	try {
+        	JSONObject jObj = new JSONObject(input);
+        	if(jObj.has(CTP.JSON_KEY_REQ_TYPE)) {
+        		// process request
+        		String reqType = jObj.getString(CTP.JSON_KEY_REQ_TYPE);
+        		if(CTP.JSON_REQ_USERLIST.equals(reqType)){
+        			JSONArray jArr = new JSONArray();
+        			for(Map.Entry<String, String> entry : userList.entrySet()){
+        				JSONObject obj = new JSONObject();
+        				obj.put(CTP.JSON_KEY_USER, entry.getKey());
+        				obj.put(CTP.JSON_KEY_IP, entry.getValue());
+        				obj.put(CTP.JSON_KEY_MSG_LENGTH, entry.getValue().length());
+        				jArr.put(obj);
+        			}
+        			jObj = new JSONObject();
+        			jObj.append(CTP.JSON_KEY_RES_TYPE, CTP.JSON_RES_USERLIST);
+        			jObj.append(CTP.JSON_KEY_RES_MSG, jArr);
+        			return jObj.toString();
+        		}else if(CTP.JSON_REQ_JOINUSER.equals(reqType)){
+        			return new JSONObject()
+        					.append(CTP.JSON_KEY_RES_TYPE, CTP.JSON_RES_OK)
+        					.append(CTP.JSON_KEY_RES_MSG, "Successfully added.").toString();
+        		}else{
+        			return new JSONObject()
+        					.append(CTP.JSON_KEY_RES_TYPE, CTP.JSON_RES_ERROR)
+        					.append(CTP.JSON_KEY_RES_MSG, "Unrecognized").toString();
+        		}
+        	}else if (jObj.has(CTP.JSON_KEY_RES_TYPE)) {
+        		// process response
+        		String resType = jObj.getString(CTP.JSON_KEY_RES_TYPE);
+        		if(CTP.JSON_RES_OK.equals(resType)){
+        			
+        		}else if(CTP.JSON_RES_USERLIST.equals(resType)){
+        			putPeerList(jObj.getJSONArray(CTP.JSON_KEY_RES_MSG));
+        		}else {
+        			
+        		}
+        		return null;
+        	}
+        	
+    	}catch(JSONException e) {
+    		return null;
+    	}
+		return null;
+
     }
     
-    public Map<String, String> remoteGetPeerList(){
+    public void remoteGetPeerList(){
     	byte[] buf = new byte[BUFFER_SIZE];
     	JSONObject jObj = new JSONObject();
     	jObj.append(CTP.JSON_KEY_REQ_TYPE, CTP.JSON_REQ_USERLIST);
@@ -100,15 +132,22 @@ public class CyborgUdpThread extends Thread {
             DatagramPacket sPacket = new DatagramPacket(buf, buf.length, address, PORT_NO);
 			socket.send(sPacket);
 			DatagramPacket rPacket = new DatagramPacket(buf, buf.length);
-			JSONArray jArr = new JSONArray(new String(rPacket.getData()));
-			for(int i=0; i < jArr.length() ; i++){
-				JSONObject obj = jArr.getJSONObject(i);
-				userList.put(obj.getString(CTP.JSON_KEY_USER), obj.getString(CTP.JSON_KEY_IP));
+			jObj = new JSONObject(new String(rPacket.getData()));
+			if (jObj.has(CTP.JSON_KEY_RES_TYPE)) {
+				putPeerList(jObj.getJSONArray(CTP.JSON_KEY_RES_MSG));
 			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			
+		} catch (IOException | JSONException e) {
 			e.printStackTrace();
 		}
-		return userList;
+    }
+    
+    public void putPeerList(JSONArray array) throws JSONException{
+		for(int i=0; i < array.length() ; i++){
+			JSONObject obj = array.getJSONObject(i);
+			if(obj.getInt(CTP.JSON_KEY_MSG_LENGTH) == obj.getString(CTP.JSON_KEY_IP).length()) {
+				userList.put(obj.getString(CTP.JSON_KEY_USER), obj.getString(CTP.JSON_KEY_IP));
+			}
+		}
     }
 }

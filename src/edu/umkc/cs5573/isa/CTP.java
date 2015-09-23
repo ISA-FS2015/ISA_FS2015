@@ -35,14 +35,17 @@ public class CTP {
 	final static String JSON_KEY_REQ_TYPE = "req_type";
 	final static String JSON_KEY_USER = "user";
 	final static String JSON_KEY_IP = "ip";
-	final static String JSON_REQ_USERLIST = "get_users";
+	final static String JSON_KEY_MSG_LENGTH = "length";
+	final static String JSON_REQ_USERLIST = "user_list";
 	final static String JSON_REQ_JOINUSER = "join_user";
 	final static String JSON_REQ_LEAVEUSER = "leave_user";
 	final static String JSON_REQ_FILELIST = "file_list";
 	final static String JSON_REQ_FILE = "file";
 	final static String JSON_KEY_RES_TYPE = "res_type";
+	final static String JSON_RES_USERLIST = "user_list";
 	final static String JSON_KEY_RES_MSG = "res_message";
 	final static String JSON_RES_ERROR = "error";
+	final static String JSON_RES_OK = "ok";
 	
     private static final int WAITING = 0;
     private static final int SENTKNOCKKNOCK = 1;
