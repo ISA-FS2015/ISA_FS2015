@@ -73,9 +73,26 @@ public class CTP {
     	msgObj.append(KEY_USER, userName);
     	msgObj.append(KEY_IP, ipAddress);
     	jObj.append(KEY_REQ_TYPE, REQ_JOINUSER);
-    	jObj.append(KEY_RES_MSG, msgObj);
+    	jObj.append(KEY_REQ_MSG, msgObj);
     	jObj.append(KEY_MSG_LENGTH, msgObj.toString());
     	return jObj.toString();
+    }
+    public String buildRes_JoinUser(Map<String, String> userList){
+    	if(msgLength == payload.length()){
+    		try{
+        		JSONObject obj = new JSONObject(payload).getJSONObject(KEY_REQ_MSG);
+        		if(userList.containsKey(obj.get(KEY_USER))){
+        			return buildRes_Err("Already Exists. Try other username.");
+        		}else{
+    				userList.put(obj.getString(KEY_USER), obj.getString(KEY_IP));
+        			return buildRes_Ok("Successfully added.");
+        		}
+    		}
+    		catch (JSONException e){
+    			e.printStackTrace();
+    		}
+    	}
+    	return buildErr_Unrecognized();
     }
     
     public static String buildRes_PeerList(Map<String, String> userList){
@@ -92,17 +109,30 @@ public class CTP {
 		obj.put(KEY_MSG_LENGTH, jArr.toString().length());
 		return obj.toString();
     }
+    
+    public static String buildRes_Err(String msg){
+    	return new JSONObject()
+		.append(KEY_RES_TYPE, RES_ERROR)
+		.append(KEY_RES_MSG, msg)
+		.append(KEY_MSG_LENGTH, msg.length()).toString();
+    }
+    
     public static String buildErr_Unrecognized(){
     	return new JSONObject()
 		.append(KEY_RES_TYPE, RES_ERROR)
 		.append(KEY_RES_MSG, "Unrecognized")
 		.append(KEY_MSG_LENGTH, "Unrecognized".length()).toString();
     }
+    
     public static String buildRes_Ok(String msg){
 		return new JSONObject()
 				.append(KEY_RES_TYPE, RES_OK)
 				.append(KEY_RES_MSG, msg)
 				.append(KEY_MSG_LENGTH, msg.length()).toString();
+    }
+    
+    public String getMessage(){
+    	return payload;
     }
     
     public String putPeerList(Map<String, String> userList){
@@ -114,7 +144,7 @@ public class CTP {
         			if(obj.getString(KEY_IP).split(".").length == 4){
         				userList.put(obj.getString(KEY_USER), obj.getString(KEY_IP));
         			}else{
-        				Logger.d("IP Parsing error: " + obj.getString(KEY_IP));
+        				Logger.d(this, "IP Parsing error: " + obj.getString(KEY_IP));
         			}
         		}
         		return buildRes_Ok("Successfully added.");
@@ -123,7 +153,7 @@ public class CTP {
     			e.printStackTrace();
     		}
     	}
-    	Logger.d("Parsing error");
+    	Logger.d(this, "Parsing error");
     	return null;
     }
 }

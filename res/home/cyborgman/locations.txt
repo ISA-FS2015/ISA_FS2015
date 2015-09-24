@@ -1,0 +1,83 @@
+{
+  "locations": [
+    {
+      "city": "San_Jose", 
+      "state": "CA", 
+      "zipcode": [
+        "95110", 
+        "95125"
+      ]
+    }, 
+    {
+      "city": "Lenexa", 
+      "state": "KS", 
+      "zipcode": [
+        "66219"
+      ]
+    }, 
+    {
+      "city": "Seattle", 
+      "state": "WA", 
+      "zipcode": [
+        "98101"
+      ]
+    }, 
+    {
+      "city": "New_York", 
+      "state": "NY", 
+      "zipcode": [
+        "10036"
+      ]
+    }, 
+    {
+      "city": "Minneapolis", 
+      "state": "MN", 
+      "zipcode": [
+        "55403"
+      ]
+    }, 
+    {
+      "city": "Las_Vegas", 
+      "state": "NV", 
+      "zipcode": [
+        "89106", 
+        "89101"
+      ]
+    }, 
+    {
+      "city": "Chicago", 
+      "state": "IL", 
+      "zipcode": [
+        "60666"
+      ]
+    }, 
+    {
+      "city": "Normal", 
+      "state": "IL", 
+      "zipcode": [
+        "61761"
+      ]
+    }, 
+    {
+      "city": "Austin", 
+      "state": "TX", 
+      "zipcode": [
+        "78712"
+      ]
+    }, 
+    {
+      "city": "Kansas_City", 
+      "state": "MO", 
+      "zipcode": [
+        "64110"
+      ]
+    }, 
+    {
+      "city": "Atlanta", 
+      "state": "GA", 
+      "zipcode": [
+        "30313"
+      ]
+    }
+  ]
+}

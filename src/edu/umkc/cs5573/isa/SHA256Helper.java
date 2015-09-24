@@ -49,8 +49,40 @@ public class SHA256Helper {
 		return null;
 	}
 	
-	static String getHashStringFromFile(String filePath){
+	/**
+	 * Make a SHA256 hash from the file. If the file is larger than 2GB it throws OutOfMemoryError
+	 * @param path
+	 * @return
+	 * @throws OutOfMemoryError
+	 */
+	static byte[] getHashFromFile(Path path) throws OutOfMemoryError {
+		try {
+			byte[] data = Files.readAllBytes(path);
+			return hashSHA256(data);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	/**
+	 * Make a SHA256 hash from the file. If the file is larger than 2GB it throws OutOfMemoryError
+	 * @param filePath
+	 * @return
+	 * @throws OutOfMemoryError
+	 */
+	static String getHashStringFromFile(String filePath) throws OutOfMemoryError {
 		return byteToBase64(getHashFromFile(filePath));
+	}
+	
+	/**
+	 * Make a SHA256 hash from the file. If the file is larger than 2GB it throws OutOfMemoryError
+	 * @param path
+	 * @return
+	 * @throws OutOfMemoryError
+	 */
+	static String getHashStringFromFile(Path path) throws OutOfMemoryError {
+		return byteToBase64(getHashFromFile(path));
 	}
 	
 	/**

@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,17 +26,47 @@ public class CyborgUdpThread extends Thread {
     protected BufferedReader in = null;
     private boolean isRunning = false;
     private String userName;
+    private String localIpAddress;
+    private String broadcastIpAddress;
     /**
      * For managing peer list. Key will be username and value will be ip address
      */
     protected Map<String, String> userList = null;
-    
-    public CyborgUdpThread(String threadName, String userName) throws IOException {
+    /**
+     * Creates UDP communication thread.
+     * @param threadName The name of thread
+     * @param userName User name to be userd
+     * @param ifName Name of the interface such as eth0 or wlan0. wlan0 is mainly used.
+     * @throws IOException
+     */
+    public CyborgUdpThread(String threadName, String userName, String ifName) throws IOException {
         super(threadName + "_" + userName);
+        for(Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces(); e.hasMoreElements();){
+        	NetworkInterface iface = e.nextElement();
+        	if(iface.getName().equals(ifName)){
+            	for(InterfaceAddress addr : iface.getInterfaceAddresses()){
+            		if(addr.getAddress().getHostAddress().contains(".")){
+                    	//System.out.println("\t" + addr.getAddress().getHostAddress());
+                    	//System.out.println("\t" + addr.getBroadcast().getHostAddress());
+                        localIpAddress = addr.getAddress().getHostAddress();
+                        broadcastIpAddress = addr.getBroadcast().getHostAddress();
+            		}
+            	}
+        	}
+        }
+        if(localIpAddress == null) throw new IOException("No interface named \"" + ifName + "\" exists ");
         socket = new DatagramSocket(PORT_NO);
+        Logger.d(this, "My Local IP is :" + localIpAddress);
+//    	String[] ipSlice = localIpAddress.split(".");
+//    	if(ipSlice.length == 4){
+//        	ipSlice[3] = "255";
+//        	String broadCast = ipSlice[0] + "." + ipSlice[1] + "." + ipSlice[2] + "." + ipSlice[3];
+//    	}else{
+//    		throw new IOException("IP Error. Something wrong!!");
+//    	}
         isRunning = true;
         userList = new HashMap<String, String>();
-        userList.put(userName, socket.getLocalAddress().getHostAddress());
+        userList.put(userName, localIpAddress);
     }
     // Getter
 	public boolean isRunning() {
@@ -60,7 +93,7 @@ public class CyborgUdpThread extends Thread {
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
 				socket.receive(packet);
 				InetAddress address = packet.getAddress();
-				if(!socket.getLocalAddress().getHostAddress().equals(address.getHostAddress())) {
+				if(!localIpAddress.equals(address.getHostAddress())) {
 					String received = new String(packet.getData(), CHARSET_UTF8);
 					String reply = processInput(received);
 					if(reply != null) {
@@ -78,6 +111,7 @@ public class CyborgUdpThread extends Thread {
     }
     
     public void stopThread() {
+    	Logger.d(this, "Stopping UDP Thread...");
     	isRunning = false;
     }
     
@@ -95,7 +129,7 @@ public class CyborgUdpThread extends Thread {
         	}else if (ctp.getType() == CTP.CTP_TYPE_RES){
         		// process response. return must be null
         		if(CTP.RES_OK.equals(ctp.getDataType())){
-        			
+        			Logger.d(this, "Received: " + ctp.getMessage());
         		}else if(CTP.RES_USERLIST.equals(ctp.getDataType())){
         			ctp.putPeerList(userList);
         		}else {
@@ -166,13 +200,13 @@ public class CyborgUdpThread extends Thread {
         }
         
         public void joinUser(String userName){
-        	sendPacket(CTP.buildReq_JoinUser(userName, socket.getLocalAddress().getHostAddress()));
+        	sendPacket(CTP.buildReq_JoinUser(userName, localIpAddress));
         }
         
         public void sendPacket(String packet){
             try {
             	buf = packet.getBytes(CHARSET_UTF8);
-            	InetAddress address = InetAddress.getByName("255.255.255.255");
+            	InetAddress address = InetAddress.getByName(broadcastIpAddress);
                 DatagramPacket sPacket = new DatagramPacket(buf, buf.length, address, PORT_NO);
                 this.socket.send(sPacket);
     		} catch (IOException | JSONException e) {

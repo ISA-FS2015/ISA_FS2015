@@ -33,11 +33,15 @@ package edu.umkc.cs5573.isa;
  */
  
 import java.nio.file.*;
+import java.nio.file.WatchEvent.Kind;
+
 import static java.nio.file.StandardWatchEventKinds.*;
 import static java.nio.file.LinkOption.*;
 import java.nio.file.attribute.*;
 import java.io.*;
 import java.util.*;
+
+import com.almworks.sqlite4java.SQLiteException;
  
 /**
  * Example to watch a directory (or tree) for changes to files.
@@ -70,6 +74,17 @@ public class WatchDir extends Thread{
                     System.out.format("update: %s -> %s\n", prev, dir);
                 }
             }
+        }
+        if(!dir.toFile().isDirectory()){
+    		try {
+    	        SQLiteInstance sql = SQLiteInstance.getInstance();
+    	        if(sql.getFileHash(dir) == null){
+    	        	sql.pushFileInfo(dir, Resources.CYBORG_FILE_TYPE_ORIGINAL);
+    	        }
+    		} catch (SQLiteException e) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}
         }
         keys.put(key, dir);
     }
@@ -111,7 +126,7 @@ public class WatchDir extends Thread{
         // enable trace after initial registration
         this.trace = true;
     }
- 
+    
     /**
      * Process all events for keys queued to the watcher
      */
@@ -133,7 +148,7 @@ public class WatchDir extends Thread{
             }
  
             for (WatchEvent<?> event: key.pollEvents()) {
-                WatchEvent.Kind kind = event.kind();
+                Kind<?> kind = event.kind();
  
                 // TBD - provide example of how OVERFLOW event is handled
                 if (kind == OVERFLOW) {
@@ -154,10 +169,16 @@ public class WatchDir extends Thread{
                     try {
                         if (Files.isDirectory(child, NOFOLLOW_LINKS)) {
                             registerAll(child);
+                        }else{
+                        	handleCreatEvent(child);
                         }
                     } catch (IOException x) {
                         // ignore to keep sample readbale
                     }
+                }else if(recursive && (kind == ENTRY_MODIFY)) {
+                	handleModifyEvent(child);
+                }else if(recursive && (kind == ENTRY_DELETE)) {
+                	handleDeleteEvent(child);
                 }
             }
  
@@ -173,11 +194,61 @@ public class WatchDir extends Thread{
             }
         }
     }
+    
+    public void stopService(){
+    	System.out.println("Stopping Watchdir service...");
+    	isRunning = false;
+    }
+ 
+    // Now handle every file event so that we can control our security!! - Start
+    
+    public void handleCreatEvent(Path child){
+    	String filePath = child.toString();
+		Logger.d(this, "HASH:" + SHA256Helper.getHashStringFromFile(child));
+		try {
+	        SQLiteInstance sql = SQLiteInstance.getInstance();
+	        if(sql.getFileHash(child) == null){
+	        	sql.pushFileInfo(child, Resources.CYBORG_FILE_TYPE_ORIGINAL);
+	        }
+		} catch (SQLiteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+    
+    public void handleModifyEvent(Path child){
+    	if(child.toFile().exists()){
+        	String filePath = child.toString();
+    		Logger.d(this, "HASH:" + SHA256Helper.getHashStringFromFile(child));
+    		try {
+    	        SQLiteInstance sql = SQLiteInstance.getInstance();
+    	        if(sql.getFileHash(child) == null){
+    	        	sql.pushFileInfo(child, Resources.CYBORG_FILE_TYPE_ORIGINAL);
+    	        }
+    		} catch (SQLiteException e) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}
+    	}
+    }
+    
+    public void handleDeleteEvent(Path child){
+    	if(child.toFile().exists()){
+    		Logger.d(this, "Abs Path:" + child.toAbsolutePath().toString());
+    		Logger.d(this, "HASH:" + SHA256Helper.getHashStringFromFile(child));
+    	}
+
+    }
+    
+
+    // Now handle every file event so that we can control our security!! - End
  
     static void usage() {
         System.err.println("usage: java WatchDir [-r] dir");
         System.exit(-1);
     }
+    
+    
  
 //    public static void main(String[] args) throws IOException {
 //        // parse arguments

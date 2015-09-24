@@ -10,17 +10,12 @@ import org.apache.ftpserver.usermanager.PropertiesUserManagerFactory;
 
 public class CyborgFtpServer extends Thread{
 	private boolean isRunning = false;
+	private FtpServer server;
 	public CyborgFtpServer(){
 		super("CyborgFtpServer");
 		isRunning = true;
 	}
-	
-	public void run(){
-		startFtpServer();
-	}
-	
-	
-	public void startFtpServer(){
+	public void initServer(){
 		// Running FTP server!
 		FtpServerFactory serverFactory = new FtpServerFactory();
 		ListenerFactory factory = new ListenerFactory();
@@ -49,13 +44,31 @@ public class CyborgFtpServer extends Thread{
 //					e1.printStackTrace();
 //				}
 		serverFactory.setUserManager(userManagerFactory.createUserManager());
-		// start the server
-		FtpServer server = serverFactory.createServer(); 
-		try {
-			server.start();
-		} catch (FtpException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		server = serverFactory.createServer(); 
+
+	}
+	
+	public void run(){
+		startFtpServer();
+	}
+	
+	public void stopFtpServer(){
+		if(server !=null){
+			Logger.d(this, "Stopping FTP server...");
+			server.stop();
+		}
+	}
+	
+	
+	public void startFtpServer(){
+		if(server !=null){
+			// start the server
+			try {
+				server.start();
+			} catch (FtpException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 }

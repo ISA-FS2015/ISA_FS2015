@@ -8,8 +8,20 @@
 	<classpathentry kind="lib" path="libs/slf4j-api-1.5.2.jar"/>
 	<classpathentry kind="lib" path="libs/slf4j-log4j12-1.5.2.jar"/>
 	<classpathentry kind="lib" path="libs/log4j-1.2.14.jar"/>
-	<classpathentry kind="lib" path="libs/sqlite/sqlite4java.jar"/>
-	<classpathentry kind="lib" path="libs/commons-net-3.3-sources.jar"/>
-	<classpathentry kind="lib" path="libs/commons-net-3.3.jar"/>
+	<classpathentry kind="lib" path="libs/sqlite/sqlite4java.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://almworks.com/sqlite4java/javadoc/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="libs/commons-net-3.3-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="https://commons.apache.org/proper/commons-net/apidocs/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="libs/commons-net-3.3.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="https://commons.apache.org/proper/commons-net/apidocs/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

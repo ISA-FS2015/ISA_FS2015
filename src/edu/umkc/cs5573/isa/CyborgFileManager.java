@@ -8,9 +8,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class CyborgFileManager {
-	final static int READ = 4;
-	final static int WRITE = 2;
-	final static int EXECUTE = 1;
+	final static int READ		= 0x00000100;
+	final static int WRITE		= 0x00000010;
+	final static int EXECUTE 	= 0x00000001;
 	
 	public CyborgFileManager(){
 	}
