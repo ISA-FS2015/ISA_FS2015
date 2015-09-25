@@ -43,8 +43,8 @@ public class CyborgUdpThread extends Thread {
         super(threadName + "_" + userName);
         for(Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces(); e.hasMoreElements();){
         	NetworkInterface iface = e.nextElement();
-        	Logger.d(this, iface.getName());
         	if(iface.getName().equals(ifName)){
+            	Logger.d(this, iface.getName());
             	for(InterfaceAddress addr : iface.getInterfaceAddresses()){
                 	Logger.d(this, "\t" + addr.getAddress().getHostAddress());
             		if(addr.getAddress().getHostAddress().contains(".")){

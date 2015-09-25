@@ -76,17 +76,8 @@ public class WatchDir extends Thread{
                 }
             }
         }
-        if(handler != null) handler.onRegisterCallback(dir);
         if(!dir.toFile().isDirectory()){
-    		try {
-    	        SQLiteInstance sql = SQLiteInstance.getInstance();
-    	        if(sql.getFileHash(dir) == null){
-    	        	sql.pushFileInfo(dir, Resources.CYBORG_FILE_TYPE_ORIGINAL);
-    	        }
-    		} catch (SQLiteException e) {
-    			// TODO Auto-generated catch block
-    			e.printStackTrace();
-    		}
+            if(handler != null) handler.onRegisterCallback(dir);
         }
         keys.put(key, dir);
     }
@@ -207,30 +198,15 @@ public class WatchDir extends Thread{
     // Now handle every file event so that we can control our security!! - Start
     
     public void handleCreatEvent(Path child){
+        if(handler != null) handler.onFileCreated(child);
     }
     
     public void handleModifyEvent(Path child){
-    	if(child.toFile().exists()){
-        	String filePath = child.toString();
-    		Logger.d(this, "HASH:" + SHA256Helper.getHashStringFromFile(child));
-    		try {
-    	        SQLiteInstance sql = SQLiteInstance.getInstance();
-    	        if(sql.getFileHash(child) == null){
-    	        	sql.pushFileInfo(child, Resources.CYBORG_FILE_TYPE_ORIGINAL);
-    	        }
-    		} catch (SQLiteException e) {
-    			// TODO Auto-generated catch block
-    			e.printStackTrace();
-    		}
-    	}
+        if(handler != null) handler.onFileModified(child);
     }
     
     public void handleDeleteEvent(Path child){
-    	if(child.toFile().exists()){
-    		Logger.d(this, "Abs Path:" + child.toAbsolutePath().toString());
-    		Logger.d(this, "HASH:" + SHA256Helper.getHashStringFromFile(child));
-    	}
-
+        if(handler != null) handler.onFileDeleted(child);
     }
     
 

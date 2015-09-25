@@ -2,107 +2,212 @@ package edu.umkc.cs5573.isa;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import com.almworks.sqlite4java.SQLiteConnection;
 import com.almworks.sqlite4java.SQLiteException;
+import com.almworks.sqlite4java.SQLiteJob;
+import com.almworks.sqlite4java.SQLiteQueue;
 import com.almworks.sqlite4java.SQLiteStatement;
 
 public class SQLiteInstance {
+//	private SQLiteConnection db;
+	SQLiteQueue queue = null;
+	private final static String TABLE_FILE_INFO = "FileInfo";
+	
+	public SQLiteInstance(){
+//		db = new SQLiteConnection(new File("res/db/database.db"));
+		queue = new SQLiteQueue(new File("res/db/database.db"));
+		init();
+	}
 
+	// Not anymore singleton due to thread issue
 	// Singleton - Start
 	
-	private volatile static SQLiteInstance sqLiteManager;
-
-	private SQLiteInstance() throws SQLiteException{
-		db = new SQLiteConnection(new File("res/db/database.db"));
-		dateFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
-		db.open(true);
-		init();
-//		db.dispose();
-	}
-	/**
-	 * Singleton
-	 * @return
-	 * @throws SQLiteException 
-	 */
-	public static SQLiteInstance getInstance() throws SQLiteException{
-		if(sqLiteManager == null){
-			synchronized(SQLiteInstance.class){
-				if(sqLiteManager == null){
-					sqLiteManager = new SQLiteInstance();
-				}
-			}
-		}
-		return sqLiteManager;
-	}
+//	private volatile static SQLiteInstance sqLiteManager;
+//
+//	private SQLiteInstance() throws SQLiteException{
+//		db = new SQLiteConnection(new File("res/db/database.db"));
+//		dateFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
+//		db.open(true);
+//		init();
+////		db.dispose();
+//	}
+//	/**
+//	 * Singleton
+//	 * @return
+//	 * @throws SQLiteException 
+//	 */
+//	public static SQLiteInstance getInstance() throws SQLiteException{
+//		if(sqLiteManager == null){
+//			synchronized(SQLiteInstance.class){
+//				if(sqLiteManager == null){
+//					sqLiteManager = new SQLiteInstance();
+//				}
+//			}
+//		}
+//		return sqLiteManager;
+//	}
 	
 	// Singleton - End
 	
-	private SQLiteConnection db;
-	private final static String TABLE_FILE_INFO = "FileInfo";
-	private SimpleDateFormat dateFormat = null;
+//	private SimpleDateFormat dateFormat = null;
 	
-	private void init(){
-		try {
-			String sqlState = "create table " + TABLE_FILE_INFO + " ("
-					+ "id integer primary key autoincrement, "
-					+ "Filename text not null, "
-					+ "LastModified text not null, "
-					+ "Type int not null, "
-					+ "Hash text not null"
-					+ ")";
-			db.exec(sqlState);
-		} catch (SQLiteException e) {
-			Logger.d(this, e.getMessage());
-		}
+	void init(){
+		queue.start();
+		Logger.d(this, "SQLite Queue running...");
+		queue.execute(new SQLiteJob<Object>() {
+			@Override
+			protected Object job(SQLiteConnection connection) throws Throwable {
+				String sqlState = "create table " + TABLE_FILE_INFO + " ("
+						+ "id integer primary key autoincrement, "
+						+ "Filename text not null, "
+						+ "CreatedOn text not null, "
+						+ "ExpiresOn text not null, "
+						+ "Type int not null, "
+						+ "Hash text not null"
+						+ ")";
+				try{
+					connection.exec(sqlState);
+				}catch(SQLiteException e){
+					Logger.d(this, e.getMessage());
+				}
+				return null;
+			}
+		});
 	}
 	
 	public String getFileHash(Path path){
-		SQLiteStatement st;
-		String hash = null;
-		try {
-//			db.open(true);
-			st = db.prepare("SELECT Hash FROM " + TABLE_FILE_INFO + " WHERE Filename = \"" + path.toString() + "\"");
-			while (st.step()) {
-				hash = st.columnString(0);
-			//  orders.add(st.columnLong(0));
+		final String sql = "SELECT Hash FROM " + TABLE_FILE_INFO + " WHERE Filename = \"" + path.toString() + "\"";
+		String hash = queue.execute(new SQLiteJob<String>(){
+			@Override
+			protected String job(SQLiteConnection connection) throws Throwable {
+				// TODO Auto-generated method stub
+				connection.open(true);
+				SQLiteStatement st = connection.prepare(sql);
+				try{
+					while (st.step()) {
+						return st.columnString(0);
+					}
+				}catch(SQLiteException e){
+					
+				}finally{
+					st.dispose();
+				}
+				//  orders.add(st.columnLong(0));
+				return null;
 			}
-			st.dispose();
-//			db.dispose();
-		} catch (SQLiteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		}).complete();
 		return hash;
 	}
 	
-	public boolean pushFileInfo(Path path, int type){
-		Date now = new Date();
-		String sqlState = "insert into " + TABLE_FILE_INFO
-				+ "(Filename, LastModified, Type, Hash)"
+	public FileInfo getFileInfo(Path path){
+		final String sql = "SELECT * FROM " + TABLE_FILE_INFO + " WHERE Filename = \"" + path.toString() + "\"";
+		FileInfo item = queue.execute(new SQLiteJob<FileInfo>(){
+			@Override
+			protected FileInfo job(SQLiteConnection connection) throws Throwable {
+				try {
+					SQLiteStatement st = connection.prepare(sql);
+					while (st.step()) {
+						int id = st.columnInt(0);
+						String fileName = st.columnString(1);
+						String createdOn = st.columnString(2);
+						String expiresOn = st.columnString(3);
+						int type = st.columnInt(4);
+						String hash = st.columnString(5);
+						FileInfo info = new FileInfo(id, fileName, createdOn, expiresOn, type, hash);
+						return info;
+					}
+					st.dispose();
+				} catch (SQLiteException e) {
+					e.printStackTrace();
+				}
+				return null;
+			}
+		}).complete();
+		return item;
+	}
+	
+	public void updateFileInfo(Path path, String expiresOn, int type, String hash){
+		final String sql = "UPDATE from " + TABLE_FILE_INFO + " set "
+				+ "ExpiresOn=\"" + expiresOn + "\""
+				+ "Type=" + Integer.toString(type)
+				+ "Hash=\"" + hash + "\""
+				+ "WHERE Filename = \"" + path.toString() + "\"";
+		queue.execute(new SQLiteJob<Void>(){
+			@Override
+			protected Void job(SQLiteConnection connection) throws Throwable {
+				try {
+					SQLiteStatement st = connection.prepare(sql);
+					while (st.step()) {
+					}
+					st.dispose();
+				} catch (SQLiteException e) {
+					e.printStackTrace();
+				}
+				return null;
+			}
+		}).complete();
+	}
+	
+	public boolean deleteFileInfo(Path path){
+		final String sqlState = "delete * from " + TABLE_FILE_INFO
+				+ " where Filename= " + "\"" + path.toString() + "\"";
+		return queue.execute(new SQLiteJob<Boolean>(){
+			@Override
+			protected Boolean job(SQLiteConnection connection) throws Throwable {
+				try {
+					connection.open();
+					SQLiteStatement st = connection.prepare(sqlState);
+					Logger.d(this, "Result: " + st.columnCount());
+					while (st.step()) {
+						Logger.d(this, "Delete Result: " + st.columnString(0));
+					}
+					st.dispose();
+					return true;
+				} catch (SQLiteException e) {
+					e.printStackTrace();
+				}
+				return false;
+			}
+		}).complete();
+
+	}
+	
+	public boolean pushFileInfo(Path path, String createdOn, String expiresOn, int type, String hash){
+		//Check if there are any items with the same file
+//		FileInfo info = getFileInfo(path);
+//		if(info == null){
+//			
+//		}
+		final String sqlState = "insert into " + TABLE_FILE_INFO
+				+ "(Filename, CreatedOn, ExpiresOn, Type, Hash)"
 				+ " values ("
 				+ "\"" + path.toString() + "\"" + ","
-				+ "\"" + dateFormat.format(now) + "\"" + ","
+				+ "\"" + createdOn + "\"" + ","
+				+ "\"" + expiresOn + "\"" + ","
 				+ Integer.toString(type) + ","
-				+ "\"" + SHA256Helper.getHashStringFromFile(path)+ "\""
+				+ "\"" + hash + "\""
 				+ ")";
-		try {
-//			db.open();
-			SQLiteStatement st = db.prepare(sqlState);
-			Logger.d(this, "Result: " + st.columnCount());
-			while (st.step()) {
-				Logger.d(this, "Result: " + st.columnString(0));
+		return queue.execute(new SQLiteJob<Boolean>(){
+			@Override
+			protected Boolean job(SQLiteConnection connection) throws Throwable {
+				try {
+					connection.open();
+					SQLiteStatement st = connection.prepare(sqlState);
+					Logger.d(this, "Result: " + st.columnCount());
+					while (st.step()) {
+						Logger.d(this, "Insert Result: " + st.columnString(0));
+					}
+					st.dispose();
+					return true;
+				} catch (SQLiteException e) {
+					e.printStackTrace();
+				}
+				return false;
 			}
-			st.dispose();
-//			db.dispose();
-			return true;
-		} catch (SQLiteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return false;
+			
+		}).complete();
 	}
 	
 	public Date getLastModified(String fileName){
@@ -110,38 +215,57 @@ public class SQLiteInstance {
 		
 	}
 	
-	public void execSql(String sql){
-		try {
-//			db.open();
-			SQLiteStatement st = db.prepare(sql);
-			while(st.step()){
-				Logger.d(this, st.toString());
+	public void execSql(final String sql){
+		String result = queue.execute(new SQLiteJob<String>(){
+			@Override
+			protected String job(SQLiteConnection connection) throws Throwable {
+				try {
+					connection.open();
+					SQLiteStatement st = connection.prepare(sql);
+					StringBuilder buf = new StringBuilder();
+					int index = 0;
+					while(st.step()){
+						if(index == 0){
+							for(int i=0; i < st.columnCount(); i++){
+								buf.append(st.getColumnName(i)).append('\t');
+							}
+							buf.append('\n');
+						}
+						for(int i=0; i < st.columnCount(); i++){
+							buf.append(st.columnString(i)).append('\t');
+						}
+						buf.append('\n');
+					}
+					st.dispose();
+					return buf.toString();
+				} catch (SQLiteException e) {
+					e.printStackTrace();
+				}
+				return null;
 			}
-			st.dispose();
-//			db.dispose();
-		} catch (SQLiteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
+		}).complete();
+		Logger.d(this, result);
 	}
 	
-	public void dispose(){
-		db.dispose();
+	public void dispose() throws InterruptedException{
+		queue.stop(true).join();
+//		db.dispose();
+//		db = null;
 	}
-	void sqlTest() {
-		try {
-			SQLiteStatement st;
-			st = db.prepare("SELECT order_id FROM orders WHERE quantity >= ?");
-			//st.bind(1, minimumQuantity);
-			while (st.step()) {
-			//  orders.add(st.columnLong(0));
-			}
-			st.dispose();
-//			db.dispose();
-		} catch (SQLiteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+	
+//	void sqlTest() {
+//		try {
+//			SQLiteStatement st;
+//			st = db.prepare("SELECT order_id FROM orders WHERE quantity >= ?");
+//			//st.bind(1, minimumQuantity);
+//			while (st.step()) {
+//			//  orders.add(st.columnLong(0));
+//			}
+//			st.dispose();
+////			db.dispose();
+//		} catch (SQLiteException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//	}
 }

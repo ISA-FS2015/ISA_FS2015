@@ -1,9 +1,11 @@
 package edu.umkc.cs5573.isa;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -46,6 +48,19 @@ public class CyborgFileManager {
 			e.printStackTrace();
 		}
 		return false;
+	}
+	public void listf(String directoryName, ArrayList<File> files) {
+	    File directory = new File(directoryName);
+
+	    // get all the files from a directory
+	    File[] fList = directory.listFiles();
+	    for (File file : fList) {
+	        if (file.isFile()) {
+	            files.add(file);
+	        } else if (file.isDirectory()) {
+	            listf(file.getAbsolutePath(), files);
+	        }
+	    }
 	}
 
 }

@@ -27,6 +27,7 @@ public class CTP {
 	final static String REQ_FILE = "file";
 	final static String KEY_RES_TYPE = "res_type";
 	final static String RES_USERLIST = "user_list";
+	final static String RES_FILELIST = "file_list";
 	final static String RES_PROBE = "probe_res";
 	final static String RES_ERROR = "error";
 	final static String RES_OK = "ok";

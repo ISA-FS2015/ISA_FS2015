@@ -1,15 +1,6 @@
 package edu.umkc.cs5573.isa;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.WatchService;
-
-import com.almworks.sqlite4java.SQLiteException;
 
 public class ISAPMain {
 	final static String WORK_DIR = Resources.WORK_DIR;
@@ -26,7 +17,10 @@ public class ISAPMain {
 				String userName = System.getProperty("user.name");
 				cyborg = CyborgController.getInstance(userName);
 			}
-		} catch (IOException | SQLiteException e) {
+			cyborg.init();
+			cyborg.cli(System.out, System.in);
+			cyborg.closeService();
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
