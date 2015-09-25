@@ -55,8 +55,7 @@ public class SQLiteInstance {
 					+ ")";
 			db.exec(sqlState);
 		} catch (SQLiteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Logger.d(this, e.getMessage());
 		}
 	}
 	
@@ -125,6 +124,10 @@ public class SQLiteInstance {
 			e.printStackTrace();
 		}
 		
+	}
+	
+	public void dispose(){
+		db.dispose();
 	}
 	void sqlTest() {
 		try {

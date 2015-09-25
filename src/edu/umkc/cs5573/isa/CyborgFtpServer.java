@@ -16,6 +16,7 @@ public class CyborgFtpServer extends Thread{
 		isRunning = true;
 	}
 	public void initServer(){
+		Logger.d(this, "Initiallizing...");
 		// Running FTP server!
 		FtpServerFactory serverFactory = new FtpServerFactory();
 		ListenerFactory factory = new ListenerFactory();
@@ -45,10 +46,10 @@ public class CyborgFtpServer extends Thread{
 //				}
 		serverFactory.setUserManager(userManagerFactory.createUserManager());
 		server = serverFactory.createServer(); 
-
 	}
 	
 	public void run(){
+		Logger.d(this, "Starting FTP server...");
 		startFtpServer();
 	}
 	

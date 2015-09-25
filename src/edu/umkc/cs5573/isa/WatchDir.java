@@ -54,6 +54,7 @@ public class WatchDir extends Thread{
     private final boolean recursive;
     private boolean trace = false;
     private boolean isRunning = false;
+    private IWatchDirHandler handler = null;
  
     @SuppressWarnings("unchecked")
     static <T> WatchEvent<T> cast(WatchEvent<?> event) {
@@ -75,6 +76,7 @@ public class WatchDir extends Thread{
                 }
             }
         }
+        if(handler != null) handler.onRegisterCallback(dir);
         if(!dir.toFile().isDirectory()){
     		try {
     	        SQLiteInstance sql = SQLiteInstance.getInstance();
@@ -109,11 +111,13 @@ public class WatchDir extends Thread{
     /**
      * Creates a WatchService and registers the given directory
      */
-    WatchDir(String dirPath, boolean recursive) throws IOException {
+    WatchDir(String dirPath, boolean recursive, IWatchDirHandler handler) throws IOException {
+		Logger.d(this, "Starting Directory Watcher...");
 		Path dir = Paths.get(dirPath);
         this.watcher = FileSystems.getDefault().newWatchService();
         this.keys = new HashMap<WatchKey,Path>();
         this.recursive = recursive;
+        this.handler = handler;
         this.isRunning = true;
         if (recursive) {
             System.out.format("Scanning %s ...\n", dir);
@@ -203,17 +207,6 @@ public class WatchDir extends Thread{
     // Now handle every file event so that we can control our security!! - Start
     
     public void handleCreatEvent(Path child){
-    	String filePath = child.toString();
-		Logger.d(this, "HASH:" + SHA256Helper.getHashStringFromFile(child));
-		try {
-	        SQLiteInstance sql = SQLiteInstance.getInstance();
-	        if(sql.getFileHash(child) == null){
-	        	sql.pushFileInfo(child, Resources.CYBORG_FILE_TYPE_ORIGINAL);
-	        }
-		} catch (SQLiteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
     }
     
     public void handleModifyEvent(Path child){

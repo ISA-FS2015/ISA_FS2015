@@ -43,8 +43,10 @@ public class CyborgUdpThread extends Thread {
         super(threadName + "_" + userName);
         for(Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces(); e.hasMoreElements();){
         	NetworkInterface iface = e.nextElement();
+        	Logger.d(this, iface.getName());
         	if(iface.getName().equals(ifName)){
             	for(InterfaceAddress addr : iface.getInterfaceAddresses()){
+                	Logger.d(this, "\t" + addr.getAddress().getHostAddress());
             		if(addr.getAddress().getHostAddress().contains(".")){
                     	//System.out.println("\t" + addr.getAddress().getHostAddress());
                     	//System.out.println("\t" + addr.getBroadcast().getHostAddress());
@@ -55,6 +57,7 @@ public class CyborgUdpThread extends Thread {
         	}
         }
         if(localIpAddress == null) throw new IOException("No interface named \"" + ifName + "\" exists ");
+		Logger.d(this, "Starting UDP Service...");
         socket = new DatagramSocket(PORT_NO);
         Logger.d(this, "My Local IP is :" + localIpAddress);
 //    	String[] ipSlice = localIpAddress.split(".");
@@ -119,10 +122,13 @@ public class CyborgUdpThread extends Thread {
     	try {
         	CTP ctp = new CTP(input);
         	if(ctp.getType() == CTP.CTP_TYPE_REQ){
+        		Logger.d(this, "REQ: " + ctp.getDataType());
         		if(CTP.REQ_USERLIST.equals(ctp.getDataType())){
         			return CTP.buildRes_PeerList(userList);
         		}else if(CTP.REQ_JOINUSER.equals(ctp.getDataType())){
-        			return CTP.buildRes_PeerList(userList);
+        			return ctp.buildRes_JoinUser(userList);
+        		}else if(CTP.REQ_PROBE.equals(ctp.getDataType())){
+        			return ctp.buildRes_Probe(userList);
         		}else{
         			return CTP.buildErr_Unrecognized();
         		}
@@ -154,6 +160,9 @@ public class CyborgUdpThread extends Thread {
     public void reqJoinUser(){
     	new UdpRequestThread(UdpRequestThread.REQUEST_JOIN_USER, socket).start();
     }
+    public void reqProbe(){
+    	new UdpRequestThread(UdpRequestThread.REQUEST_PROBE, socket).start();
+    }
     
     
     // Outgoing process functions - Start
@@ -167,6 +176,7 @@ public class CyborgUdpThread extends Thread {
     class UdpRequestThread extends Thread{
     	final static int REQUEST_USER_LIST = 0;
     	final static int REQUEST_JOIN_USER = 1;
+    	final static int REQUEST_PROBE = 2;
     	private int reqType;
     	private DatagramSocket socket = null;
     	private byte[] buf = null;
@@ -191,6 +201,11 @@ public class CyborgUdpThread extends Thread {
 	        			joinUser(userName);
 	        			break;
 	        		}
+	        		case REQUEST_PROBE:
+	        		{
+	        			probe(userName);
+	        			break;
+	        		}
         		}
         	}
         }
@@ -202,6 +217,11 @@ public class CyborgUdpThread extends Thread {
         public void joinUser(String userName){
         	sendPacket(CTP.buildReq_JoinUser(userName, localIpAddress));
         }
+        
+        public void probe(String userName){
+        	sendPacket(CTP.buildReq_Probe(userName, localIpAddress));
+        }
+
         
         public void sendPacket(String packet){
             try {
