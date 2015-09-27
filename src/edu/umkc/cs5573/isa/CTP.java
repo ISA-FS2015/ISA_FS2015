@@ -1,5 +1,6 @@
 package edu.umkc.cs5573.isa;
 
+import java.util.List;
 import java.util.Map;
 
 import org.json.JSONArray;
@@ -16,6 +17,8 @@ public class CTP {
 	final static String KEY_REQ_TYPE = "req_type";
 	final static String KEY_USER = "user";
 	final static String KEY_IP = "ip";
+	final static String KEY_FILENAME = "file_name";
+	final static String KEY_FILETYPE = "file_type";
 	final static String KEY_MSG_LENGTH = "length";
 	final static String KEY_REQ_MSG = "req_message";
 	final static String KEY_RES_MSG = "res_message";
@@ -92,6 +95,23 @@ public class CTP {
     	return jObj.toString();
     }
 
+	public static String build_FileList(String userName, List<FileInfo> fileInfoes) {
+    	JSONArray jArr = new JSONArray();
+		JSONObject obj = new JSONObject();
+		for(FileInfo item : fileInfoes){
+			obj.put(KEY_USER, userName);
+			obj.put(KEY_FILENAME, item.getFileName());
+			obj.put(KEY_FILETYPE, item.getType());
+			jArr.put(obj);
+		}
+		obj = new JSONObject();
+		
+		obj.append(KEY_RES_TYPE, RES_USERLIST);
+		obj.append(KEY_RES_MSG, jArr);
+		obj.put(KEY_MSG_LENGTH, jArr.toString().length());
+		return obj.toString();
+	}
+	
     public String buildRes_JoinUser(Map<String, String> userList){
     	if(msgLength == payload.length()){
     		try{

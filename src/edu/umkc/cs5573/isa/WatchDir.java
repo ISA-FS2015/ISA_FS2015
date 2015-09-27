@@ -55,6 +55,7 @@ public class WatchDir extends Thread{
     private boolean trace = false;
     private boolean isRunning = false;
     private IWatchDirHandler handler = null;
+
  
     @SuppressWarnings("unchecked")
     static <T> WatchEvent<T> cast(WatchEvent<?> event) {
@@ -117,7 +118,6 @@ public class WatchDir extends Thread{
         } else {
             register(dir);
         }
- 
         // enable trace after initial registration
         this.trace = true;
     }
@@ -209,7 +209,6 @@ public class WatchDir extends Thread{
         if(handler != null) handler.onFileDeleted(child);
     }
     
-
     // Now handle every file event so that we can control our security!! - End
  
     static void usage() {

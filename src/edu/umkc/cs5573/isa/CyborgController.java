@@ -10,6 +10,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import com.almworks.sqlite4java.SQLiteException;
+
 public class CyborgController implements IWatchDirHandler{
 	final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
 	final static int EXPIRES_DAYS_COPIED = 1;
@@ -19,11 +21,12 @@ public class CyborgController implements IWatchDirHandler{
 	
 	private volatile static CyborgController mController;
 	
-	public static CyborgController getInstance(String userName) throws IOException{
+	public static CyborgController getInstance(String userName, String ifName, String homeDirectory)
+			throws IOException, SQLiteException{
 		if(mController == null){
 			synchronized(CyborgController.class){
 				if(mController == null){
-					mController = new CyborgController(userName);
+					mController = new CyborgController(userName, ifName, homeDirectory);
 				}
 			}
 		}
@@ -40,12 +43,13 @@ public class CyborgController implements IWatchDirHandler{
 	private boolean isDisposed = false;
 	
 	
-	private CyborgController(String userName) throws IOException{
+	private CyborgController(String userName, String ifName, String homeDirectory)
+			throws IOException, SQLiteException{
 //		sql = SQLiteInstance.getInstance();
 		ftpServer = new CyborgFtpServer();
-		watchDir = new WatchDir(Resources.WORK_DIR, true, this);
-		udpThread = new CyborgUdpThread("UDPThread", userName, "wlan0");
-		sql = new SQLiteInstance();
+		watchDir = new WatchDir(homeDirectory, true, this);
+		udpThread = new CyborgUdpThread("UDPThread", userName, ifName, homeDirectory);
+		sql = SQLiteInstance.getInstance();
 	}
 	
 	public void init(){

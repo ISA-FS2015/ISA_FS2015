@@ -9,9 +9,12 @@ import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.json.JSONException;
+
+import com.almworks.sqlite4java.SQLiteException;
 /**
  * This class manages peer list through UDP broadcasting.
  * @author Younghwan
@@ -26,12 +29,14 @@ public class CyborgUdpThread extends Thread {
     protected BufferedReader in = null;
     private boolean isRunning = false;
     private String userName;
+    private String homeDirectory;
     private String localIpAddress;
     private String broadcastIpAddress;
     /**
      * For managing peer list. Key will be username and value will be ip address
      */
     protected Map<String, String> userList = null;
+    protected Map<String, List<String>> fileList = null;
     /**
      * Creates UDP communication thread.
      * @param threadName The name of thread
@@ -39,7 +44,7 @@ public class CyborgUdpThread extends Thread {
      * @param ifName Name of the interface such as eth0 or wlan0. wlan0 is mainly used.
      * @throws IOException
      */
-    public CyborgUdpThread(String threadName, String userName, String ifName) throws IOException {
+    public CyborgUdpThread(String threadName, String userName, String ifName, String homeDirectory) throws IOException {
         super(threadName + "_" + userName);
         for(Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces(); e.hasMoreElements();){
         	NetworkInterface iface = e.nextElement();
@@ -68,8 +73,10 @@ public class CyborgUdpThread extends Thread {
 //    		throw new IOException("IP Error. Something wrong!!");
 //    	}
         isRunning = true;
+        this.homeDirectory = homeDirectory;
         userList = new HashMap<String, String>();
         userList.put(userName, localIpAddress);
+        fileList = new HashMap<String, List<String>>();
     }
     // Getter
 	public boolean isRunning() {
@@ -177,6 +184,7 @@ public class CyborgUdpThread extends Thread {
     	final static int REQUEST_USER_LIST = 0;
     	final static int REQUEST_JOIN_USER = 1;
     	final static int REQUEST_PROBE = 2;
+    	final static int BROADCAST_FILE_LIST = 3;
     	private int reqType;
     	private DatagramSocket socket = null;
     	private byte[] buf = null;
@@ -206,27 +214,55 @@ public class CyborgUdpThread extends Thread {
 	        			probe(userName);
 	        			break;
 	        		}
+	        		case BROADCAST_FILE_LIST:
+	        		{
+	        			try {
+							broadcastFileList();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+	        			break;
+	        		}
         		}
         	}
         }
-        
+
+        @Deprecated
         public void reqPeerList(){
-        	sendPacket(CTP.buildReq_PeerList());
+        	broadcastPacket(CTP.buildReq_PeerList());
         }
         
         public void joinUser(String userName){
-        	sendPacket(CTP.buildReq_JoinUser(userName, localIpAddress));
+        	broadcastPacket(CTP.buildReq_JoinUser(userName, localIpAddress));
         }
         
         public void probe(String userName){
-        	sendPacket(CTP.buildReq_Probe(userName, localIpAddress));
+        	broadcastPacket(CTP.buildReq_Probe(userName, localIpAddress));
+        }
+        
+        public void broadcastFileList() throws IOException{
+            try {
+				SQLiteInstance sql = SQLiteInstance.getInstance();
+				CTP.build_FileList(userName, sql.getFileInfoes());
+			} catch (SQLiteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+            
         }
 
         
-        public void sendPacket(String packet){
+        public void sendPacketTo(String packet, String ipAddress){
+        	sendPacket(packet, ipAddress);
+        }
+        public void broadcastPacket(String packet){
+        	sendPacket(packet, broadcastIpAddress);
+        }
+        private void sendPacket(String packet, String ipAddress){
             try {
             	buf = packet.getBytes(CHARSET_UTF8);
-            	InetAddress address = InetAddress.getByName(broadcastIpAddress);
+            	InetAddress address = InetAddress.getByName(ipAddress);
                 DatagramPacket sPacket = new DatagramPacket(buf, buf.length, address, PORT_NO);
                 this.socket.send(sPacket);
     		} catch (IOException | JSONException e) {

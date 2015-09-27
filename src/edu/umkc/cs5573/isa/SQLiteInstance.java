@@ -2,7 +2,9 @@ package edu.umkc.cs5573.isa;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import com.almworks.sqlite4java.SQLiteConnection;
 import com.almworks.sqlite4java.SQLiteException;
@@ -15,7 +17,7 @@ public class SQLiteInstance {
 	SQLiteQueue queue = null;
 	private final static String TABLE_FILE_INFO = "FileInfo";
 	
-	public SQLiteInstance(){
+	private SQLiteInstance(){
 //		db = new SQLiteConnection(new File("res/db/database.db"));
 		queue = new SQLiteQueue(new File("res/db/database.db"));
 		init();
@@ -24,7 +26,7 @@ public class SQLiteInstance {
 	// Not anymore singleton due to thread issue
 	// Singleton - Start
 	
-//	private volatile static SQLiteInstance sqLiteManager;
+	private volatile static SQLiteInstance sqLiteInstance;
 //
 //	private SQLiteInstance() throws SQLiteException{
 //		db = new SQLiteConnection(new File("res/db/database.db"));
@@ -33,21 +35,21 @@ public class SQLiteInstance {
 //		init();
 ////		db.dispose();
 //	}
-//	/**
-//	 * Singleton
-//	 * @return
-//	 * @throws SQLiteException 
-//	 */
-//	public static SQLiteInstance getInstance() throws SQLiteException{
-//		if(sqLiteManager == null){
-//			synchronized(SQLiteInstance.class){
-//				if(sqLiteManager == null){
-//					sqLiteManager = new SQLiteInstance();
-//				}
-//			}
-//		}
-//		return sqLiteManager;
-//	}
+	/**
+	 * Singleton
+	 * @return
+	 * @throws SQLiteException 
+	 */
+	public static SQLiteInstance getInstance() throws SQLiteException{
+		if(sqLiteInstance == null){
+			synchronized(SQLiteInstance.class){
+				if(sqLiteInstance == null){
+					sqLiteInstance = new SQLiteInstance();
+				}
+			}
+		}
+		return sqLiteInstance;
+	}
 	
 	// Singleton - End
 	
@@ -119,6 +121,34 @@ public class SQLiteInstance {
 						return info;
 					}
 					st.dispose();
+				} catch (SQLiteException e) {
+					e.printStackTrace();
+				}
+				return null;
+			}
+		}).complete();
+		return item;
+	}
+	
+	public List<FileInfo> getFileInfoes(){
+		final String sql = "SELECT * FROM " + TABLE_FILE_INFO;
+		List<FileInfo> item = queue.execute(new SQLiteJob<List<FileInfo>>(){
+			@Override
+			protected List<FileInfo> job(SQLiteConnection connection) throws Throwable {
+				try {
+					List<FileInfo> list = new ArrayList<FileInfo>();
+					SQLiteStatement st = connection.prepare(sql);
+					while (st.step()) {
+						int id = st.columnInt(0);
+						String fileName = st.columnString(1);
+						String createdOn = st.columnString(2);
+						String expiresOn = st.columnString(3);
+						int type = st.columnInt(4);
+						String hash = st.columnString(5);
+						list.add(new FileInfo(id, fileName, createdOn, expiresOn, type, hash));
+					}
+					st.dispose();
+					return list;
 				} catch (SQLiteException e) {
 					e.printStackTrace();
 				}
