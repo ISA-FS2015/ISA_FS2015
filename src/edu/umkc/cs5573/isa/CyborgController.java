@@ -57,7 +57,7 @@ public class CyborgController implements IWatchDirHandler{
 		this.watchDir = new WatchDir(homeDirectory, true, this);
 		this.watchFileExpiration = new WatchFileExpiration("FileExpirationWatcher", sql);
 		this.homeDirectory = homeDirectory;
-		//this.udpThread = new CyborgUdpThread("UDPThread", userName, ifName, homeDirectory);
+		this.udpThread = new CyborgUdpThread("UDPThread", userName, ifName, homeDirectory);
 	}
 	
 	public void init(){
@@ -65,8 +65,8 @@ public class CyborgController implements IWatchDirHandler{
 			ftpServer.start();
 			watchDir.start();
 			watchFileExpiration.start();
-			//udpThread.start();
-			//udpThread.reqJoinUser();
+			udpThread.start();
+			udpThread.reqJoinUser();
 			isInit = true;
 			//new SQLiteInstance().init();
 		}else if(isDisposed){
