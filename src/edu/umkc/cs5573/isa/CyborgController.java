@@ -1,10 +1,14 @@
 package edu.umkc.cs5573.isa;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -13,7 +17,7 @@ import java.util.List;
 import com.almworks.sqlite4java.SQLiteException;
 
 public class CyborgController implements IWatchDirHandler{
-	final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
+	final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 	final static int EXPIRES_DAYS_COPIED = 1;
 	final static int EXPIRES_DAYS_OWNER = 3650; // 10 years for the owner
 
@@ -38,26 +42,31 @@ public class CyborgController implements IWatchDirHandler{
 	CyborgUdpThread udpThread;
 	CyborgFtpServer ftpServer;
 	WatchDir watchDir;
+	WatchFileExpiration watchFileExpiration;
 	SQLiteInstance sql;
 	private boolean isInit = false;
 	private boolean isDisposed = false;
+	private String homeDirectory;
 	
 	
 	private CyborgController(String userName, String ifName, String homeDirectory)
 			throws IOException, SQLiteException{
 //		sql = SQLiteInstance.getInstance();
-		ftpServer = new CyborgFtpServer();
-		watchDir = new WatchDir(homeDirectory, true, this);
-		udpThread = new CyborgUdpThread("UDPThread", userName, ifName, homeDirectory);
-		sql = SQLiteInstance.getInstance();
+		this.sql = SQLiteInstance.getInstance();
+		this.ftpServer = new CyborgFtpServer();
+		this.watchDir = new WatchDir(homeDirectory, true, this);
+		this.watchFileExpiration = new WatchFileExpiration("FileExpirationWatcher", sql);
+		this.homeDirectory = homeDirectory;
+		//this.udpThread = new CyborgUdpThread("UDPThread", userName, ifName, homeDirectory);
 	}
 	
 	public void init(){
 		if(!isInit){
 			ftpServer.start();
 			watchDir.start();
-			udpThread.start();
-			udpThread.reqJoinUser();
+			watchFileExpiration.start();
+			//udpThread.start();
+			//udpThread.reqJoinUser();
 			isInit = true;
 			//new SQLiteInstance().init();
 		}else if(isDisposed){
@@ -72,6 +81,7 @@ public class CyborgController implements IWatchDirHandler{
 			udpThread.stopThread();
 			ftpServer.stopFtpServer();
 			watchDir.stopService();
+			watchFileExpiration.stopThread();
 			try {
 				sql.dispose();
 			} catch (InterruptedException e) {
@@ -96,6 +106,9 @@ public class CyborgController implements IWatchDirHandler{
 			}
 			else if ("connect".equals(cmds[0])){
 				
+			}
+			else if ("maketestfile".equals(cmds[0])){
+				makeTestFile();
 			}else if("sql".equals(cmds[0])){
 				StringBuilder state = new StringBuilder();
 				for(int i = 1; i < cmds.length ; i++){
@@ -114,6 +127,26 @@ public class CyborgController implements IWatchDirHandler{
 			}
 		}
 		Logger.d(this, "Exitting...... Byebye!");
+	}
+	
+	public void makeTestFile() throws IOException{
+//		File testFile = new File(homeDirectory + "/test.txt");
+		Path testPath = Paths.get(homeDirectory + "/test.txt");
+		Files.write(testPath, "This is for test! It represents the copied file and should not be changed.".getBytes());
+		Date now = new Date();
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(now);
+		cal.add(Calendar.DATE, 1);
+		Date expiresOn = cal.getTime();
+		//new SQLiteInstance().pushFileInfo(child,
+		FileInfo info = sql.getFileInfo(testPath);
+		if(info != null) sql.deleteFileInfo(testPath);
+		sql.pushFileInfo(testPath,
+				dateFormat.format(now),
+				dateFormat.format(expiresOn),
+				Resources.CYBORG_FILE_TYPE_COPIED|Resources.CYBORG_FILE_WRITE_PROTECTED,
+				SHA256Helper.getHashStringFromFile(testPath));
+		Logger.d(this, "Test Fileinfo successfully created");
 	}
 	
 	public static String[] getCommands(PrintStream out, InputStream in) throws IOException{
@@ -177,6 +210,10 @@ public class CyborgController implements IWatchDirHandler{
         				Logger.d(this, "Alert! File contents has been attemped to be changed!! Deleting");
         				child.toFile().delete();
         				// TODO Report this message to the original owner!!
+        				
+    				}else{
+    					// This file is original. Update the file info
+    					sql.updateFileInfo(child, dateFormat.format(info.getExpiresOn()), info.getType(), SHA256Helper.getHashStringFromFile(child));
     				}
     			}
     		}
@@ -186,10 +223,10 @@ public class CyborgController implements IWatchDirHandler{
 
 	@Override
 	public void onFileDeleted(Path child) {
-    	if(child.toFile().exists()){
-    		Logger.d(this, "HASH:" + SHA256Helper.getHashStringFromFile(child));
+    	if(!child.toFile().exists()){
+    		//Logger.d(this, "HASH:" + SHA256Helper.getHashStringFromFile(child));
     		sql.deleteFileInfo(child);
-    	}		
+    	}
 	}
 
 	@Override

@@ -181,7 +181,7 @@ public class SQLiteInstance {
 	}
 	
 	public boolean deleteFileInfo(Path path){
-		final String sqlState = "delete * from " + TABLE_FILE_INFO
+		final String sqlState = "delete from " + TABLE_FILE_INFO
 				+ " where Filename= " + "\"" + path.toString() + "\"";
 		return queue.execute(new SQLiteJob<Boolean>(){
 			@Override
@@ -239,6 +239,38 @@ public class SQLiteInstance {
 			
 		}).complete();
 	}
+	
+	public List<FileInfo> getExpiredFileInfoes(){
+		final String sql = "SELECT * FROM " + TABLE_FILE_INFO;
+		List<FileInfo> item = queue.execute(new SQLiteJob<List<FileInfo>>(){
+			@Override
+			protected List<FileInfo> job(SQLiteConnection connection) throws Throwable {
+				try {
+					List<FileInfo> list = new ArrayList<FileInfo>();
+					SQLiteStatement st = connection.prepare(sql);
+					while (st.step()) {
+						int id = st.columnInt(0);
+						String fileName = st.columnString(1);
+						String createdOn = st.columnString(2);
+						String expiresOn = st.columnString(3);
+						int type = st.columnInt(4);
+						String hash = st.columnString(5);
+						FileInfo info = new FileInfo(id, fileName, createdOn, expiresOn, type, hash);
+						if(info.isExpired()){
+							list.add(info);
+						}
+					}
+					st.dispose();
+					return list;
+				} catch (SQLiteException e) {
+					e.printStackTrace();
+				}
+				return null;
+			}
+		}).complete();
+		return item;
+	}
+
 	
 	public Date getLastModified(String fileName){
 		return null;

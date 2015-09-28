@@ -9,7 +9,7 @@ import java.util.Date;
  *
  */
 public class FileInfo {
-	final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
+	final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 //	+ "id integer primary key autoincrement, "
 //	+ "Filename text not null, "
 //	+ "LastModified text not null, "
@@ -87,5 +87,9 @@ public class FileInfo {
 		this.type = type;
 		this.hash = hash;
 	}
-
+	
+	public boolean isExpired(){
+		Date now = new Date();
+		return expiresOn.before(now);
+	}
 }
