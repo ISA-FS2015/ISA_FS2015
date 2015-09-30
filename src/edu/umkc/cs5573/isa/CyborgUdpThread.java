@@ -36,7 +36,6 @@ public class CyborgUdpThread extends Thread {
      * For managing peer list. Key will be username and value will be ip address
      */
     protected Map<String, String> userList = null;
-    protected Map<String, List<String>> fileList = null;
     /**
      * Creates UDP communication thread.
      * @param threadName The name of thread
@@ -50,13 +49,14 @@ public class CyborgUdpThread extends Thread {
         	NetworkInterface iface = e.nextElement();
         	if(iface.getName().equals(ifName)){
             	Logger.d(this, iface.getName());
-            	for(InterfaceAddress addr : iface.getInterfaceAddresses()){
-                	Logger.d(this, "\t" + addr.getAddress().getHostAddress());
-            		if(addr.getAddress().getHostAddress().contains(".")){
+            	for(Enumeration<InetAddress> ea = iface.getInetAddresses() ; ea.hasMoreElements() ;){
+            		InetAddress addr = ea.nextElement();
+                	Logger.d(this, "\t" + addr.getHostAddress());
+            		if(addr.getHostAddress().contains(".")){
                     	//System.out.println("\t" + addr.getAddress().getHostAddress());
                     	//System.out.println("\t" + addr.getBroadcast().getHostAddress());
-                        localIpAddress = addr.getAddress().getHostAddress();
-                        broadcastIpAddress = addr.getBroadcast().getHostAddress();
+                        localIpAddress = addr.getHostAddress();
+                        broadcastIpAddress = addr.getHostAddress();
             		}
             	}
         	}
@@ -76,7 +76,6 @@ public class CyborgUdpThread extends Thread {
         this.homeDirectory = homeDirectory;
         userList = new HashMap<String, String>();
         userList.put(userName, localIpAddress);
-        fileList = new HashMap<String, List<String>>();
     }
     // Getter
 	public boolean isRunning() {
@@ -136,6 +135,8 @@ public class CyborgUdpThread extends Thread {
         			return ctp.buildRes_JoinUser(userList);
         		}else if(CTP.REQ_PROBE.equals(ctp.getDataType())){
         			return ctp.buildRes_Probe(userList);
+        		}else if(CTP.REQ_FILE_PROBE.equals(ctp.getDataType())){
+        			return ctp.buildRes_File_Probe(homeDirectory, userName, localIpAddress);
         		}else{
         			return CTP.buildErr_Unrecognized();
         		}
@@ -145,6 +146,8 @@ public class CyborgUdpThread extends Thread {
         			Logger.d(this, "Received: " + ctp.getMessage());
         		}else if(CTP.RES_USERLIST.equals(ctp.getDataType())){
         			ctp.putPeerList(userList);
+        		}else if(CTP.RES_FILE_PROBE.equals(ctp.getDataType())){
+        			Logger.d(this, "Received: " + ctp.getMessage());
         		}else {
         			
         		}
@@ -161,6 +164,9 @@ public class CyborgUdpThread extends Thread {
     
     
     // Request Functions
+    public void reqFileProbe(String fileName){
+    	new UdpRequestThread(UdpRequestThread.REQUEST_FILE_PROBE, socket).addArgument(fileName).start();
+    }
     public void reqUserList(){
     	new UdpRequestThread(UdpRequestThread.REQUEST_USER_LIST, socket).start();
     }
@@ -181,17 +187,23 @@ public class CyborgUdpThread extends Thread {
     // Incoming process functions - End
     
     class UdpRequestThread extends Thread{
-    	final static int REQUEST_USER_LIST = 0;
+		final static int REQUEST_USER_LIST = 0;
     	final static int REQUEST_JOIN_USER = 1;
     	final static int REQUEST_PROBE = 2;
     	final static int BROADCAST_FILE_LIST = 3;
+    	public static final int REQUEST_FILE_PROBE = 4;
     	private int reqType;
+    	private String arg = null;
     	private DatagramSocket socket = null;
     	private byte[] buf = null;
     	public UdpRequestThread(int reqType, DatagramSocket sock){
         	buf = new byte[BUFFER_SIZE];
     		this.reqType = reqType;
     		this.socket = sock;
+    	}
+    	public UdpRequestThread addArgument(String arg){
+    		this.arg = arg;
+    		return this;
     	}
     	/**
     	 * Actually runs here!
@@ -214,6 +226,11 @@ public class CyborgUdpThread extends Thread {
 	        			probe(userName);
 	        			break;
 	        		}
+	        		case REQUEST_FILE_PROBE:
+	        		{
+	        			fileProbe(arg);
+	        			break;
+	        		}
 	        		case BROADCAST_FILE_LIST:
 	        		{
 	        			try {
@@ -228,7 +245,10 @@ public class CyborgUdpThread extends Thread {
         	}
         }
 
-        @Deprecated
+        private void fileProbe(String fileName) {
+        	broadcastPacket(CTP.buildReq_File_Probe(fileName));
+		}
+		@Deprecated
         public void reqPeerList(){
         	broadcastPacket(CTP.buildReq_PeerList());
         }

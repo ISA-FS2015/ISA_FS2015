@@ -1,11 +1,16 @@
 package edu.umkc.cs5573.isa;
 
+import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.almworks.sqlite4java.SQLiteException;
 
 
 /**
@@ -25,12 +30,14 @@ public class CTP {
 	final static String REQ_USERLIST = "user_list";
 	final static String REQ_JOINUSER = "join_user";
 	final static String REQ_PROBE = "probe_req";
+	final static String REQ_FILE_PROBE = "file_probe_req";
 	final static String REQ_LEAVEUSER = "leave_user";
 	final static String REQ_FILELIST = "file_list";
 	final static String REQ_FILE = "file";
 	final static String KEY_RES_TYPE = "res_type";
 	final static String RES_USERLIST = "user_list";
 	final static String RES_FILELIST = "file_list";
+	final static String RES_FILE_PROBE = "file_probe_res";
 	final static String RES_PROBE = "probe_res";
 	final static String RES_ERROR = "error";
 	final static String RES_OK = "ok";
@@ -74,25 +81,17 @@ public class CTP {
     	return jObj.toString();
     }
     public static String buildReq_JoinUser(String userName, String ipAddress){
-    	JSONObject jObj = new JSONObject();
-    	JSONObject msgObj = new JSONObject();
-    	msgObj.append(KEY_USER, userName);
-    	msgObj.append(KEY_IP, ipAddress);
-    	jObj.append(KEY_REQ_TYPE, REQ_JOINUSER);
-    	jObj.append(KEY_REQ_MSG, msgObj);
-    	jObj.append(KEY_MSG_LENGTH, msgObj.toString());
-    	return jObj.toString();
+		Map<String, String> params = new HashMap<String, String>();
+		params.put(KEY_USER, userName);
+		params.put(KEY_IP, ipAddress);
+    	return build_req(REQ_JOINUSER, params);
     }
     
     public static String buildReq_Probe(String userName, String ipAddress){
-    	JSONObject jObj = new JSONObject();
-    	JSONObject msgObj = new JSONObject();
-    	msgObj.append(KEY_USER, userName);
-    	msgObj.append(KEY_IP, ipAddress);
-    	jObj.append(KEY_REQ_TYPE, REQ_PROBE);
-    	jObj.append(KEY_REQ_MSG, msgObj);
-    	jObj.append(KEY_MSG_LENGTH, msgObj.toString());
-    	return jObj.toString();
+		Map<String, String> params = new HashMap<String, String>();
+		params.put(KEY_USER, userName);
+		params.put(KEY_IP, ipAddress);
+    	return build_req(REQ_PROBE, params);
     }
 
 	public static String build_FileList(String userName, List<FileInfo> fileInfoes) {
@@ -219,4 +218,57 @@ public class CTP {
     	Logger.d(this, "Parsing error");
     	return null;
     }
+	public static String buildReq_File_Probe(String fileName) {
+		Map<String, String> params = new HashMap<String, String>();
+		params.put(KEY_FILENAME, fileName);
+    	return build_req(REQ_FILE_PROBE, params);
+	}
+	
+	private static String build_req(String reqType, Map<String, String> params)
+	{
+    	JSONObject jObj = new JSONObject();
+    	JSONObject msgObj = new JSONObject();
+    	for(Entry<String, String> entry : params.entrySet()){
+        	msgObj.append(entry.getKey(), entry.getValue());
+    	}
+    	jObj.append(KEY_REQ_TYPE, reqType);
+    	jObj.append(KEY_REQ_MSG, msgObj);
+    	jObj.append(KEY_MSG_LENGTH, msgObj.toString());
+    	return jObj.toString();
+	}
+	private static String build_res(String resType, Map<String, String> params)
+	{
+    	JSONObject jObj = new JSONObject();
+    	JSONObject msgObj = new JSONObject();
+    	for(Entry<String, String> entry : params.entrySet()){
+        	msgObj.append(entry.getKey(), entry.getValue());
+    	}
+    	jObj.append(KEY_RES_TYPE, resType);
+    	jObj.append(KEY_REQ_MSG, msgObj);
+    	jObj.append(KEY_MSG_LENGTH, msgObj.toString());
+    	return jObj.toString();
+	}
+	public String buildRes_File_Probe(String homeDirectory, String userName, String ipAddress) {
+    	if(msgLength == payload.length()){
+    		try{
+        		JSONObject obj = new JSONObject(payload).getJSONObject(KEY_REQ_MSG);
+        		String fileName = obj.getString(KEY_FILENAME);
+        		SQLiteInstance sql = SQLiteInstance.getInstance();
+        		FileInfo info = sql.getFileInfo(Paths.get(homeDirectory + "/" + fileName));
+        		if(info == null){
+        			return null;
+        		}else{
+        			Map<String, String> params = new HashMap<String, String>();
+        			params.put(KEY_FILENAME, fileName);
+        			params.put(KEY_USER, userName);
+        			params.put(KEY_IP, ipAddress);
+        	    	return build_res(RES_FILE_PROBE, params);
+        		}
+    		}
+    		catch (JSONException | SQLiteException e){
+    			e.printStackTrace();
+    		}
+    	}
+    	return buildErr_Unrecognized();
+	}
 }

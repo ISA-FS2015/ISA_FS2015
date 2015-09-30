@@ -201,7 +201,6 @@ public class SQLiteInstance {
 				return false;
 			}
 		}).complete();
-
 	}
 	
 	public boolean pushFileInfo(Path path, String createdOn, String expiresOn, int type, String hash){

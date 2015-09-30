@@ -44,7 +44,7 @@ import java.util.*;
 import com.almworks.sqlite4java.SQLiteException;
  
 /**
- * Example to watch a directory (or tree) for changes to files.
+ * watch a directory (or tree) for changes to files.
  */
  
 public class WatchDir extends Thread{

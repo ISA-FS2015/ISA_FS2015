@@ -1,6 +1,5 @@
 package edu.umkc.cs5573.isa;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -8,7 +7,6 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -40,7 +38,7 @@ public class CyborgController implements IWatchDirHandler{
 	// Singleton - End
 
 	CyborgUdpThread udpThread;
-	CyborgFtpServer ftpServer;
+//	CyborgFtpServer ftpServer;
 	WatchDir watchDir;
 	WatchFileExpiration watchFileExpiration;
 	SQLiteInstance sql;
@@ -51,9 +49,8 @@ public class CyborgController implements IWatchDirHandler{
 	
 	private CyborgController(String userName, String ifName, String homeDirectory)
 			throws IOException, SQLiteException{
-//		sql = SQLiteInstance.getInstance();
 		this.sql = SQLiteInstance.getInstance();
-		this.ftpServer = new CyborgFtpServer();
+		//this.ftpServer = new CyborgFtpServer();
 		this.watchDir = new WatchDir(homeDirectory, true, this);
 		this.watchFileExpiration = new WatchFileExpiration("FileExpirationWatcher", sql);
 		this.homeDirectory = homeDirectory;
@@ -62,11 +59,10 @@ public class CyborgController implements IWatchDirHandler{
 	
 	public void init(){
 		if(!isInit){
-			ftpServer.start();
+//			ftpServer.start();
 			watchDir.start();
 			watchFileExpiration.start();
 			udpThread.start();
-			udpThread.reqJoinUser();
 			isInit = true;
 			//new SQLiteInstance().init();
 		}else if(isDisposed){
@@ -79,7 +75,7 @@ public class CyborgController implements IWatchDirHandler{
 	public void closeService(){
 		if(isInit){
 			udpThread.stopThread();
-			ftpServer.stopFtpServer();
+//			ftpServer.stopFtpServer();
 			watchDir.stopService();
 			watchFileExpiration.stopThread();
 			try {
@@ -104,8 +100,15 @@ public class CyborgController implements IWatchDirHandler{
 			if("byby".equals(cmds[0])){
 				session = false;
 			}
-			else if ("connect".equals(cmds[0])){
-				
+			else if ("whohas".equals(cmds[0])){
+				if(cmds.length >= 2) udpThread.reqFileProbe(cmds[1]);
+			}
+			else if ("requestFile".equals(cmds[0])){
+				if(cmds.length >= 3){
+					String ipAddress = cmds[1];
+					String fileName = cmds[2];
+					// TODO Using TCPClient get file!!
+				}
 			}
 			else if ("maketestfile".equals(cmds[0])){
 				makeTestFile();
@@ -118,12 +121,6 @@ public class CyborgController implements IWatchDirHandler{
 					}
 				}
     			sql.execSql(state.toString());
-//	    		try {
-//	    	        SQLiteInstance sql = SQLiteInstance.getInstance();
-//	    	        sql.execSql(state.toString());
-//	    		} catch (SQLiteException e) {
-//	    			e.printStackTrace();
-//	    		}
 			}
 		}
 		Logger.d(this, "Exitting...... Byebye!");
@@ -178,8 +175,8 @@ public class CyborgController implements IWatchDirHandler{
 			Logger.d(this, "Fileinfo successfully created");
 		}
 		
-		// TODO Make files permission 000 so that no one except Superuser can read, write, or execute it.
-		// For Later step!!
+		// TODO For Later step!!
+		
 	}
 
 
@@ -208,7 +205,7 @@ public class CyborgController implements IWatchDirHandler{
     				if((info.getType()&copied_and_protected) == copied_and_protected){
     					// The user violates the access rule! File should be deleted!!
         				Logger.d(this, "Alert! File contents has been attemped to be changed!! Deleting");
-        				child.toFile().delete();
+//        				child.toFile().delete();
         				// TODO Report this message to the original owner!!
         				
     				}else{
@@ -245,7 +242,6 @@ public class CyborgController implements IWatchDirHandler{
 
 	@Override
 	public void onRegisterCallback(List<Path> dirs) {
-		// TODO Auto-generated method stub
 		
 	}
 }
