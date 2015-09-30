@@ -233,7 +233,7 @@ public class CTP {
     	}
     	jObj.append(KEY_REQ_TYPE, reqType);
     	jObj.append(KEY_REQ_MSG, msgObj);
-    	jObj.append(KEY_MSG_LENGTH, msgObj.toString());
+    	jObj.append(KEY_MSG_LENGTH, msgObj.toString().length());
     	return jObj.toString();
 	}
 	private static String build_res(String resType, Map<String, String> params)
@@ -245,7 +245,7 @@ public class CTP {
     	}
     	jObj.append(KEY_RES_TYPE, resType);
     	jObj.append(KEY_REQ_MSG, msgObj);
-    	jObj.append(KEY_MSG_LENGTH, msgObj.toString());
+    	jObj.append(KEY_MSG_LENGTH, msgObj.toString().length());
     	return jObj.toString();
 	}
 	public String buildRes_File_Probe(String homeDirectory, String userName, String ipAddress) {
