@@ -49,14 +49,13 @@ public class CyborgUdpThread extends Thread {
         	NetworkInterface iface = e.nextElement();
         	if(iface.getName().equals(ifName)){
             	Logger.d(this, iface.getName());
-            	for(Enumeration<InetAddress> ea = iface.getInetAddresses() ; ea.hasMoreElements() ;){
-            		InetAddress addr = ea.nextElement();
-                	Logger.d(this, "\t" + addr.getHostAddress());
-            		if(addr.getHostAddress().contains(".")){
-                    	//System.out.println("\t" + addr.getAddress().getHostAddress());
-                    	//System.out.println("\t" + addr.getBroadcast().getHostAddress());
-                        localIpAddress = addr.getHostAddress();
-                        broadcastIpAddress = addr.getHostAddress();
+            	for(InterfaceAddress addr : iface.getInterfaceAddresses()){
+                	Logger.d(this, "\t" + addr.getAddress().getHostAddress());
+            		if(addr.getAddress().getHostAddress().contains(".")){
+                    	System.out.println("\t" + addr.getAddress().getHostAddress());
+                    	System.out.println("\t" + addr.getBroadcast().getHostAddress());
+                        localIpAddress = addr.getAddress().getHostAddress();
+                        broadcastIpAddress = addr.getBroadcast().getHostAddress();
             		}
             	}
         	}
