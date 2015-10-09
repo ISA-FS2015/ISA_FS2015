@@ -115,16 +115,15 @@ public class CTP {
     public String buildRes_JoinUser(Map<String, String> userList){
     	if(msgLength == payload.toString().length()){
     		try{
-        		JSONObject obj = payload.getJSONObject(KEY_REQ_MSG);
-        		if(userList.containsKey(obj.get(KEY_USER))){
-        			if(userList.get(obj.get(KEY_USER)).equals(obj.get(KEY_IP))){
-        				userList.put(obj.getString(KEY_USER), obj.getString(KEY_IP));
+        		if(userList.containsKey(payload.get(KEY_USER))){
+        			if(userList.get(payload.get(KEY_USER)).equals(payload.get(KEY_IP))){
+        				userList.put(payload.getString(KEY_USER), payload.getString(KEY_IP));
             			return buildRes_Ok("Successfully added.");
         			}else{
             			return buildRes_Err("Already Exists. Try other username.");
         			}
         		}else{
-    				userList.put(obj.getString(KEY_USER), obj.getString(KEY_IP));
+    				userList.put(payload.getString(KEY_USER), payload.getString(KEY_IP));
         			return buildRes_Ok("Successfully added.");
         		}
     		}
@@ -138,15 +137,14 @@ public class CTP {
     public String buildRes_Probe(Map<String, String> userList){
     	if(msgLength == payload.toString().length()){
     		try{
-        		JSONObject obj = payload.getJSONObject(KEY_REQ_MSG);
-        		if(userList.containsKey(obj.get(KEY_USER))){
-        			if(userList.get(obj.get(KEY_USER)).equals(obj.get(KEY_IP))){
+        		if(userList.containsKey(payload.get(KEY_USER))){
+        			if(userList.get(payload.get(KEY_USER)).equals(payload.get(KEY_IP))){
             			return buildRes_Ok("You already joined.");
         			}else{
             			return buildRes_Err("Already Exists. Try other username.");
         			}
         		}else{
-    				userList.put(obj.getString(KEY_USER), obj.getString(KEY_IP));
+    				userList.put(payload.getString(KEY_USER), payload.getString(KEY_IP));
         			return buildRes_Ok("You can use the name.");
         		}
     		}
@@ -252,8 +250,7 @@ public class CTP {
 	public String buildRes_File_Probe(String homeDirectory, String userName, String ipAddress) {
     	if(msgLength == payload.toString().length()){
     		try{
-        		JSONObject obj = payload.getJSONObject(KEY_REQ_MSG);
-        		String fileName = obj.getString(KEY_FILENAME);
+        		String fileName = payload.getString(KEY_FILENAME);
         		SQLiteInstance sql = SQLiteInstance.getInstance();
         		FileInfo info = sql.getFileInfo(Paths.get(homeDirectory + "/" + fileName));
         		if(info == null){
