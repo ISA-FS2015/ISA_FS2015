@@ -51,6 +51,7 @@ public class CTP {
     private String dataType;
     private JSONObject payload;
     private int msgLength;
+    private Logger logger;
     
     public CTP(String rawMsg) throws JSONException{
     	JSONObject jObj = new JSONObject(rawMsg);
@@ -69,6 +70,7 @@ public class CTP {
     	}else{
     		throw new JSONException("Unsupported CTP Type");
     	}
+    	this.logger = Logger.getInstance();
     }
     public int getType(){
     	return this.ctpType;
@@ -205,7 +207,7 @@ public class CTP {
         			if(obj.getString(KEY_IP).split(".").length == 4){
         				userList.put(obj.getString(KEY_USER), obj.getString(KEY_IP));
         			}else{
-        				Logger.d(this, "IP Parsing error: " + obj.getString(KEY_IP));
+        				logger.d(this, "IP Parsing error: " + obj.getString(KEY_IP));
         			}
         		}
         		return buildRes_Ok("Successfully added.");
@@ -214,7 +216,7 @@ public class CTP {
     			e.printStackTrace();
     		}
     	}
-    	Logger.d(this, "Parsing error");
+    	logger.d(this, "Parsing error");
     	return null;
     }
 	public static String buildReq_File_Probe(String fileName) {

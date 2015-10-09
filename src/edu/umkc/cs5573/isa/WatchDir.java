@@ -104,7 +104,8 @@ public class WatchDir extends Thread{
      * Creates a WatchService and registers the given directory
      */
     WatchDir(String dirPath, boolean recursive, IWatchDirHandler handler) throws IOException {
-		Logger.d(this, "Starting Directory Watcher...");
+    	Logger logger = Logger.getInstance();
+    	logger.d(this, "Starting Directory Watcher...");
 		Path dir = Paths.get(dirPath);
         this.watcher = FileSystems.getDefault().newWatchService();
         this.keys = new HashMap<WatchKey,Path>();

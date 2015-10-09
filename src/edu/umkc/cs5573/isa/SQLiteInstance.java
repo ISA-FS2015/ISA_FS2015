@@ -1,6 +1,8 @@
 package edu.umkc.cs5573.isa;
 
 import java.io.File;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,10 +18,12 @@ public class SQLiteInstance {
 //	private SQLiteConnection db;
 	SQLiteQueue queue = null;
 	private final static String TABLE_FILE_INFO = "FileInfo";
+	private Logger logger;
 	
 	private SQLiteInstance(){
 //		db = new SQLiteConnection(new File("res/db/database.db"));
-		queue = new SQLiteQueue(new File("res/db/database.db"));
+		this.queue = new SQLiteQueue(new File("res/db/database.db"));
+		this.logger = Logger.getInstance();
 		init();
 	}
 
@@ -37,6 +41,8 @@ public class SQLiteInstance {
 //	}
 	/**
 	 * Singleton
+	 * @param in 
+	 * @param out 
 	 * @return
 	 * @throws SQLiteException 
 	 */
@@ -57,7 +63,7 @@ public class SQLiteInstance {
 	
 	void init(){
 		queue.start();
-		Logger.d(this, "SQLite Queue running...");
+		logger.d(this, "SQLite Queue running...");
 		queue.execute(new SQLiteJob<Object>() {
 			@Override
 			protected Object job(SQLiteConnection connection) throws Throwable {
@@ -72,7 +78,7 @@ public class SQLiteInstance {
 				try{
 					connection.exec(sqlState);
 				}catch(SQLiteException e){
-					Logger.d(this, e.getMessage());
+					logger.d(this, e.getMessage());
 				}
 				return null;
 			}
@@ -189,9 +195,9 @@ public class SQLiteInstance {
 				try {
 					connection.open();
 					SQLiteStatement st = connection.prepare(sqlState);
-					Logger.d(this, "Result: " + st.columnCount());
+					logger.d(this, "Result: " + st.columnCount());
 					while (st.step()) {
-						Logger.d(this, "Delete Result: " + st.columnString(0));
+						logger.d(this, "Delete Result: " + st.columnString(0));
 					}
 					st.dispose();
 					return true;
@@ -224,9 +230,9 @@ public class SQLiteInstance {
 				try {
 					connection.open();
 					SQLiteStatement st = connection.prepare(sqlState);
-					Logger.d(this, "Result: " + st.columnCount());
+					logger.d(this, "Result: " + st.columnCount());
 					while (st.step()) {
-						Logger.d(this, "Insert Result: " + st.columnString(0));
+						logger.d(this, "Insert Result: " + st.columnString(0));
 					}
 					st.dispose();
 					return true;
@@ -305,7 +311,7 @@ public class SQLiteInstance {
 				return null;
 			}
 		}).complete();
-		Logger.d(this, result);
+		logger.d(this, result);
 	}
 	
 	public void dispose() throws InterruptedException{

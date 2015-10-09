@@ -45,10 +45,12 @@ public class CyborgController implements IWatchDirHandler{
 	private boolean isInit = false;
 	private boolean isDisposed = false;
 	private String homeDirectory;
-	
+	private Logger logger;
+
 	
 	private CyborgController(String userName, String ifName, String homeDirectory)
 			throws IOException, SQLiteException{
+		this.logger = Logger.getInstance();
 		this.sql = SQLiteInstance.getInstance();
 		//this.ftpServer = new CyborgFtpServer();
 		this.watchDir = new WatchDir(homeDirectory, true, this);
@@ -66,9 +68,9 @@ public class CyborgController implements IWatchDirHandler{
 			isInit = true;
 			//new SQLiteInstance().init();
 		}else if(isDisposed){
-			Logger.d(this, "Already disposed. Skipping...");
+			logger.d(this, "Already disposed. Skipping...");
 		}else{
-			Logger.d(this, "Already initialized. Skipping...");
+			logger.d(this, "Already initialized. Skipping...");
 		}
 	}
 	
@@ -88,8 +90,9 @@ public class CyborgController implements IWatchDirHandler{
 	}
 	
 	public void cli(PrintStream out, InputStream in) throws IOException{
+		logger.setOutputStream(out);
 		if(!isInit || isDisposed){
-			Logger.d(this, "Not initialized or already disposed. Skipping...");
+			logger.d(this, "Not initialized or already disposed. Skipping...");
 			return;
 		}
 		boolean session = true;
@@ -123,7 +126,8 @@ public class CyborgController implements IWatchDirHandler{
     			sql.execSql(state.toString());
 			}
 		}
-		Logger.d(this, "Exitting...... Byebye!");
+		logger.d(this, "Exitting...... Byebye!");
+		logger.resetOutputStream();
 	}
 	
 	public void makeTestFile() throws IOException{
@@ -143,7 +147,7 @@ public class CyborgController implements IWatchDirHandler{
 				dateFormat.format(expiresOn),
 				Resources.CYBORG_FILE_TYPE_COPIED|Resources.CYBORG_FILE_WRITE_PROTECTED,
 				SHA256Helper.getHashStringFromFile(testPath));
-		Logger.d(this, "Test Fileinfo successfully created");
+		logger.d(this, "Test Fileinfo successfully created");
 	}
 	
 	public static String[] getCommands(PrintStream out, InputStream in) throws IOException{
@@ -158,7 +162,7 @@ public class CyborgController implements IWatchDirHandler{
 	@Override
 	public void onFileCreated(Path child) {
     	//String filePath = child.toString();
-		Logger.d(this, "HASH:" + SHA256Helper.getHashStringFromFile(child));
+		logger.d(this, "HASH:" + SHA256Helper.getHashStringFromFile(child));
 		Date now = new Date();
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(now);
@@ -172,7 +176,7 @@ public class CyborgController implements IWatchDirHandler{
 					dateFormat.format(expiresOn),
 					Resources.CYBORG_FILE_TYPE_ORIGINAL|Resources.CYBORG_FILE_WRITE_ALLOWED,
 					SHA256Helper.getHashStringFromFile(child));
-			Logger.d(this, "Fileinfo successfully created");
+			logger.d(this, "Fileinfo successfully created");
 		}
 		
 		// TODO For Later step!!
@@ -184,10 +188,10 @@ public class CyborgController implements IWatchDirHandler{
 	public void onFileModified(Path child) {
     	if(child.toFile().exists()){
         	//String filePath = child.toString();
-    		Logger.d(this, "HASH:" + SHA256Helper.getHashStringFromFile(child));
+    		logger.d(this, "HASH:" + SHA256Helper.getHashStringFromFile(child));
     		FileInfo info = sql.getFileInfo(child);
     		if(info == null){
-    			Logger.d(this, "No fileinfo. Creating...");
+    			logger.d(this, "No fileinfo. Creating...");
     			Date now = new Date();
     			Calendar cal = Calendar.getInstance();
     			cal.setTime(now);
@@ -204,7 +208,7 @@ public class CyborgController implements IWatchDirHandler{
     				int copied_and_protected = Resources.CYBORG_FILE_TYPE_COPIED | Resources.CYBORG_FILE_WRITE_PROTECTED;
     				if((info.getType()&copied_and_protected) == copied_and_protected){
     					// The user violates the access rule! File should be deleted!!
-        				Logger.d(this, "Alert! File contents has been attemped to be changed!! Deleting");
+    					logger.d(this, "Alert! File contents has been attemped to be changed!! Deleting");
 //        				child.toFile().delete();
         				// TODO Report this message to the original owner!!
         				

@@ -27,6 +27,7 @@ public class CyborgUdpThread extends Thread {
 	//protected final static String KEY_USER = "user";
 	protected DatagramSocket socket = null;
     protected BufferedReader in = null;
+    private Logger logger;
     private boolean isRunning = false;
     private String userName;
     private String homeDirectory;
@@ -45,12 +46,13 @@ public class CyborgUdpThread extends Thread {
      */
     public CyborgUdpThread(String threadName, String userName, String ifName, String homeDirectory) throws IOException {
         super(threadName + "_" + userName);
+        this.logger = Logger.getInstance();
         for(Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces(); e.hasMoreElements();){
         	NetworkInterface iface = e.nextElement();
         	if(iface.getName().equals(ifName)){
-            	Logger.d(this, iface.getName());
+        		logger.d(this, iface.getName());
             	for(InterfaceAddress addr : iface.getInterfaceAddresses()){
-                	Logger.d(this, "\t" + addr.getAddress().getHostAddress());
+            		logger.d(this, "\t" + addr.getAddress().getHostAddress());
             		if(addr.getAddress().getHostAddress().contains(".")){
                     	System.out.println("\t" + addr.getAddress().getHostAddress());
                     	System.out.println("\t" + addr.getBroadcast().getHostAddress());
@@ -61,9 +63,9 @@ public class CyborgUdpThread extends Thread {
         	}
         }
         if(localIpAddress == null) throw new IOException("No interface named \"" + ifName + "\" exists ");
-		Logger.d(this, "Starting UDP Service...");
+        logger.d(this, "Starting UDP Service...");
         socket = new DatagramSocket(PORT_NO);
-        Logger.d(this, "My Local IP is :" + localIpAddress);
+        logger.d(this, "My Local IP is :" + localIpAddress);
 //    	String[] ipSlice = localIpAddress.split(".");
 //    	if(ipSlice.length == 4){
 //        	ipSlice[3] = "255";
@@ -119,7 +121,7 @@ public class CyborgUdpThread extends Thread {
     }
     
     public void stopThread() {
-    	Logger.d(this, "Stopping UDP Thread...");
+    	logger.d(this, "Stopping UDP Thread...");
     	isRunning = false;
     }
     
@@ -127,7 +129,7 @@ public class CyborgUdpThread extends Thread {
     	try {
         	CTP ctp = new CTP(input);
         	if(ctp.getType() == CTP.CTP_TYPE_REQ){
-        		Logger.d(this, "REQ: " + ctp.getDataType());
+        		logger.d(this, "REQ: " + ctp.getDataType());
         		if(CTP.REQ_USERLIST.equals(ctp.getDataType())){
         			return CTP.buildRes_PeerList(userList);
         		}else if(CTP.REQ_JOINUSER.equals(ctp.getDataType())){
@@ -142,11 +144,11 @@ public class CyborgUdpThread extends Thread {
         	}else if (ctp.getType() == CTP.CTP_TYPE_RES){
         		// process response. return must be null
         		if(CTP.RES_OK.equals(ctp.getDataType())){
-        			Logger.d(this, "Received: " + ctp.getMessage());
+        			logger.d(this, "Received: " + ctp.getMessage());
         		}else if(CTP.RES_USERLIST.equals(ctp.getDataType())){
         			ctp.putPeerList(userList);
         		}else if(CTP.RES_FILE_PROBE.equals(ctp.getDataType())){
-        			Logger.d(this, "Received: " + ctp.getMessage());
+        			logger.d(this, "Received: " + ctp.getMessage());
         		}else {
         			
         		}

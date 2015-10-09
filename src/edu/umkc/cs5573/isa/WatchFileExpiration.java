@@ -7,12 +7,14 @@ import java.util.List;
 public class WatchFileExpiration extends Thread{
 	private final static long INTERVAL = 30 * 60 * 1000;
 	private SQLiteInstance sql;
+	private Logger logger;
 	private boolean isRunning;
 	
 
 	public WatchFileExpiration(String threadName, SQLiteInstance sql) {
 		super(threadName);
 		this.sql = sql;
+		this.logger = Logger.getInstance();
 		this.isRunning = true;
 	}
 	
@@ -30,7 +32,7 @@ public class WatchFileExpiration extends Thread{
 				Path path = Paths.get(info.getFileName());
 				path.toFile().delete();
 				sql.deleteFileInfo(path);
-				Logger.d(this, "The file " + path.toString() + " has been expired. deleting...");
+				logger.d(this, "The file " + path.toString() + " has been expired. deleting...");
 			}
 			try {
 				// Runs every 30 min.
