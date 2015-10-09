@@ -25,6 +25,7 @@ public class CTP {
 	final static String KEY_FILENAME = "file_name";
 	final static String KEY_FILETYPE = "file_type";
 	final static String KEY_MSG_LENGTH = "length";
+	final static String KEY_USERLIST = "user_list";
 	final static String KEY_REQ_MSG = "req_message";
 	final static String KEY_RES_MSG = "res_message";
 	final static String REQ_USERLIST = "user_list";
@@ -48,7 +49,7 @@ public class CTP {
     
     private int ctpType;
     private String dataType;
-    private String payload;
+    private JSONObject payload;
     private int msgLength;
     
     public CTP(String rawMsg) throws JSONException{
@@ -57,13 +58,13 @@ public class CTP {
     		ctpType = CTP_TYPE_REQ;
     		// process request
     		this.dataType = jObj.getString(KEY_REQ_TYPE);
-    		this.payload = jObj.getString(KEY_REQ_MSG);
+    		this.payload = jObj.getJSONObject(KEY_REQ_MSG);
     		this.msgLength = jObj.getInt(KEY_MSG_LENGTH);
     	}else if(jObj.has(KEY_RES_TYPE)) {
     		ctpType = CTP_TYPE_RES;
     		// process request
     		this.dataType = jObj.getString(KEY_RES_TYPE);    		
-    		this.payload = jObj.getString(KEY_RES_MSG);
+    		this.payload = jObj.getJSONObject(KEY_RES_MSG);
     		this.msgLength = jObj.getInt(KEY_MSG_LENGTH);
     	}else{
     		throw new JSONException("Unsupported CTP Type");
@@ -112,9 +113,9 @@ public class CTP {
 	}
 	
     public String buildRes_JoinUser(Map<String, String> userList){
-    	if(msgLength == payload.length()){
+    	if(msgLength == payload.toString().length()){
     		try{
-        		JSONObject obj = new JSONObject(payload).getJSONObject(KEY_REQ_MSG);
+        		JSONObject obj = payload.getJSONObject(KEY_REQ_MSG);
         		if(userList.containsKey(obj.get(KEY_USER))){
         			if(userList.get(obj.get(KEY_USER)).equals(obj.get(KEY_IP))){
         				userList.put(obj.getString(KEY_USER), obj.getString(KEY_IP));
@@ -135,9 +136,9 @@ public class CTP {
     }
     
     public String buildRes_Probe(Map<String, String> userList){
-    	if(msgLength == payload.length()){
+    	if(msgLength == payload.toString().length()){
     		try{
-        		JSONObject obj = new JSONObject(payload).getJSONObject(KEY_REQ_MSG);
+        		JSONObject obj = payload.getJSONObject(KEY_REQ_MSG);
         		if(userList.containsKey(obj.get(KEY_USER))){
         			if(userList.get(obj.get(KEY_USER)).equals(obj.get(KEY_IP))){
             			return buildRes_Ok("You already joined.");
@@ -167,7 +168,7 @@ public class CTP {
 		}
 		obj = new JSONObject();
 		obj.put(KEY_RES_TYPE, RES_USERLIST);
-		obj.put(KEY_RES_MSG, jArr);
+		obj.put(KEY_RES_MSG, new JSONObject().put(KEY_USERLIST, jArr));
 		obj.put(KEY_MSG_LENGTH, jArr.toString().length());
 		return obj.toString();
     }
@@ -194,13 +195,13 @@ public class CTP {
     }
     
     public String getMessage(){
-    	return payload;
+    	return payload.toString();
     }
     
     public String putPeerList(Map<String, String> userList){
-    	if(msgLength == payload.length()){
+    	if(msgLength == payload.toString().length()){
     		try{
-        		JSONArray jArr = new JSONArray(payload);
+        		JSONArray jArr = payload.getJSONArray(KEY_USERLIST);
         		for(int i=0; i < jArr.length() ; i++){
         			JSONObject obj = jArr.getJSONObject(i);
         			if(obj.getString(KEY_IP).split(".").length == 4){
@@ -249,9 +250,9 @@ public class CTP {
     	return jObj.toString();
 	}
 	public String buildRes_File_Probe(String homeDirectory, String userName, String ipAddress) {
-    	if(msgLength == payload.length()){
+    	if(msgLength == payload.toString().length()){
     		try{
-        		JSONObject obj = new JSONObject(payload).getJSONObject(KEY_REQ_MSG);
+        		JSONObject obj = payload.getJSONObject(KEY_REQ_MSG);
         		String fileName = obj.getString(KEY_FILENAME);
         		SQLiteInstance sql = SQLiteInstance.getInstance();
         		FileInfo info = sql.getFileInfo(Paths.get(homeDirectory + "/" + fileName));
