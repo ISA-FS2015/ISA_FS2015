@@ -77,7 +77,7 @@ public class CTP {
     }
     public static String buildReq_PeerList(){
     	JSONObject jObj = new JSONObject();
-    	jObj.append(KEY_REQ_TYPE, REQ_USERLIST);
+    	jObj.put(KEY_REQ_TYPE, REQ_USERLIST);
     	return jObj.toString();
     }
     public static String buildReq_JoinUser(String userName, String ipAddress){
@@ -105,8 +105,8 @@ public class CTP {
 		}
 		obj = new JSONObject();
 		
-		obj.append(KEY_RES_TYPE, RES_USERLIST);
-		obj.append(KEY_RES_MSG, jArr);
+		obj.put(KEY_RES_TYPE, RES_USERLIST);
+		obj.put(KEY_RES_MSG, jArr);
 		obj.put(KEY_MSG_LENGTH, jArr.toString().length());
 		return obj.toString();
 	}
@@ -166,31 +166,31 @@ public class CTP {
 			jArr.put(obj);
 		}
 		obj = new JSONObject();
-		obj.append(KEY_RES_TYPE, RES_USERLIST);
-		obj.append(KEY_RES_MSG, jArr);
+		obj.put(KEY_RES_TYPE, RES_USERLIST);
+		obj.put(KEY_RES_MSG, jArr);
 		obj.put(KEY_MSG_LENGTH, jArr.toString().length());
 		return obj.toString();
     }
     
     public static String buildRes_Err(String msg){
     	return new JSONObject()
-		.append(KEY_RES_TYPE, RES_ERROR)
-		.append(KEY_RES_MSG, msg)
-		.append(KEY_MSG_LENGTH, msg.length()).toString();
+		.put(KEY_RES_TYPE, RES_ERROR)
+		.put(KEY_RES_MSG, msg)
+		.put(KEY_MSG_LENGTH, msg.length()).toString();
     }
     
     public static String buildErr_Unrecognized(){
     	return new JSONObject()
-		.append(KEY_RES_TYPE, RES_ERROR)
-		.append(KEY_RES_MSG, "Unrecognized")
-		.append(KEY_MSG_LENGTH, "Unrecognized".length()).toString();
+		.put(KEY_RES_TYPE, RES_ERROR)
+		.put(KEY_RES_MSG, "Unrecognized")
+		.put(KEY_MSG_LENGTH, "Unrecognized".length()).toString();
     }
     
     public static String buildRes_Ok(String msg){
 		return new JSONObject()
-				.append(KEY_RES_TYPE, RES_OK)
-				.append(KEY_RES_MSG, msg)
-				.append(KEY_MSG_LENGTH, msg.length()).toString();
+				.put(KEY_RES_TYPE, RES_OK)
+				.put(KEY_RES_MSG, msg)
+				.put(KEY_MSG_LENGTH, msg.length()).toString();
     }
     
     public String getMessage(){
@@ -229,11 +229,11 @@ public class CTP {
     	JSONObject jObj = new JSONObject();
     	JSONObject msgObj = new JSONObject();
     	for(Entry<String, String> entry : params.entrySet()){
-        	msgObj.append(entry.getKey(), entry.getValue());
+        	msgObj.put(entry.getKey(), entry.getValue());
     	}
-    	jObj.append(KEY_REQ_TYPE, reqType);
-    	jObj.append(KEY_REQ_MSG, msgObj);
-    	jObj.append(KEY_MSG_LENGTH, msgObj.toString().length());
+    	jObj.put(KEY_REQ_TYPE, reqType);
+    	jObj.put(KEY_REQ_MSG, msgObj);
+    	jObj.put(KEY_MSG_LENGTH, msgObj.toString().length());
     	return jObj.toString();
 	}
 	private static String build_res(String resType, Map<String, String> params)
@@ -241,11 +241,11 @@ public class CTP {
     	JSONObject jObj = new JSONObject();
     	JSONObject msgObj = new JSONObject();
     	for(Entry<String, String> entry : params.entrySet()){
-        	msgObj.append(entry.getKey(), entry.getValue());
+        	msgObj.put(entry.getKey(), entry.getValue());
     	}
-    	jObj.append(KEY_RES_TYPE, resType);
-    	jObj.append(KEY_REQ_MSG, msgObj);
-    	jObj.append(KEY_MSG_LENGTH, msgObj.toString().length());
+    	jObj.put(KEY_RES_TYPE, resType);
+    	jObj.put(KEY_REQ_MSG, msgObj);
+    	jObj.put(KEY_MSG_LENGTH, msgObj.toString().length());
     	return jObj.toString();
 	}
 	public String buildRes_File_Probe(String homeDirectory, String userName, String ipAddress) {
