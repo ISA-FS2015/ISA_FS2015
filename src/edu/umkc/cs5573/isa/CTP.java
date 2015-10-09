@@ -243,7 +243,7 @@ public class CTP {
         	msgObj.put(entry.getKey(), entry.getValue());
     	}
     	jObj.put(KEY_RES_TYPE, resType);
-    	jObj.put(KEY_REQ_MSG, msgObj);
+    	jObj.put(KEY_RES_MSG, msgObj);
     	jObj.put(KEY_MSG_LENGTH, msgObj.toString().length());
     	return jObj.toString();
 	}
