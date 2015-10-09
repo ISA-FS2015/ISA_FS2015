@@ -285,7 +285,7 @@ public class CyborgUdpThread extends Thread {
         }
         public void broadcastPacket(String packet){
         	if(softBroadcast){
-        		String[] ipSets = localIpAddress.split(".");
+        		String[] ipSets = localIpAddress.split("\\.");
         		for(int i= 1; i <= 255 ; i++){
         			String targetIp = String.format("%s.%s.%s.%s", ipSets[0], ipSets[1], ipSets[2], Integer.toString(i));
         			if(!targetIp.equals(localIpAddress) && !targetIp.equals(broadcastIpAddress)){
