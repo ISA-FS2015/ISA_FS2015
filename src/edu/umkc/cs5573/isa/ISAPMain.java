@@ -46,6 +46,7 @@ public class ISAPMain {
 					String userName = System.getProperty("user.name");
 					cyborg = CyborgController.getInstance(userName, "wlan0", "res/home/cyborgman");
 				}
+				cyborg.init();
 				cyborg.cli(System.out, System.in);
 			}
 		} catch (IOException | SQLiteException e) {
