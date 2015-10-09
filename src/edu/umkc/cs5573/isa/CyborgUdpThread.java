@@ -191,6 +191,11 @@ public class CyborgUdpThread extends Thread {
     	final static int REQUEST_PROBE = 2;
     	final static int BROADCAST_FILE_LIST = 3;
     	public static final int REQUEST_FILE_PROBE = 4;
+    	/**
+    	 * Some network does not allow using broadcast IP address. In that case, we need to 
+    	 * emulate the broadcasting(Just sending data from IP x.x.x.1 to x.x.x.254
+    	 */
+    	private boolean softBroadcast = true;
     	private int reqType;
     	private String arg = null;
     	private DatagramSocket socket = null;
@@ -203,6 +208,9 @@ public class CyborgUdpThread extends Thread {
     	public UdpRequestThread addArgument(String arg){
     		this.arg = arg;
     		return this;
+    	}
+    	public void setSoftBroadcast(boolean softBroadcast){
+    		this.softBroadcast = softBroadcast;
     	}
     	/**
     	 * Actually runs here!
@@ -276,7 +284,17 @@ public class CyborgUdpThread extends Thread {
         	sendPacket(packet, ipAddress);
         }
         public void broadcastPacket(String packet){
-        	sendPacket(packet, broadcastIpAddress);
+        	if(softBroadcast){
+        		String[] ipSets = localIpAddress.split(".");
+        		for(int i= 1; i <= 255 ; i++){
+        			String targetIp = String.format("%s.%s.%s.%s", ipSets[0], ipSets[1], ipSets[2], Integer.toString(i));
+        			if(!targetIp.equals(localIpAddress) && !targetIp.equals(broadcastIpAddress)){
+                    	sendPacket(packet, targetIp);
+        			}
+        		}
+        	}else{
+            	sendPacket(packet, broadcastIpAddress);
+        	}
         }
         private void sendPacket(String packet, String ipAddress){
             try {
