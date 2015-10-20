@@ -72,7 +72,7 @@ public class SHA256Helper {
 	 * @throws OutOfMemoryError
 	 */
 	static String getHashStringFromFile(String filePath) throws OutOfMemoryError {
-		return byteToBase64(getHashFromFile(filePath));
+		return StaticUtil.byteToBase64(getHashFromFile(filePath));
 	}
 	
 	/**
@@ -82,7 +82,7 @@ public class SHA256Helper {
 	 * @throws OutOfMemoryError
 	 */
 	static String getHashStringFromFile(Path path) throws OutOfMemoryError {
-		return byteToBase64(getHashFromFile(path));
+		return StaticUtil.byteToBase64(getHashFromFile(path));
 	}
 	
 	/**
@@ -91,7 +91,7 @@ public class SHA256Helper {
 	 * @return
 	 */
 	static String getHashString(String text){
-		return byteToBase64(getHash(text));
+		return StaticUtil.byteToBase64(getHash(text));
 	}
 	
 	/**
@@ -112,12 +112,4 @@ public class SHA256Helper {
 		return null;
 	}
 	
-	/**
-	 * Converts bytes to printable strings. Do not use public
-	 * @param data
-	 * @return Base64 encoded string
-	 */
-	private static String byteToBase64(byte[] data){
-		return Base64.getEncoder().encodeToString(data);
-	}
 }
