@@ -18,6 +18,7 @@ public class SQLiteInstance {
 //	private SQLiteConnection db;
 	SQLiteQueue queue = null;
 	private final static String TABLE_FILE_INFO = "FileInfo";
+	private final static String TABLE_USER_INFO = "UserInfo";
 	private Logger logger;
 	
 	private SQLiteInstance(){
@@ -64,6 +65,7 @@ public class SQLiteInstance {
 	void init(){
 		queue.start();
 		logger.d(this, "SQLite Queue running...");
+		// File Info Table Initialization
 		queue.execute(new SQLiteJob<Object>() {
 			@Override
 			protected Object job(SQLiteConnection connection) throws Throwable {
@@ -72,7 +74,7 @@ public class SQLiteInstance {
 						+ "Filename text not null, "
 						+ "CreatedOn text not null, "
 						+ "ExpiresOn text not null, "
-						+ "Type int not null, "
+						+ "Type integer not null, "
 						+ "Hash text not null"
 						+ ")";
 				try{
@@ -83,7 +85,30 @@ public class SQLiteInstance {
 				return null;
 			}
 		});
+		// User Info Table Initialization
+		queue.execute(new SQLiteJob<Object>() {
+			@Override
+			protected Object job(SQLiteConnection connection) throws Throwable {
+				String sqlState = "create table " + TABLE_USER_INFO + " ("
+						+ "SSO text primary key not null, "
+						+ "Type integer not null, "
+						+ "Name text not null, "
+						+ "Organization text not null, "
+						+ "Email text not null, "
+						+ "PhoneNumber text not null, "
+						+ "Score integer not null"
+						+ ")";
+				try{
+					connection.exec(sqlState);
+				}catch(SQLiteException e){
+					logger.d(this, e.getMessage());
+				}
+				return null;
+			}
+		});
 	}
+	
+	/* Following methods are for file info DB */
 	
 	public String getFileHash(Path path){
 		final String sql = "SELECT Hash FROM " + TABLE_FILE_INFO + " WHERE Filename = \"" + path.toString() + "\"";
@@ -281,6 +306,120 @@ public class SQLiteInstance {
 		return null;
 		
 	}
+	
+	/* Following methods are for user info DB */
+	
+	public boolean pushUserInfo(UserInfo info){
+		//Check if there are any items with the same file
+//		FileInfo info = getFileInfo(path);
+//		if(info == null){
+//			
+//		}
+		final String sqlState = "insert into " + TABLE_USER_INFO
+				+ "(SSO, Type, Name, Organization, Email, PhoneNumber, Score)"
+				+ " values ("
+				+ "\"" + info.getSso() + "\"" + ","
+				+ Integer.toString(info.getType()) + ","
+				+ "\"" + info.getName() + "\"" + ","
+				+ "\"" + info.getOrganization() + "\"" + ","
+				+ "\"" + info.getEmail() + "\"" + ","
+				+ "\"" + info.getPhoneNumber() + "\"" + ","
+				+ Integer.toString(info.getScore())
+				+ ")";
+		return queue.execute(new SQLiteJob<Boolean>(){
+			@Override
+			protected Boolean job(SQLiteConnection connection) throws Throwable {
+				try {
+					connection.open();
+					SQLiteStatement st = connection.prepare(sqlState);
+					logger.d(this, "Result: " + st.columnCount());
+					while (st.step()) {
+						logger.d(this, "Insert Result: " + st.columnString(0));
+					}
+					st.dispose();
+					return true;
+				} catch (SQLiteException e) {
+					e.printStackTrace();
+				}
+				return false;
+			}
+		}).complete();
+	}
+
+	public void updateUserInfo(UserInfo info){
+		final String sql = "UPDATE from " + TABLE_USER_INFO + " set "
+				+ "Name=\"" + info.getName() + "\""
+				+ "Organization=\"" + info.getOrganization() + "\""
+				+ "Email=\"" + info.getEmail() + "\""
+				+ "PhoneNumber=\"" + info.getPhoneNumber() + "\""
+				+ "Score=\"" + Integer.toString(info.getScore())
+				+ "WHERE SSO = \"" + info.getSso() + "\"";
+		queue.execute(new SQLiteJob<Void>(){
+			@Override
+			protected Void job(SQLiteConnection connection) throws Throwable {
+				try {
+					SQLiteStatement st = connection.prepare(sql);
+					while (st.step()) {
+					}
+					st.dispose();
+				} catch (SQLiteException e) {
+					e.printStackTrace();
+				}
+				return null;
+			}
+		}).complete();
+	}
+	
+	public boolean deleteUserInfo(UserInfo info){
+		final String sqlState = "delete from " + TABLE_USER_INFO
+				+ "WHERE SSO = \"" + info.getSso() + "\"";
+		return queue.execute(new SQLiteJob<Boolean>(){
+			@Override
+			protected Boolean job(SQLiteConnection connection) throws Throwable {
+				try {
+					connection.open();
+					SQLiteStatement st = connection.prepare(sqlState);
+					logger.d(this, "Result: " + st.columnCount());
+					while (st.step()) {
+						logger.d(this, "Delete Result: " + st.columnString(0));
+					}
+					st.dispose();
+					return true;
+				} catch (SQLiteException e) {
+					e.printStackTrace();
+				}
+				return false;
+			}
+		}).complete();
+	}
+	
+	public UserInfo getUserInfo(final String sso){
+		final String sql = "SELECT * FROM " + TABLE_USER_INFO + "WHERE SSO=\"" + sso + "\"";
+		UserInfo item = queue.execute(new SQLiteJob<UserInfo>(){
+			@Override
+			protected UserInfo job(SQLiteConnection connection) throws Throwable {
+				try {
+					SQLiteStatement st = connection.prepare(sql);
+					while (st.step()) {
+						int type = st.columnInt(1);
+						String name = st.columnString(2);
+						String organization = st.columnString(3);
+						String email = st.columnString(4);
+						String phoneNumber = st.columnString(5);
+						int score = st.columnInt(6);
+						UserInfo info = new UserInfo(sso, type, name, organization, email, phoneNumber, score);
+						return info;
+					}
+					st.dispose();
+				} catch (SQLiteException e) {
+					e.printStackTrace();
+				}
+				return null;
+			}
+		}).complete();
+		return item;
+	}
+
 	
 	public void execSql(final String sql){
 		String result = queue.execute(new SQLiteJob<String>(){

@@ -94,13 +94,9 @@ public class CyborgTcpService extends Thread {
     		// Send the file to the requestor
     		File file = new File(fileName);
     		if(file.exists()){
-	            os.writeBytes("Size:" + Long.toString(file.length()));
-	            String resp = is.readLine();
-	            if("OK".equals(resp)){
-	            	Files.copy(file.toPath(), os);
-	            }
+	            os.writeBytes("Size#" + Long.toString(file.length()) + "#" + StaticUtil.encodeFileToBase64Binary(fileName));
     		}else{
-	            os.writeBytes("Error:NoFile");
+	            os.writeBytes("Error#NoFile");
     		}
 		}
 		public void doIssueCertificates(BufferedReader is, DataOutputStream os, String[] reqs) throws IOException, GeneralSecurityException{
@@ -117,7 +113,7 @@ public class CyborgTcpService extends Thread {
     					pair, 31, "SHA1withRSA");
     			PrivateKey prk = pair.getPrivate();
     			PublicKey pbk = pair.getPublic();
-    			os.writeBytes("X509:");
+    			os.writeBytes("X509#");
     			os.write( issuedX509.getEncoded() );
     			os.flush();
     		}
