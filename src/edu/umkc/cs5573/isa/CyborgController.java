@@ -18,6 +18,8 @@ public class CyborgController implements IWatchDirHandler{
 	final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 	final static int EXPIRES_DAYS_COPIED = 1;
 	final static int EXPIRES_DAYS_OWNER = 3650; // 10 years for the owner
+	final static int UDP_PORT = 55730;
+	final static int TCP_PORT = 55731;
 
 	// Singleton - Start
 	
@@ -38,6 +40,7 @@ public class CyborgController implements IWatchDirHandler{
 	// Singleton - End
 
 	CyborgUdpThread udpThread;
+	CyborgTcpService tcpService;
 //	CyborgFtpServer ftpServer;
 	WatchDir watchDir;
 	WatchFileExpiration watchFileExpiration;
@@ -57,6 +60,7 @@ public class CyborgController implements IWatchDirHandler{
 		this.watchFileExpiration = new WatchFileExpiration("FileExpirationWatcher", sql);
 		this.homeDirectory = homeDirectory;
 		this.udpThread = new CyborgUdpThread("UDPThread", userName, ifName, homeDirectory);
+		this.tcpService = new CyborgTcpService(TCP_PORT);
 	}
 	
 	public void init(){
@@ -65,6 +69,7 @@ public class CyborgController implements IWatchDirHandler{
 			watchDir.start();
 			watchFileExpiration.start();
 			udpThread.start();
+			tcpService.start();
 			isInit = true;
 			//new SQLiteInstance().init();
 		}else if(isDisposed){
@@ -77,6 +82,7 @@ public class CyborgController implements IWatchDirHandler{
 	public void closeService(){
 		if(isInit){
 			udpThread.stopThread();
+			tcpService.stopService();
 //			ftpServer.stopFtpServer();
 			watchDir.stopService();
 			watchFileExpiration.stopThread();
@@ -209,7 +215,7 @@ public class CyborgController implements IWatchDirHandler{
     				if((info.getType()&copied_and_protected) == copied_and_protected){
     					// The user violates the access rule! File should be deleted!!
     					logger.d(this, "Alert! File contents has been attemped to be changed!! Deleting");
-//        				child.toFile().delete();
+        				child.toFile().delete();
         				// TODO Report this message to the original owner!!
         				
     				}else{

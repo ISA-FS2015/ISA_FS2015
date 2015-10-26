@@ -11,7 +11,7 @@ import com.almworks.sqlite4java.SQLiteException;
 
 public class ISAPMain {
 	final static String WORK_DIR = Resources.WORK_DIR;
-	protected final static int PORT_NO = 55731;
+	protected final static int PORT_NO = 55732;
 	
 
 	public static void main(String[] args) {
