@@ -87,7 +87,7 @@ public class CyborgTcpService extends Thread {
 		public void doFileTransferProcess(BufferedReader is, DataOutputStream os, String[] reqs) throws CertificateException, IOException{
     		// Do some trust process
     		String trust = reqs[1];
-    		X509Util x509Util = new X509Util(trust);
+    		X509Util x509Util = new X509Util(StaticUtil.base64ToBytes(trust));
 			x509Util.checkValidity();
     		// Get filename
     		String fileName = reqs[2];
@@ -114,7 +114,8 @@ public class CyborgTcpService extends Thread {
     			PrivateKey prk = pair.getPrivate();
     			PublicKey pbk = pair.getPublic();
     			os.writeBytes("X509#");
-    			os.write( issuedX509.getEncoded() );
+    			//os.write( issuedX509.getEncoded() );
+    			os.writeBytes(StaticUtil.byteToBase64(issuedX509.getEncoded()));
     			os.flush();
     		}
 		}
