@@ -10,9 +10,11 @@ public class UserInfo {
 	private String organization;
 	private String email;
 	private String phoneNumber;
+	private String privateKey;
+	private String publicKey;
 	private int score;
 	
-	public UserInfo(String sso, int type, String name, String organization, String email, String phoneNumber, int score) {
+	public UserInfo(String sso, int type, String name, String organization, String email, String phoneNumber, int score, String privateKey, String publicKey) {
 		super();
 		this.sso = sso;
 		this.type = type;
@@ -21,6 +23,8 @@ public class UserInfo {
 		this.email = email;
 		this.phoneNumber = phoneNumber;
 		this.score = score;
+		this.privateKey = privateKey;
+		this.publicKey = publicKey;
 	}
 	public String getSso() {
 		return sso;
@@ -63,6 +67,18 @@ public class UserInfo {
 	}
 	public void setPhoneNumber(String phoneNumber) {
 		this.phoneNumber = phoneNumber;
+	}
+	public String getPrivateKey() {
+		return privateKey;
+	}
+	public void setPrivateKey(String privateKey) {
+		this.privateKey = privateKey;
+	}
+	public String getPublicKey() {
+		return publicKey;
+	}
+	public void setPublicKey(String publicKey) {
+		this.publicKey = publicKey;
 	}
 	
 }

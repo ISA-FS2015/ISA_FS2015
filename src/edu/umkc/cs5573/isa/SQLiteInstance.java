@@ -96,7 +96,9 @@ public class SQLiteInstance {
 						+ "Organization text not null, "
 						+ "Email text not null, "
 						+ "PhoneNumber text not null, "
-						+ "Score integer not null"
+						+ "Score integer not null, "
+						+ "PrivateKey text not null, "
+						+ "PublicKey text not null"
 						+ ")";
 				try{
 					connection.exec(sqlState);
@@ -324,7 +326,9 @@ public class SQLiteInstance {
 				+ "\"" + info.getOrganization() + "\"" + ","
 				+ "\"" + info.getEmail() + "\"" + ","
 				+ "\"" + info.getPhoneNumber() + "\"" + ","
-				+ Integer.toString(info.getScore())
+				+ Integer.toString(info.getScore()) + ","
+				+ "\"" + info.getPrivateKey() + "\"" + ","
+				+ "\"" + info.getPublicKey() + "\""
 				+ ")";
 		return queue.execute(new SQLiteJob<Boolean>(){
 			@Override
@@ -353,6 +357,8 @@ public class SQLiteInstance {
 				+ "Email=\"" + info.getEmail() + "\""
 				+ "PhoneNumber=\"" + info.getPhoneNumber() + "\""
 				+ "Score=\"" + Integer.toString(info.getScore())
+				+ "PrivateKey=\"" + info.getPrivateKey() + "\""
+				+ "PublicKey=\"" + info.getPublicKey() + "\""
 				+ "WHERE SSO = \"" + info.getSso() + "\"";
 		queue.execute(new SQLiteJob<Void>(){
 			@Override
@@ -407,7 +413,9 @@ public class SQLiteInstance {
 						String email = st.columnString(4);
 						String phoneNumber = st.columnString(5);
 						int score = st.columnInt(6);
-						UserInfo info = new UserInfo(sso, type, name, organization, email, phoneNumber, score);
+						String privateKey = st.columnString(7);
+						String publicKey = st.columnString(8);
+						UserInfo info = new UserInfo(sso, type, name, organization, email, phoneNumber, score, privateKey, publicKey);
 						return info;
 					}
 					st.dispose();

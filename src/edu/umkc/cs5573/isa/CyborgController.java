@@ -60,7 +60,7 @@ public class CyborgController implements IWatchDirHandler{
 		this.watchFileExpiration = new WatchFileExpiration("FileExpirationWatcher", sql);
 		this.homeDirectory = homeDirectory;
 		this.udpThread = new CyborgUdpThread("UDPThread", userName, ifName, homeDirectory);
-		this.tcpService = new CyborgTcpService(TCP_PORT);
+		this.tcpService = new CyborgTcpService(TCP_PORT, userName, homeDirectory);
 	}
 	
 	public void init(){

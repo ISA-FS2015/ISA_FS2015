@@ -11,6 +11,7 @@ import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
@@ -63,8 +64,20 @@ public class X509Util{
 	public X509Certificate getCertificate() {
 		return this.x509cert;
 	}
-	public void checkValidity() throws CertificateExpiredException, CertificateNotYetValidException {
-		x509cert.checkValidity();
+	public boolean isCertValid(PublicKey pbk, String issuer, String user){
+		try {
+			x509cert.checkValidity();
+			// For now, we skip if the issuer is same or not
+			//if(!issuer.equals(parseDN(x509cert.getIssuerDN().getName())[0])) return false;
+			if(!user.equals(parseDN(x509cert.getSubjectDN().getName())[0])) return false;
+			if(!x509cert.getPublicKey().equals(pbk)) return false;
+			
+			return true;
+		} catch (CertificateExpiredException | CertificateNotYetValidException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
 	}
 	public String getBriefKeyInfo() {
 		StringBuilder sb = new StringBuilder();
@@ -100,7 +113,7 @@ public class X509Util{
 	 * @param days how many days from now the Certificate is valid for
 	 * @param algorithm the signing algorithm, eg "SHA1withRSA"
 	 */ 
-	public static X509Certificate issueCertificate(String dn, KeyPair pair, int days, String algorithm)
+	public static X509Certificate issueCertificate(String issuerDN, String subjectDN, KeyPair pair, int days, String algorithm)
 	  throws GeneralSecurityException, IOException
 	{
 	  PrivateKey privkey = pair.getPrivate();
@@ -109,11 +122,12 @@ public class X509Util{
 	  Date to = new Date(from.getTime() + days * 86400000l);
 	  CertificateValidity interval = new CertificateValidity(from, to);
 	  BigInteger sn = new BigInteger(64, new SecureRandom());
-	  X500Name owner = new X500Name(dn);
+	  X500Name owner = new X500Name(issuerDN);
+	  X500Name subject = new X500Name(subjectDN);
 	 
 	  info.set(X509CertInfo.VALIDITY, interval);
 	  info.set(X509CertInfo.SERIAL_NUMBER, new CertificateSerialNumber(sn));
-	  info.set(X509CertInfo.SUBJECT, owner);
+	  info.set(X509CertInfo.SUBJECT, subject);
 	  info.set(X509CertInfo.ISSUER, owner);
 	  info.set(X509CertInfo.KEY, new CertificateX509Key(pair.getPublic()));
 	  info.set(X509CertInfo.VERSION, new CertificateVersion(CertificateVersion.V3));
@@ -136,5 +150,31 @@ public class X509Util{
 		fos.write( x509cert.getEncoded() );
 		fos.flush();
 		fos.close();		
+	}
+	
+	public static String makeDN(String commonName, String organization, String location, String country){
+		return String.format("CN=%s, O=%s, L=%s, C=%s", commonName, organization, location, country);
+	}
+	/**
+	 * Retrieves the keywords from distinguished name
+	 * @param dn
+	 * @return index- 0:CN, 1:O, 2:L, 3:C
+	 */
+	public static String[] parseDN(String dn){
+		String[] info = new String[4];
+		String[] keystrings = dn.split(",");
+		for(String keystring : keystrings){
+			String[] keywords = keystring.split("=");
+			if("CN".equals(keywords[0])){
+				info[0] = keywords[1];
+			}else if("O".equals(keywords[0])){
+				info[1] = keywords[1];
+			}else if("L".equals(keywords[0])){
+				info[2] = keywords[1];
+			}else if("C".equals(keywords[0])){
+				info[3] = keywords[1];
+			}
+		}
+		return info;
 	}
 }
