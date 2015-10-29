@@ -7,17 +7,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.file.Files;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.LinkedList;
-import java.util.Queue;
 
 import com.almworks.sqlite4java.SQLiteException;
 
@@ -28,9 +24,9 @@ public class CyborgTcpService extends Thread {
 	private String mUserName;
 	private String mHomeDirectory;
 	private SQLiteInstance sql;
-	public CyborgTcpService(int portNum, String userName, String homeDirectory)
+	public CyborgTcpService(String threadName, int portNum, String userName, String homeDirectory)
 			throws IOException, SQLiteException{
-		super("TCP Thread");
+		super(threadName);
 		this.mServerSocket = new ServerSocket(portNum);
 		this.mUserName = userName;
 		this.mHomeDirectory = homeDirectory;
@@ -52,7 +48,6 @@ public class CyborgTcpService extends Thread {
 		this.isRunning = false;
 	}
 	public class TcpThread extends Thread{
-		private static final int BUF_SIZE = 8192;
 		private static final int PREFIX = 8;
 		private boolean isRunning = false;
 		private Socket mSocket;

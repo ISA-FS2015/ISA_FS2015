@@ -20,9 +20,8 @@ import com.almworks.sqlite4java.SQLiteException;
  * @author Younghwan
  *
  */
-public class CyborgUdpThread extends Thread {
+public class CyborgUdpService extends Thread {
 	protected final static int BUFFER_SIZE = 1024;
-	protected final static int PORT_NO = 55730;
 	private final static String CHARSET_UTF8 = "UTF-8";
 	//protected final static String KEY_USER = "user";
 	protected DatagramSocket socket = null;
@@ -33,6 +32,7 @@ public class CyborgUdpThread extends Thread {
     private String homeDirectory;
     private String localIpAddress;
     private String broadcastIpAddress;
+    private int portNum;
     /**
      * For managing peer list. Key will be username and value will be ip address
      */
@@ -44,7 +44,7 @@ public class CyborgUdpThread extends Thread {
      * @param ifName Name of the interface such as eth0 or wlan0. wlan0 is mainly used.
      * @throws IOException
      */
-    public CyborgUdpThread(String threadName, String userName, String ifName, String homeDirectory) throws IOException {
+    public CyborgUdpService(String threadName, int portNum, String userName, String ifName, String homeDirectory) throws IOException {
         super(threadName + "_" + userName);
         this.logger = Logger.getInstance();
         for(Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces(); e.hasMoreElements();){
@@ -64,7 +64,8 @@ public class CyborgUdpThread extends Thread {
         }
         if(localIpAddress == null) throw new IOException("No interface named \"" + ifName + "\" exists ");
         logger.d(this, "Starting UDP Service...");
-        socket = new DatagramSocket(PORT_NO);
+        this.socket = new DatagramSocket(portNum);
+        this.portNum = portNum;
         logger.d(this, "My Local IP is :" + localIpAddress);
 //    	String[] ipSlice = localIpAddress.split(".");
 //    	if(ipSlice.length == 4){
@@ -73,10 +74,10 @@ public class CyborgUdpThread extends Thread {
 //    	}else{
 //    		throw new IOException("IP Error. Something wrong!!");
 //    	}
-        isRunning = true;
+        this.isRunning = true;
         this.homeDirectory = homeDirectory;
-        userList = new HashMap<String, String>();
-        userList.put(userName, localIpAddress);
+        this.userList = new HashMap<String, String>();
+        this.userList.put(userName, localIpAddress);
     }
     // Getter
 	public boolean isRunning() {
@@ -120,7 +121,7 @@ public class CyborgUdpThread extends Thread {
     	socket.close();
     }
     
-    public void stopThread() {
+    public void stopService() {
     	logger.d(this, "Stopping UDP Thread...");
     	isRunning = false;
     }
@@ -302,7 +303,7 @@ public class CyborgUdpThread extends Thread {
             try {
             	buf = packet.getBytes(CHARSET_UTF8);
             	InetAddress address = InetAddress.getByName(ipAddress);
-                DatagramPacket sPacket = new DatagramPacket(buf, buf.length, address, PORT_NO);
+                DatagramPacket sPacket = new DatagramPacket(buf, buf.length, address, portNum);
                 this.socket.send(sPacket);
     		} catch (IOException | JSONException e) {
     			e.printStackTrace();

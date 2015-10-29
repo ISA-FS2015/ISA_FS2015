@@ -1,20 +1,28 @@
 package edu.umkc.cs5573.isa;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.util.Map;
 
-public class CyborgSocketManager {
-	CyborgUdpThread udpThread;
-	
-	
-	public CyborgSocketManager(){
-		
+import com.almworks.sqlite4java.SQLiteException;
+
+public class CyborgSocketManager {	
+	private CyborgUdpService udpService;
+	private CyborgTcpService tcpService;
+
+	public CyborgSocketManager(String userName, String ifName, String homeDirectory, int tcpPort, int udpPort, boolean softBroadcast) throws IOException, SQLiteException{
+		this.udpService = new CyborgUdpService("UDPThread", udpPort, userName, ifName, homeDirectory);
+		this.tcpService = new CyborgTcpService("TCPThread", tcpPort, userName, homeDirectory);
 	}
 	
+	public void init(){
+		udpService.start();
+		tcpService.start();
+	}
+	
+	public void stopServices(){
+		udpService.stopService();
+		tcpService.stopService();		
+	}
 //	void serverSide(String ip, int portNumber){
 //		ServerSocket serverSocket;
 //		try {
@@ -39,42 +47,25 @@ public class CyborgSocketManager {
 //		            break;
 //		    }
 //		} catch (IOException e) {
-//			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
 //	}
 //	
-	void clientSice(String hostName, int portNumber){
- 
-        try (
-            Socket kkSocket = new Socket(hostName, portNumber);
-            PrintWriter out = new PrintWriter(kkSocket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(
-                new InputStreamReader(kkSocket.getInputStream()));
-        ) {
-            BufferedReader stdIn =
-                new BufferedReader(new InputStreamReader(System.in));
-            String fromServer;
-            String fromUser;
- 
-            while ((fromServer = in.readLine()) != null) {
-                System.out.println("Server: " + fromServer);
-                if (fromServer.equals("Bye."))
-                    break;
-                 
-                fromUser = stdIn.readLine();
-                if (fromUser != null) {
-                    System.out.println("Client: " + fromUser);
-                    out.println(fromUser);
-                }
-            }
-        } catch (UnknownHostException e) {
-            System.err.println("Don't know about host " + hostName);
-            System.exit(1);
-        } catch (IOException e) {
-            System.err.println("Couldn't get I/O for the connection to " +
-                hostName);
-            System.exit(1);
-        }
+	
+	public void reqFileProbe(String fileName) {
+		udpService.reqFileProbe(fileName);
+	}
+
+	public void reqFile(String ipAddress, String fileName) {
+		// TODO Using TCPClient get file!!
+		// Make TCP Client Socket and req file!!!
+		
+	}
+	
+	public void reportVilation(String userName, String fileName){
+		Map<String, String> userList = udpService.getUserList();
+		String ipAddress = userList.get(userName);
+		// TODO Using TCPClient report the violation!! 
+		//Make TCP Client Socket and report!
 	}
 }

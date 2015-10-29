@@ -18,8 +18,6 @@ public class CyborgController implements IWatchDirHandler{
 	final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 	final static int EXPIRES_DAYS_COPIED = 1;
 	final static int EXPIRES_DAYS_OWNER = 3650; // 10 years for the owner
-	final static int UDP_PORT = 55730;
-	final static int TCP_PORT = 55731;
 
 	// Singleton - Start
 	
@@ -38,15 +36,14 @@ public class CyborgController implements IWatchDirHandler{
 	}
 	
 	// Singleton - End
-
-	CyborgUdpThread udpThread;
-	CyborgTcpService tcpService;
+	CyborgSocketManager mSocketManager;
 //	CyborgFtpServer ftpServer;
 	WatchDir watchDir;
 	WatchFileExpiration watchFileExpiration;
 	SQLiteInstance sql;
 	private boolean isInit = false;
 	private boolean isDisposed = false;
+	private String userName;
 	private String homeDirectory;
 	private Logger logger;
 
@@ -58,9 +55,9 @@ public class CyborgController implements IWatchDirHandler{
 		//this.ftpServer = new CyborgFtpServer();
 		this.watchDir = new WatchDir(homeDirectory, true, this);
 		this.watchFileExpiration = new WatchFileExpiration("FileExpirationWatcher", sql);
+		this.userName = userName;
 		this.homeDirectory = homeDirectory;
-		this.udpThread = new CyborgUdpThread("UDPThread", userName, ifName, homeDirectory);
-		this.tcpService = new CyborgTcpService(TCP_PORT, userName, homeDirectory);
+		this.mSocketManager = new CyborgSocketManager(userName, ifName, homeDirectory, Resources.UDP_PORT, Resources.TCP_PORT, true);
 	}
 	
 	public void init(){
@@ -68,8 +65,7 @@ public class CyborgController implements IWatchDirHandler{
 //			ftpServer.start();
 			watchDir.start();
 			watchFileExpiration.start();
-			udpThread.start();
-			tcpService.start();
+			mSocketManager.init();
 			isInit = true;
 			//new SQLiteInstance().init();
 		}else if(isDisposed){
@@ -81,8 +77,7 @@ public class CyborgController implements IWatchDirHandler{
 	
 	public void closeService(){
 		if(isInit){
-			udpThread.stopThread();
-			tcpService.stopService();
+			mSocketManager.stopServices();
 //			ftpServer.stopFtpServer();
 			watchDir.stopService();
 			watchFileExpiration.stopThread();
@@ -110,13 +105,13 @@ public class CyborgController implements IWatchDirHandler{
 				session = false;
 			}
 			else if ("whohas".equals(cmds[0])){
-				if(cmds.length >= 2) udpThread.reqFileProbe(cmds[1]);
+				if(cmds.length >= 2) mSocketManager.reqFileProbe(cmds[1]);
 			}
 			else if ("requestFile".equals(cmds[0])){
 				if(cmds.length >= 3){
 					String ipAddress = cmds[1];
 					String fileName = cmds[2];
-					// TODO Using TCPClient get file!!
+					mSocketManager.reqFile(ipAddress, fileName);
 				}
 			}
 			else if ("maketestfile".equals(cmds[0])){
@@ -216,8 +211,7 @@ public class CyborgController implements IWatchDirHandler{
     					// The user violates the access rule! File should be deleted!!
     					logger.d(this, "Alert! File contents has been attemped to be changed!! Deleting");
         				child.toFile().delete();
-        				// TODO Report this message to the original owner!!
-        				
+        				mSocketManager.reportVilation(userName, child.toString());
     				}else{
     					// This file is original. Update the file info
     					sql.updateFileInfo(child, dateFormat.format(info.getExpiresOn()), info.getType(), SHA256Helper.getHashStringFromFile(child));
