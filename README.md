@@ -18,18 +18,19 @@ This tool will be executed by:
 e.g.1:
 
 ```sh
-$ sudo ./start.sh yjvxf wlan0 myfolder
+sudo ./start.sh yjvxf wlan0 myfolder
 ```
 
 e.g.2:
 
 ```sh
-$ sudo ./start.sh yjvxf wlan0 myfolder B
+sudo ./start.sh yjvxf wlan0 myfolder B
 ```
 
 using ISA_Client:
+
 ```sh
-$ java -jar isaclient.jar 127.0.0.1 55732
+java -jar isaclient.jar 127.0.0.1 55732
 ```
 
 <p> Source Code description </p>
