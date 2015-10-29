@@ -24,6 +24,8 @@ public class CyborgTcpService extends Thread {
 	private String mUserName;
 	private String mHomeDirectory;
 	private SQLiteInstance sql;
+	private Logger logger;
+	private MessageQueue mQueue;
 	public CyborgTcpService(String threadName, int portNum, String userName, String homeDirectory)
 			throws IOException, SQLiteException{
 		super(threadName);
@@ -32,6 +34,8 @@ public class CyborgTcpService extends Thread {
 		this.mHomeDirectory = homeDirectory;
 		this.isRunning = true;
 		this.sql = SQLiteInstance.getInstance();
+		this.logger = Logger.getInstance();
+		this.mQueue = MessageQueue.getInstance();
 	}
 	public void run(){
 		while(isRunning && !mServerSocket.isClosed()){
@@ -49,6 +53,7 @@ public class CyborgTcpService extends Thread {
 	}
 	public class TcpThread extends Thread{
 		private static final int PREFIX = 8;
+		private static final String DELIMITER = "#";
 		private boolean isRunning = false;
 		private Socket mSocket;
 		public TcpThread(Socket sock){
@@ -73,11 +78,13 @@ public class CyborgTcpService extends Thread {
 			try {
 	            String recvd = is.readLine();
 	            if(recvd.length() >= PREFIX){
-	            	String[] reqs = recvd.split("#");
+	            	String[] reqs = recvd.split(DELIMITER);
 	            	if("REQ_FILE".equals(reqs[0])){
-	            		doFileTransferProcess(is, os, reqs);
+	            		os.writeBytes(doFileTransferProcess(reqs));
 	            	}else if("REQ_TRST".equals(reqs[0])){
-	            		doIssueCertificates(is, os, reqs);
+	            		os.writeBytes(doIssueCertificates(reqs));
+	            	}else if("REPORT_VIOLATION".equals(reqs[0])){
+	            		os.writeBytes(doReaction(reqs));
 	            	}
 	            }
 			} catch (IOException | GeneralSecurityException e) {
@@ -89,7 +96,67 @@ public class CyborgTcpService extends Thread {
 				}
 			}
 		}
-		public void doFileTransferProcess(BufferedReader is, DataOutputStream os, String[] reqs) throws CertificateException, IOException{
+		
+		private String doReaction(String[] reqs) {
+			String sso = reqs[1];
+			String name = reqs[2];
+			String fileName = reqs[3];
+			String access = reqs[4];
+			String msg = "The prohibited access detected from the following user:"
+					+ "\nSSO: " + sso
+					+ "\nName: " + name
+					+ "\nAccess attempted: " + access
+					+ "\nPlease type 'delete " + fileName + " from " + sso + "' to delete remotely,"
+					+ "\nor 'restore " + fileName + " from " + sso + "' to restore remotely,"
+					+ "\nor 'allow " + fileName + " from " + sso + "' to do nothing.";
+			logger.d(this, msg);
+			msg = null;
+			String response = "";
+			while(msg == null){
+				try {
+					msg = mQueue.getFirstMessage();
+					if(msg.startsWith("delete ")){
+						String[] cmds = msg.split(" ");
+						if(cmds.length > 3){
+							if(cmds[1].equals(fileName) &&
+								cmds[2].equals("from") &&
+								cmds[3].equals(sso)){
+								// Delete the file remotely
+								response = "REACTION" + DELIMITER + "DELETE";
+							}
+						}
+					}else if(msg.startsWith("restore ")){
+						String[] cmds = msg.split(" ");
+						if(cmds.length > 3){
+							if(cmds[1].equals(fileName) &&
+								cmds[2].equals("from") &&
+								cmds[3].equals(sso)){
+								// Restore the file remotely
+								String fileBase64 = "";
+								response = "REACTION" + DELIMITER + "RESTORE" + DELIMITER + fileBase64;
+							}
+						}
+					}else if(msg.startsWith("allow ")){
+						String[] cmds = msg.split(" ");
+						if(cmds.length > 3){
+							if(cmds[1].equals(fileName) &&
+								cmds[2].equals("from") &&
+								cmds[3].equals(sso)){
+								// Do nothing
+								response = "REACTION" + DELIMITER + "ALLOW";
+							}
+						}
+					}
+					msg = null;
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			return response;
+		}
+		public String doFileTransferProcess(String[] reqs) throws CertificateException, IOException{
     		// Do some trust process
     		String trust = reqs[1];
     		X509Util x509Util = new X509Util(StaticUtil.base64ToBytes(trust));
@@ -97,25 +164,24 @@ public class CyborgTcpService extends Thread {
     		String sso = X509Util.parseDN(x509Util.getCertificate().getSubjectDN().getName())[0];
     		UserInfo info = sql.getUserInfo(sso);
     		if(info == null){
-                os.writeBytes("Error#InvalidTrustee");
-                return;
+                return "Error"+DELIMITER+"InvalidTrustee";
     		}
     		// Checking if the cert is valid
 			if(!x509Util.isCertValid(x509Util.getCertificate().getPublicKey(), mUserName, info.getSso())){
-                os.writeBytes("Error#InvalidCert");
-                return;
+                return "Error"+DELIMITER+"InvalidCert";
 			}
     		// Get filename
     		String fileName = reqs[2];
     		// Send the file to the requestor
     		File file = new File(fileName);
     		if(file.exists()){
-	            os.writeBytes("Size#" + Long.toString(file.length()) + "#" + StaticUtil.encodeFileToBase64Binary(fileName));
+	            return "Size"+ DELIMITER + Long.toString(file.length()) + DELIMITER + StaticUtil.encodeFileToBase64Binary(fileName);
     		}else{
-	            os.writeBytes("Error#NoFile");
+	            return "Error"+DELIMITER+"NoFile";
     		}
 		}
-		public void doIssueCertificates(BufferedReader is, DataOutputStream os, String[] reqs) throws IOException, GeneralSecurityException{
+		
+		public String doIssueCertificates(String[] reqs) throws IOException, GeneralSecurityException{
     		boolean isTrustworthy = false;
     		// Ask the required information from the trustee
     		isTrustworthy = validateUser(reqs);
@@ -134,12 +200,13 @@ public class CyborgTcpService extends Thread {
     			PublicKey pbk = pair.getPublic();
     			// Insert userinfo into DB
     			insertUserInfoIntoDB(reqs, prk, pbk);
-    			os.writeBytes("X509#");
     			//os.write( issuedX509.getEncoded() );
-    			os.writeBytes(StaticUtil.byteToBase64(issuedX509.getEncoded()));
-    			os.flush();
+    			return "X509"+ DELIMITER + StaticUtil.byteToBase64(issuedX509.getEncoded());
+    		}else{
+    			return "Error" + DELIMITER + "Revoked";
     		}
 		}
+		
 		private void insertUserInfoIntoDB(String[] reqs, PrivateKey prk, PublicKey pbk) {
 			String sso = reqs[1];
 			int type = Integer.parseInt(reqs[2]);
@@ -152,6 +219,7 @@ public class CyborgTcpService extends Thread {
 			UserInfo info = new UserInfo(sso, type, name, organization, email, phoneNumber,BASE_SCORE, privateKey, publicKey);
 			sql.pushUserInfo(info);
 		}
+		
 		private boolean validateUser(String[] reqs) {
 			// the index start from 1 because 0 is used by prefix
 			if(reqs.length == 6){
@@ -161,15 +229,47 @@ public class CyborgTcpService extends Thread {
 				String organization = reqs[4];
 				String email = reqs[5];
 				String phoneNumber = reqs[6];
-				//if the info is true{
-				return true;
-				//}else{
-				// return false;
-				//}
+				String msg = "The following user is requesting a trust."
+						+ "\nSSO: " + sso
+						+ "\nType: " + UserInfo.getTypeString(type)
+						+ "\nName: " + name
+						+ "\nOrganization: " + organization
+						+ "\ne-mail: " + email
+						+ "\nphone number: " + phoneNumber
+						+ "\nPlease type 'allow " + sso + "' to allow,"
+						+ "\notherwise 'revoke " + sso + "' to revoke.";
+				logger.d(this, msg);
+				msg = null;
+				while(msg == null){
+					try {
+						msg = mQueue.getFirstMessage();
+						if(msg.startsWith("allow ")){
+							String[] cmds = msg.split(" ");
+							if(cmds.length > 1){
+								String requestor = cmds[1];
+								if(sso.equals(requestor)){
+									mQueue.deque();
+									return true;
+								}
+							}
+						}else if(msg.startsWith("revoke ")){
+							String[] cmds = msg.split(" ");
+							if(cmds.length > 1){
+								String requestor = cmds[1];
+								if(sso.equals(requestor)){
+									mQueue.deque();
+									return false;
+								}
+							}
+						}
+						msg = null;
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
 			}
-			else{
-				return false;
-			}
+			return false;
 		}
 	}
 }

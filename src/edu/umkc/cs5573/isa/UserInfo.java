@@ -80,5 +80,8 @@ public class UserInfo {
 	public void setPublicKey(String publicKey) {
 		this.publicKey = publicKey;
 	}
-	
+	public static String getTypeString(int type){
+		if (type == TYPE_STUDENT) return "Student";
+		else return "Employee";
+	}
 }

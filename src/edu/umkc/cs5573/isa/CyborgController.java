@@ -46,6 +46,7 @@ public class CyborgController implements IWatchDirHandler{
 	private String userName;
 	private String homeDirectory;
 	private Logger logger;
+	private MessageQueue mQueue;
 
 	
 	private CyborgController(String userName, String ifName, String homeDirectory)
@@ -58,6 +59,7 @@ public class CyborgController implements IWatchDirHandler{
 		this.userName = userName;
 		this.homeDirectory = homeDirectory;
 		this.mSocketManager = new CyborgSocketManager(userName, ifName, homeDirectory, Resources.UDP_PORT, Resources.TCP_PORT, true);
+		this.mQueue = MessageQueue.getInstance();
 	}
 	
 	public void init(){
@@ -210,10 +212,10 @@ public class CyborgController implements IWatchDirHandler{
     				if((info.getType()&copied_and_protected) == copied_and_protected){
     					// The user violates the access rule! File should be deleted!!
     					logger.d(this, "Alert! File contents has been attemped to be changed!! Deleting");
-        				child.toFile().delete();
-        				mSocketManager.reportVilation(userName, child.toString());
+        				//child.toFile().delete();
+        				mSocketManager.reportViolation(userName, child.toString());
     				}else{
-    					// This file is original. Update the file info
+    					// This file is original or write-allowed. Update the file info
     					sql.updateFileInfo(child, dateFormat.format(info.getExpiresOn()), info.getType(), SHA256Helper.getHashStringFromFile(child));
     				}
     			}

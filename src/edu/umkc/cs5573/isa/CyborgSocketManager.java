@@ -62,7 +62,7 @@ public class CyborgSocketManager {
 		
 	}
 	
-	public void reportVilation(String userName, String fileName){
+	public void reportViolation(String userName, String fileName){
 		Map<String, String> userList = udpService.getUserList();
 		String ipAddress = userList.get(userName);
 		// TODO Using TCPClient report the violation!! 
