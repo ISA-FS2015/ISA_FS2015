@@ -18,7 +18,7 @@ public class ISAPMain {
 		//String tobeHashed = "Test!!";
 		//System.out.println("Hash of " + tobeHashed + " : " + SHA256Helper.getHashString(tobeHashed));
 		localPrint("Cyborg test program.");
-		localPrint("Usage: ISAPMain <username> <interfacefname> <HomeDirectory> <B-Backend Mode>");
+		localPrint("Usage: ISAPMain <username> <interfacename> <HomeDirectory> <B-Backend Mode>");
 		localPrint("E.g: ISAPMain user01 wlan0 ./cyborgman");
 		CyborgController cyborg = null;
 		try {

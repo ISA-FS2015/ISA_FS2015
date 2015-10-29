@@ -22,7 +22,7 @@ import java.util.Queue;
 import com.almworks.sqlite4java.SQLiteException;
 
 public class CyborgTcpService extends Thread {
-	private final static int BASE_SCORE = 10;
+	private final static int BASE_SCORE = 100;
 	private boolean isRunning = false;
 	private ServerSocket mServerSocket;
 	private String mUserName;
