@@ -23,11 +23,11 @@ public class CyborgFileManager {
 	 * @param permissionString Permission String. Like chmod. "755" or "600"...
 	 * @return true if success, false otherwise
 	 */
-	public boolean setPermissions(String filePath, String permissionString){
+	public static boolean setPermissions(String filePath, String permissionString){
 		Set<PosixFilePermission> perms = new HashSet<PosixFilePermission>();
-		int l_owner = Integer.parseInt(permissionString.substring(0,1));
-		int l_group = Integer.parseInt(permissionString.substring(0,1));
-		int l_other = Integer.parseInt(permissionString.substring(0,1));
+		int l_owner = Integer.parseInt(permissionString.substring(0,0));
+		int l_group = Integer.parseInt(permissionString.substring(1,1));
+		int l_other = Integer.parseInt(permissionString.substring(2,2));
 		//add owners permission
 		if((l_owner & READ) == READ) perms.add(PosixFilePermission.OWNER_READ);
 		if((l_owner & WRITE) == WRITE) perms.add(PosixFilePermission.OWNER_WRITE);

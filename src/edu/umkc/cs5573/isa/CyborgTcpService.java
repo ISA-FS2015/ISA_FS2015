@@ -9,7 +9,10 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -21,8 +24,20 @@ import java.util.Date;
 
 import com.almworks.sqlite4java.SQLiteException;
 
+/**
+ * The actual TCP communication is processed here.
+ * @author Younghwan
+ *
+ */
 public class CyborgTcpService extends Thread {
+	/**
+	 * The default score for trust.
+	 */
 	private final static int BASE_SCORE = 100;
+	/**
+	 * The score increment. Inversely used as decrement by inversion
+	 */
+	private final static int SCORE_INCREMENT = 10;
 	private final static String REQTYPE_FILE = "REQ_FILE";
 	private final static String REQTYPE_TRST = "REQ_TRST";
 	private final static String REQTYPE_REPORT_VIOLATION = "REQ_REPORT_VIOLATION";
@@ -57,6 +72,7 @@ public class CyborgTcpService extends Thread {
 		while(isRunning && !mServerSocket.isClosed()){
 			try {
 				Socket clientSocket = mServerSocket.accept();
+				// For Multi-socket programming
 				new ServerThread(clientSocket).start();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -144,8 +160,12 @@ public class CyborgTcpService extends Thread {
 							if(cmds[1].equals(fileName) &&
 								cmds[2].equals("from") &&
 								cmds[3].equals(sso)){
+				    			// Decrements the user's trust
+				    			UserInfo info = sql.getUserInfo(sso);
+				    			info.setScore(info.getScore() - SCORE_INCREMENT);
+				    			sql.updateUserInfo(info);
 								// Delete the file remotely
-								response = RESPONSE_REACTION + DELIMITER + REACTION_DELETE;
+								response = RESPONSE_REACTION + DELIMITER + REACTION_DELETE + DELIMITER + fileName;
 							}
 						}
 					}else if(msg.startsWith("restore ")){
@@ -154,11 +174,20 @@ public class CyborgTcpService extends Thread {
 							if(cmds[1].equals(fileName) &&
 								cmds[2].equals("from") &&
 								cmds[3].equals(sso)){
+				    			// Decrements the user's trust
+				    			UserInfo info = sql.getUserInfo(sso);
+				    			info.setScore(info.getScore() - SCORE_INCREMENT/2);
+				    			sql.updateUserInfo(info);
 								// Restore the file remotely
 								String fileBase64;
 								try {
 									fileBase64 = StaticUtil.encodeFileToBase64Binary(fileName);
-									response = RESPONSE_REACTION + DELIMITER + REACTION_RESTORE + DELIMITER + fileBase64;
+									File file = new File(mHomeDirectory + "/" + fileName);
+									response = RESPONSE_REACTION + DELIMITER
+											+ REACTION_RESTORE + DELIMITER
+											+ fileName + DELIMITER
+											+ Long.toString(file.length()) + DELIMITER
+											+ fileBase64;
 								} catch (IOException e) {
 									e.printStackTrace();
 									logger.d(this, e.getMessage());
@@ -205,11 +234,15 @@ public class CyborgTcpService extends Thread {
     		// Send the file to the requestor
     		File file = new File(fileName);
     		if(file.exists()){
-    			FileInfo fileInfo = sql.getFileInfo(file.toPath());
-	            return RESPONSE_FILE_SIZE + DELIMITER
-	            		+ Long.toString(file.length()) + DELIMITER
-	            		+ StaticUtil.encodeFileToBase64Binary(fileName) +DELIMITER
-	            		+ fileInfo.getType();
+    			if(info.getScore() >= BASE_SCORE){
+        			FileInfo fileInfo = sql.getFileInfo(file.toPath());
+    	            return RESPONSE_FILE_SIZE + DELIMITER
+    	            		+ Long.toString(file.length()) + DELIMITER
+    	            		+ StaticUtil.encodeFileToBase64Binary(fileName) +DELIMITER
+    	            		+ fileInfo.getType();
+    			}else{
+    				return RESPONSE_ERROR+DELIMITER+"Insufficient Trust Score";
+    			}
     		}else{
 	            return RESPONSE_ERROR+DELIMITER+"NoFile";
     		}
@@ -312,7 +345,8 @@ public class CyborgTcpService extends Thread {
 	
 	// Client Requesting method part - start
 	
-	public void reqCert(String ipAddress, int portNum, String sso, UserInfo myInfo){
+	public void reqCert(String ipAddress, int portNum, String sso, UserInfo myInfo)
+	{
 		StringBuilder payload = new StringBuilder();
 		payload.append(myInfo.getSso())
 				.append(DELIMITER)
@@ -330,7 +364,8 @@ public class CyborgTcpService extends Thread {
 		req.start();
 	}
 	
-	public void reqFile(String ipAddress, int portNum, String sso, String fileName) {
+	public void reqFile(String ipAddress, int portNum, String sso, String fileName)
+	{
 		CertInfo cert = sql.getCertInfo(sso);
 		if (cert == null){
 			logger.d(this, "No certification corresponding to the owner. Please get a trust first.");
@@ -338,17 +373,21 @@ public class CyborgTcpService extends Thread {
 			String certStr = cert.getCert();
 			Requestor req = new Requestor(ipAddress, portNum, sso);
 			StringBuilder payload = new StringBuilder();
+			payload.append(fileName).append(DELIMITER)
+					.append(certStr);
 			req.setRequest(REQTYPE_TRST, payload.toString().split(DELIMITER));
 			req.start();
 		}
 	}
 	
-	public void reportViolation(String ipAddress, int portNum, String sso, String violation){
+	public void reportViolation(String ipAddress, int portNum, String sso, String fileName, String violation)
+	{
 		StringBuilder payload = new StringBuilder();
+		payload.append(fileName).append(DELIMITER)
+				.append(violation);
 		Requestor req = new Requestor(ipAddress, portNum, sso);
 		req.setRequest(REQTYPE_REPORT_VIOLATION, payload.toString().split(DELIMITER));
 		req.start();
-		
 	}
 	
 	// Client Requesting method part - end
@@ -359,12 +398,33 @@ public class CyborgTcpService extends Thread {
 	 *
 	 */
 	public class Requestor extends Thread{
+		/**
+		 * The client socket
+		 */
 		private Socket mSocket;
+		/**
+		 * The destination IP Address
+		 */
 		private String mIpAddress;
+		/**
+		 * The SSO ID of the destination(Not yours)
+		 */
 		private String mSso;
+		/**
+		 * The destination TCP port number
+		 */
 		private int mPortNum;
+		/**
+		 * The request type
+		 */
 		private String mReqType;
+		/**
+		 * The data payload
+		 */
 		private String[] mPayLoad;
+		/**
+		 * Logger
+		 */
 		private Logger logger;
 		/**
 		 * Constructor
@@ -401,6 +461,10 @@ public class CyborgTcpService extends Thread {
 			}
 		}
 
+		/**
+		 * Process the request
+		 * @throws IOException
+		 */
 		private void processReq() throws IOException {
 		    if(mReqType.equals(REQTYPE_TRST)){
 		    	doCertRequest();
@@ -412,6 +476,10 @@ public class CyborgTcpService extends Thread {
 		}
 		
 
+		/**
+		 * Certification Request method
+		 * @throws IOException
+		 */
 		private void doCertRequest() throws IOException
 		{
 			PrintWriter out =
@@ -452,7 +520,12 @@ public class CyborgTcpService extends Thread {
 			out.close();
 		}
 		
-		private void doFileRequest() throws IOException{
+		/**
+		 * File Request method
+		 * @throws IOException
+		 */
+		private void doFileRequest() throws IOException
+		{
 			String fileName = mPayLoad[1];
 			PrintWriter out =
 			        new PrintWriter(mSocket.getOutputStream(), true);
@@ -478,8 +551,13 @@ public class CyborgTcpService extends Thread {
 		    					fileType,
 		    					SHA256Helper.getHashStringFromBytes(fileContents));
 		    			StaticUtil.saveToFile(mHomeDirectory + fileName, fileContents);
+		    			// Retrieving file finished. If we have the sso who gave file,
+		    			// Then we will raise his/her score by 10
+		    			UserInfo info = sql.getUserInfo(mSso);
+		    			info.setScore(info.getScore() + SCORE_INCREMENT);
+		    			sql.updateUserInfo(info);
 		    		}else{
-			    		logger.d(this, "File received is currupt. Please try again.");
+			    		logger.d(this, "File received is currupted. Please try again.");
 		    		}
 		    	}else{
 		    		logger.d(this, "Error while getting file. Please try again.");
@@ -491,18 +569,61 @@ public class CyborgTcpService extends Thread {
 			out.close();
 		}
 		
-		private void doReportViolation() throws IOException {
+		/**
+		 * Report Violation method
+		 * @throws IOException
+		 */
+		private void doReportViolation() throws IOException
+		{
 			PrintWriter out =
 			        new PrintWriter(mSocket.getOutputStream(), true);
 		    BufferedReader in =
 		        new BufferedReader(
 		            new InputStreamReader(mSocket.getInputStream()));
 	    	StringBuilder payload = new StringBuilder(mReqType);
-			
+	    	payload.append(joinStrs(mPayLoad, DELIMITER));
+		    out.write(payload.toString());
+		    String result = in.readLine();
+		    if(result.startsWith(RESPONSE_REACTION)){
+		    	String[] reaction = result.split(DELIMITER);
+		    	if(reaction.length > 1){
+		    		if(reaction[1].equals(REACTION_DELETE)){
+		    			String fileName = reaction[2];
+		    			File file = new File(mHomeDirectory + "/" + fileName);
+		    			file.delete();
+		    		}else if(reaction[1].equals(REACTION_RESTORE)){
+		    			String fileName = reaction[2];
+		    			Path filePath = Paths.get(mHomeDirectory + "/" + fileName);
+		    			//long fileSize = Long.parseLong(reaction[3]);
+		    			byte[] fileContent = StaticUtil.base64ToBytes(reaction[4]);
+		    			FileInfo info = sql.getFileInfo(filePath);
+		    			sql.updateFileInfo(filePath,
+		    					info.getExpiresOnStr(), info.getType(),
+		    					SHA256Helper.getHashStringFromBytes(fileContent), FileInfo.UNLOCK);
+		    			Files.write(filePath, fileContent, StandardOpenOption.WRITE);
+		    		}else if(reaction[1].equals(REACTION_ALLOW)){
+		    			// Just unlock file and update the hash
+		    			String fileName = reaction[2];
+		    			Path filePath = Paths.get(mHomeDirectory + "/" + fileName);
+		    			FileInfo info = sql.getFileInfo(filePath);
+		    			sql.updateFileInfo(filePath, info.getExpiresOnStr(), info.getType(),
+		    					SHA256Helper.getHashStringFromFile(filePath), FileInfo.UNLOCK);
+		    		}else{
+				    	logger.d(this, result);
+		    		}
+		    	}
+		    }else{
+		    	logger.d(this, result);
+		    }
 		}
 	}
 	
-	
+	/**
+	 * Join string arrays into one string separated by a delimiter
+	 * @param strings
+	 * @param delimiter
+	 * @return
+	 */
 	private static String joinStrs(String[] strings, String delimiter)
 	{
 		StringBuilder result = new StringBuilder();
@@ -512,6 +633,4 @@ public class CyborgTcpService extends Thread {
 		result.deleteCharAt(result.length()-1);
 		return result.toString();
 	}
-
-	
 }

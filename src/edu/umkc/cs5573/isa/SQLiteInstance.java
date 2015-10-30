@@ -77,7 +77,8 @@ public class SQLiteInstance {
 						+ "CreatedOn text not null, "
 						+ "ExpiresOn text not null, "
 						+ "Type integer not null, "
-						+ "Hash text not null"
+						+ "Hash text not null,"
+						+ "Lock integer text"
 						+ ")";
 				try{
 					connection.exec(sqlState);
@@ -169,7 +170,8 @@ public class SQLiteInstance {
 						String expiresOn = st.columnString(4);
 						int type = st.columnInt(5);
 						String hash = st.columnString(6);
-						FileInfo info = new FileInfo(id, fileName, owner, createdOn, expiresOn, type, hash);
+						int lock = st.columnInt(7);
+						FileInfo info = new FileInfo(id, fileName, owner, createdOn, expiresOn, type, hash, lock);
 						return info;
 					}
 					st.dispose();
@@ -198,7 +200,8 @@ public class SQLiteInstance {
 						String expiresOn = st.columnString(4);
 						int type = st.columnInt(5);
 						String hash = st.columnString(6);
-						list.add(new FileInfo(id, fileName, owner, createdOn, expiresOn, type, hash));
+						int lock = st.columnInt(7);
+						list.add(new FileInfo(id, fileName, owner, createdOn, expiresOn, type, hash, lock));
 					}
 					st.dispose();
 					return list;
@@ -211,11 +214,12 @@ public class SQLiteInstance {
 		return item;
 	}
 	
-	public void updateFileInfo(Path path, String expiresOn, int type, String hash){
+	public void updateFileInfo(Path path, String expiresOn, int type, String hash, int lock){
 		final String sql = "UPDATE from " + TABLE_FILE_INFO + " set "
 				+ "ExpiresOn=\"" + expiresOn + "\""
 				+ "Type=" + Integer.toString(type)
 				+ "Hash=\"" + hash + "\""
+				+ "Lock=\"" + lock + "\""
 				+ "WHERE Filename = \"" + path.toString() + "\"";
 		queue.execute(new SQLiteJob<Void>(){
 			@Override
@@ -309,7 +313,8 @@ public class SQLiteInstance {
 						String expiresOn = st.columnString(4);
 						int type = st.columnInt(5);
 						String hash = st.columnString(6);
-						FileInfo info = new FileInfo(id, fileName, owner, createdOn, expiresOn, type, hash);
+						int lock = st.columnInt(7);
+						FileInfo info = new FileInfo(id, fileName, owner, createdOn, expiresOn, type, hash, lock);
 						if(info.isExpired()){
 							list.add(info);
 						}
@@ -372,7 +377,8 @@ public class SQLiteInstance {
 		}).complete();
 	}
 
-	public void updateUserInfo(UserInfo info){
+	public void updateUserInfo(UserInfo info)
+	{
 		final String sql = "UPDATE from " + TABLE_USER_INFO + " set "
 				+ "Name=\"" + info.getName() + "\""
 				+ "Organization=\"" + info.getOrganization() + "\""

@@ -10,10 +10,12 @@ import java.util.Date;
  */
 public class FileInfo {
 	final static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-	public final static int CYBORG_FILE_TYPE_COPIED = 0x00000000;
-	public final static int CYBORG_FILE_WRITE_PROTECTED = 0x00000000;
-	public final static int CYBORG_FILE_TYPE_ORIGINAL = 0x00000010;
-	public final static int CYBORG_FILE_WRITE_ALLOWED = 0x00000100;
+	public final static int TYPE_COPIED		= 0x00000000;
+	public final static int TYPE_ORIGINAL	= 0x00000010;
+	public final static int WRITE_PROTECTED	= 0x00000000;
+	public final static int WRITE_ALLOWED	= 0x00000100;
+	public final static int LOCK = 1;
+	public final static int UNLOCK = 0;
 
 //	+ "id integer primary key autoincrement, "
 //	+ "Filename text not null, "
@@ -27,6 +29,7 @@ public class FileInfo {
 	private Date expiresOn;
 	private int type;
 	private String hash;
+	private int lock;
 	public int getId() {
 		return id;
 	}
@@ -73,7 +76,14 @@ public class FileInfo {
 	public void setExpiresOn(Date expiresOn) {
 		this.expiresOn = expiresOn;
 	}
-	public FileInfo(int id, String fileName, String owner, String createdOn, String expiresOn, int type, String hash) {
+	
+	public int getLock() {
+		return lock;
+	}
+	public void setLock(int lock) {
+		this.lock = lock;
+	}
+	public FileInfo(int id, String fileName, String owner, String createdOn, String expiresOn, int type, String hash, int lock) {
 		super();
 		this.id = id;
 		this.fileName = fileName;
@@ -87,9 +97,10 @@ public class FileInfo {
 		}
 		this.type = type;
 		this.hash = hash;
+		this.lock = lock;
 	}
 	
-	public FileInfo(String fileName, String owner, String createdOn, String expiresOn, int type, String hash) {
+	public FileInfo(String fileName, String owner, String createdOn, String expiresOn, int type, String hash, int lock) {
 		super();
 		this.id = 0;
 		this.fileName = fileName;
@@ -103,6 +114,7 @@ public class FileInfo {
 		}
 		this.type = type;
 		this.hash = hash;
+		this.lock = lock;
 	}
 	
 	public boolean isExpired(){

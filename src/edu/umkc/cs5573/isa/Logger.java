@@ -28,4 +28,7 @@ public class Logger {
 	public void d(Object obj, String msg){
 		if(DEBUG) out.println(obj.getClass().getSimpleName() + " Says: " + msg);
 	}
+	public void i(Object obj, String msg){
+		out.println(obj.getClass().getSimpleName().substring(0, 8) + ": " + msg);
+	}
 }
