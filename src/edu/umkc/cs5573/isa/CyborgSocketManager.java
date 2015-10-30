@@ -52,7 +52,7 @@ public class CyborgSocketManager {
 	public void stopServices()
 	{
 		udpService.stopService();
-		tcpService.stopService();		
+		tcpService.stopService();
 	}
 	
 	/**

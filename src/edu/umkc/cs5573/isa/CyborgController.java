@@ -11,6 +11,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import com.almworks.sqlite4java.SQLiteException;
 
@@ -132,6 +134,8 @@ public class CyborgController implements IWatchDirHandler{
 			if(cmds.length == 0) continue;
 			if("byby".equals(cmds[0])){
 				session = false;
+			}else if ("userlist".equals(cmds[0])){
+				doUserList();
 			}else if ("whohas".equals(cmds[0])){
 				doRequestFileProbe(cmds);
 			}else if ("requestFile".equals(cmds[0])){
@@ -152,6 +156,13 @@ public class CyborgController implements IWatchDirHandler{
 		logger.resetOutputStream();
 	}
 	
+	private void doUserList() {
+		Map<String, String> userList = mSocketManager.getUserList();
+    	for(Entry<String, String> entry : userList.entrySet()){
+        	logger.d(this, entry.getKey() + ":" + entry.getValue());
+    	}
+	}
+
 	/**
 	 * Broadcast the file probe into the network. The response will be handled in {@code CyborgUdpService}
 	 * @param cmds Commands
