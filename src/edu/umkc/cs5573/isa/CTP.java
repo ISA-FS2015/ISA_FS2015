@@ -179,8 +179,9 @@ public class CTP {
 		}
 		obj = new JSONObject();
 		obj.put(KEY_RES_TYPE, RES_USERLIST);
-		obj.put(KEY_RES_MSG, new JSONObject().put(KEY_USERLIST, jArr));
-		obj.put(KEY_MSG_LENGTH, jArr.toString().length());
+		JSONObject listJson = new JSONObject().put(KEY_USERLIST, jArr);
+		obj.put(KEY_RES_MSG, listJson);
+		obj.put(KEY_MSG_LENGTH, listJson.toString().length());
 		return obj.toString();
     }
     
