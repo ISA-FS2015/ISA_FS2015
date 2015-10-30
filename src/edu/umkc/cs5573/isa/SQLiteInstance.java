@@ -238,7 +238,7 @@ public class SQLiteInstance {
 	 * @param lock
 	 */
 	public void updateFileInfo(Path path, String expiresOn, int type, String hash, int lock){
-		final String sql = "UPDATE from " + TABLE_FILE_INFO + " set "
+		final String sql = "UPDATE " + TABLE_FILE_INFO + " set "
 				+ "ExpiresOn=\"" + expiresOn + "\"" + ","
 				+ "Type=" + type + ","
 				+ "Hash=\"" + hash + "\"" + ","
@@ -430,7 +430,7 @@ public class SQLiteInstance {
 	 */
 	public void updateUserInfo(UserInfo info)
 	{
-		final String sql = "UPDATE from " + TABLE_USER_INFO + " set "
+		final String sql = "UPDATE " + TABLE_USER_INFO + " set "
 				+ "Name=\"" + info.getName() + "\"" + ","
 				+ "Organization=\"" + info.getOrganization() + "\"" + ","
 				+ "Email=\"" + info.getEmail() + "\"" + ","
