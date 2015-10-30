@@ -206,7 +206,12 @@ public class CTP {
     }
     
     public String getMessage(){
-    	return payload.toString();
+    	try{
+        	return payload.toString();
+    		
+    	}catch(NullPointerException e){
+    		return "";
+    	}
     }
     
     public String putPeerList(Map<String, String> userList){
