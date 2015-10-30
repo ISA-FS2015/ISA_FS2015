@@ -522,7 +522,7 @@ public class CyborgTcpService extends Thread {
 		    BufferedReader in =
 		        new BufferedReader(
 		            new InputStreamReader(mSocket.getInputStream()));
-	    	StringBuilder payload = new StringBuilder(mReqType);
+	    	StringBuilder payload = new StringBuilder(mReqType).append(DELIMITER);
 	    	payload.append(joinStrs(mPayLoad, DELIMITER));
 	    	logger.d(this, "Sending:" + payload.toString());
 		    out.write(payload.toString());
@@ -570,7 +570,7 @@ public class CyborgTcpService extends Thread {
 		    BufferedReader in =
 		        new BufferedReader(
 		            new InputStreamReader(mSocket.getInputStream()));
-	    	StringBuilder payload = new StringBuilder(mReqType);
+	    	StringBuilder payload = new StringBuilder(mReqType).append(DELIMITER);
 	    	payload.append(joinStrs(mPayLoad, DELIMITER));
 	    	logger.d(this, "Sending:" + payload.toString());
 		    out.write(payload.toString());
@@ -620,7 +620,7 @@ public class CyborgTcpService extends Thread {
 		    BufferedReader in =
 		        new BufferedReader(
 		            new InputStreamReader(mSocket.getInputStream()));
-	    	StringBuilder payload = new StringBuilder(mReqType);
+	    	StringBuilder payload = new StringBuilder(mReqType).append(DELIMITER);
 	    	payload.append(joinStrs(mPayLoad, DELIMITER));
 	    	logger.d(this, "Sending:" + payload.toString());
 		    out.write(payload.toString());
