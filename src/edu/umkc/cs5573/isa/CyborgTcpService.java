@@ -135,6 +135,14 @@ public class CyborgTcpService extends Thread {
 			}
 		}
 		
+		/**
+		 * <p>Make a reaction of the violation report</p>
+		 * <p>If owner react for deleting, deletes file remotely, decrementing the trust score.</p>
+		 * <p>If owner react for restoring, restores file remotely, slightly decrementing the trust score.</p>
+		 * <p>If owner react for nothing, just allows the file modified, no score changed</p>
+		 * @param reqs
+		 * @return
+		 */
 		private String doReaction(String[] reqs)
 		{
 			String sso = reqs[1];
@@ -214,6 +222,14 @@ public class CyborgTcpService extends Thread {
 			return response;
 		}
 		
+		/**
+		 * <p>File Transfer process</p>
+		 * <p>The owner checks the X509 certificate's validation, if the trust score's sufficient, finally gives the file</p>
+		 * @param reqs
+		 * @return
+		 * @throws CertificateException
+		 * @throws IOException
+		 */
 		public String doFileTransferProcess(String[] reqs)
 				throws CertificateException, IOException{
     		// Do some trust process
@@ -232,7 +248,7 @@ public class CyborgTcpService extends Thread {
     		// Get filename
     		String fileName = reqs[2];
     		// Send the file to the requestor
-    		File file = new File(fileName);
+    		File file = new File(mHomeDirectory + "/" + fileName);
     		if(file.exists()){
     			if(info.getScore() >= BASE_SCORE){
         			FileInfo fileInfo = sql.getFileInfo(file.toPath());
@@ -248,6 +264,13 @@ public class CyborgTcpService extends Thread {
     		}
 		}
 		
+		/**
+		 * Issueing Certification process
+		 * @param reqs
+		 * @return
+		 * @throws IOException
+		 * @throws GeneralSecurityException
+		 */
 		public String doIssueCertificates(String[] reqs)
 				throws IOException, GeneralSecurityException{
     		boolean isTrustworthy = false;
@@ -275,6 +298,12 @@ public class CyborgTcpService extends Thread {
     		}
 		}
 		
+		/**
+		 * Inserts user info into DB
+		 * @param reqs
+		 * @param prk Private Key. Not used for now, but just in case...
+		 * @param pbk Public Key
+		 */
 		private void insertUserInfoIntoDB(String[] reqs, PrivateKey prk, PublicKey pbk)
 		{
 			String sso = reqs[1];
@@ -289,6 +318,11 @@ public class CyborgTcpService extends Thread {
 			sql.pushUserInfo(info);
 		}
 		
+		/**
+		 * Validates if the user is correct or not.
+		 * @param reqs
+		 * @return
+		 */
 		private boolean validateUser(String[] reqs)
 		{
 			// the index start from 1 because 0 is used by prefix
@@ -521,7 +555,8 @@ public class CyborgTcpService extends Thread {
 		}
 		
 		/**
-		 * File Request method
+		 * <p>File Request method</p>
+		 * <p>If file is received, if the user info exists, raise the trust score for the owner's sharing the file</p>
 		 * @throws IOException
 		 */
 		private void doFileRequest() throws IOException

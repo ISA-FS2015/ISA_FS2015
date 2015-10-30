@@ -329,9 +329,8 @@ public class CyborgController implements IWatchDirHandler{
 					SHA256Helper.getHashStringFromFile(child));
 			logger.d(this, "Fileinfo successfully created.\nPlease type 'setfile " + child.toFile().getName() + " readwrite' to make it write-allowed for other peers.");
 		}
-		
-		// TODO For Later step!!
-		
+		// Set file permission as read-only. Commenting for now
+//		CyborgFileManager.setPermissions(child.toString(), "600");
 	}
 
 
@@ -359,7 +358,7 @@ public class CyborgController implements IWatchDirHandler{
     					// Lock the file
     					sql.updateFileInfo(child, info.getExpiresOnStr(), info.getType(), SHA256Helper.getHashStringFromFile(child), FileInfo.LOCK);
     					CyborgFileManager.setPermissions(child.toString(), "000");
-        				mSocketManager.reportViolation(userName, child.toString(), "WritingReadOnly");
+        				mSocketManager.reportViolation(userName, child.toFile().getName(), "WritingReadOnly");
     				}else{
     					// This file is original or write-allowed. Update the file info
     					if(info.getLock() == FileInfo.LOCK){
