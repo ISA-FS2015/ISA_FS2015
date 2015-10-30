@@ -131,6 +131,7 @@ public class CyborgTcpService extends Thread {
 					os.writeBytes(RESPONSE_ERROR + DELIMITER + e.getMessage());
 				} catch (IOException e1) {
 					e1.printStackTrace();
+					isRunning = false;
 				}
 			}
 		}
