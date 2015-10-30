@@ -76,6 +76,7 @@ public class CyborgUdpService extends Thread {
 //    	}
         this.isRunning = true;
         this.homeDirectory = homeDirectory;
+        this.userName = userName;
         this.userList = new HashMap<String, String>();
         this.userList.put(userName, localIpAddress);
     }
