@@ -59,14 +59,24 @@ public class CTP {
     		ctpType = CTP_TYPE_REQ;
     		// process request
     		this.dataType = jObj.getString(KEY_REQ_TYPE);
-    		this.payload = jObj.getJSONObject(KEY_REQ_MSG);
-    		this.msgLength = jObj.getInt(KEY_MSG_LENGTH);
+    		try{
+        		this.payload = jObj.getJSONObject(KEY_REQ_MSG);
+        		this.msgLength = jObj.getInt(KEY_MSG_LENGTH);
+    		}catch(JSONException e){
+    			this.payload = null;
+    			this.msgLength = 0;
+    		}
     	}else if(jObj.has(KEY_RES_TYPE)) {
     		ctpType = CTP_TYPE_RES;
     		// process request
-    		this.dataType = jObj.getString(KEY_RES_TYPE);    		
-    		this.payload = jObj.getJSONObject(KEY_RES_MSG);
-    		this.msgLength = jObj.getInt(KEY_MSG_LENGTH);
+    		this.dataType = jObj.getString(KEY_RES_TYPE);
+    		try{
+	    		this.payload = jObj.getJSONObject(KEY_RES_MSG);
+	    		this.msgLength = jObj.getInt(KEY_MSG_LENGTH);
+    		}catch(JSONException e){
+    			this.payload = null;
+    			this.msgLength = 0;
+    		}
     	}else{
     		throw new JSONException("Unsupported CTP Type");
     	}
