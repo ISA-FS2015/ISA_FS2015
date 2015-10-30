@@ -118,17 +118,17 @@ public class CyborgTcpService extends Thread {
 	            if(recvd.length() >= PREFIX){
 	            	String[] reqs = recvd.split(DELIMITER);
 	            	if(REQTYPE_FILE.equals(reqs[0])){
-	            		os.writeBytes(doFileTransferProcess(reqs));
+	            		os.writeBytes(doFileTransferProcess(reqs) + "\n");
 	            	}else if(REQTYPE_TRST.equals(reqs[0])){
-	            		os.writeBytes(doIssueCertificates(reqs));
+	            		os.writeBytes(doIssueCertificates(reqs) + "\n");
 	            	}else if(REQTYPE_REPORT_VIOLATION.equals(reqs[0])){
-	            		os.writeBytes(doReaction(reqs));
+	            		os.writeBytes(doReaction(reqs) + "\n");
 	            	}
 	            }
 			} catch (IOException | GeneralSecurityException e) {
 				e.printStackTrace();
 				try {
-					os.writeBytes(RESPONSE_ERROR + DELIMITER + e.getMessage());
+					os.writeBytes(RESPONSE_ERROR + DELIMITER + e.getMessage() + "\n");
 				} catch (IOException e1) {
 					e1.printStackTrace();
 					isRunning = false;
@@ -523,7 +523,7 @@ public class CyborgTcpService extends Thread {
 		        new BufferedReader(
 		            new InputStreamReader(mSocket.getInputStream()));
 	    	StringBuilder payload = new StringBuilder(mReqType).append(DELIMITER);
-	    	payload.append(joinStrs(mPayLoad, DELIMITER));
+	    	payload.append(joinStrs(mPayLoad, DELIMITER)).append('\n');
 	    	logger.d(this, "Sending:" + payload.toString());
 		    out.write(payload.toString());
 		    String result = in.readLine();
@@ -571,7 +571,7 @@ public class CyborgTcpService extends Thread {
 		        new BufferedReader(
 		            new InputStreamReader(mSocket.getInputStream()));
 	    	StringBuilder payload = new StringBuilder(mReqType).append(DELIMITER);
-	    	payload.append(joinStrs(mPayLoad, DELIMITER));
+	    	payload.append(joinStrs(mPayLoad, DELIMITER)).append('\n');
 	    	logger.d(this, "Sending:" + payload.toString());
 		    out.write(payload.toString());
 		    String result = in.readLine();
@@ -621,7 +621,7 @@ public class CyborgTcpService extends Thread {
 		        new BufferedReader(
 		            new InputStreamReader(mSocket.getInputStream()));
 	    	StringBuilder payload = new StringBuilder(mReqType).append(DELIMITER);
-	    	payload.append(joinStrs(mPayLoad, DELIMITER));
+	    	payload.append(joinStrs(mPayLoad, DELIMITER)).append('\n');
 	    	logger.d(this, "Sending:" + payload.toString());
 		    out.write(payload.toString());
 		    String result = in.readLine();
