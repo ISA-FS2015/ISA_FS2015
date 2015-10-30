@@ -317,6 +317,7 @@ public class CyborgUdpService extends Thread {
          * @param packet
          */
         public void broadcastPacket(String packet){
+        	logger.d(this, "Broadcasting: " + packet);
         	if(softBroadcast){
         		String[] ipSets = localIpAddress.split("\\.");
         		for(int i= 1; i <= 255 ; i++){
