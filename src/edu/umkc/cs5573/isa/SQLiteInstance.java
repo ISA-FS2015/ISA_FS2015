@@ -240,9 +240,9 @@ public class SQLiteInstance {
 	public void updateFileInfo(Path path, String expiresOn, int type, String hash, int lock){
 		final String sql = "UPDATE from " + TABLE_FILE_INFO + " set "
 				+ "ExpiresOn=\"" + expiresOn + "\"" + ","
-				+ "Type=" + Integer.toString(type) + ","
+				+ "Type=" + type + ","
 				+ "Hash=\"" + hash + "\"" + ","
-				+ "Lock=\"" + lock + "\"" + ","
+				+ "Lock=" + lock + ","
 				+ "WHERE Filename = \"" + path.toString() + "\"";
 		queue.execute(new SQLiteJob<Void>(){
 			@Override

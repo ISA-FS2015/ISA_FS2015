@@ -363,7 +363,9 @@ public class CyborgController implements IWatchDirHandler{
     		}else{
     			if(!SHA256Helper.getHashStringFromFile(child).equals(info.getHash())){
     				int copied_and_protected = FileInfo.TYPE_COPIED | FileInfo.WRITE_PROTECTED;
-    				if((info.getType()&copied_and_protected) == copied_and_protected){
+    				// If the file is not mine and copy protected
+    				if(!info.getOwner().equals(userName) &&
+    						(info.getType()&copied_and_protected) == copied_and_protected){
     					// The user violates the access rule! File should be deleted!!
     					logger.d(this, "Alert! File contents has been attemped to be changed!! Deleting");
     					// Lock the file
