@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<class-diagram version="1.1.8" icons="true" automaticImage="PNG" always-add-relationships="true" generalizations="true" 
+  realizations="true" associations="true" dependencies="true" nesting-relationships="true">  
+  <class id="1" language="java" name="edu.umkc.cs5573.isa.ISAPMain" project="ISA_FS2015" 
+    file="/ISA_FS2015/src/edu/umkc/cs5573/isa/ISAPMain.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="156" width="379" x="235" y="-201"/>    
+    <display autosize="false" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="2" language="java" name="edu.umkc.cs5573.isa.CyborgController" project="ISA_FS2015" 
+    file="/ISA_FS2015/src/edu/umkc/cs5573/isa/CyborgController.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="427" y="237"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="3" language="java" name="edu.umkc.cs5573.isa.CyborgSocketManager" project="ISA_FS2015" 
+    file="/ISA_FS2015/src/edu/umkc/cs5573/isa/CyborgSocketManager.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="236" width="327" x="671" y="-197"/>    
+    <display autosize="false" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="4" language="java" name="edu.umkc.cs5573.isa.CyborgTcpService" project="ISA_FS2015" 
+    file="/ISA_FS2015/src/edu/umkc/cs5573/isa/CyborgTcpService.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="1366" y="-99"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="5" language="java" name="edu.umkc.cs5573.isa.CyborgTcpService.ServerThread" project="ISA_FS2015" 
+    file="/ISA_FS2015/src/edu/umkc/cs5573/isa/CyborgTcpService.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="176" width="246" x="1604" y="-38"/>    
+    <display autosize="false" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="6" language="java" name="edu.umkc.cs5573.isa.CyborgTcpService.Requestor" project="ISA_FS2015" 
+    file="/ISA_FS2015/src/edu/umkc/cs5573/isa/CyborgTcpService.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="1727" y="-135"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="7" language="java" name="edu.umkc.cs5573.isa.CyborgUdpService" project="ISA_FS2015" 
+    file="/ISA_FS2015/src/edu/umkc/cs5573/isa/CyborgUdpService.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="1369" y="311"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="8" language="java" name="edu.umkc.cs5573.isa.CyborgUdpService.UdpRequestThread" project="ISA_FS2015" 
+    file="/ISA_FS2015/src/edu/umkc/cs5573/isa/CyborgUdpService.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="216" width="242" x="1607" y="162"/>    
+    <display autosize="false" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="9" language="java" name="edu.umkc.cs5573.isa.WatchDir" project="ISA_FS2015" 
+    file="/ISA_FS2015/src/edu/umkc/cs5573/isa/WatchDir.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="236" width="328" x="671" y="78"/>    
+    <display autosize="false" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="10" language="java" name="edu.umkc.cs5573.isa.WatchFileExpiration" project="ISA_FS2015" 
+    file="/ISA_FS2015/src/edu/umkc/cs5573/isa/WatchFileExpiration.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="156" width="368" x="244" y="496"/>    
+    <display autosize="false" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="11" language="java" name="edu.umkc.cs5573.isa.CTP" project="ISA_FS2015" 
+    file="/ISA_FS2015/src/edu/umkc/cs5573/isa/CTP.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="136" width="240" x="1608" y="408"/>    
+    <display autosize="false" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="12" language="java" name="edu.umkc.cs5573.isa.CyborgSecurity" project="ISA_FS2015" 
+    file="/ISA_FS2015/src/edu/umkc/cs5573/isa/CyborgSecurity.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="2012" y="-2"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="13" language="java" name="edu.umkc.cs5573.isa.FileInfo" project="ISA_FS2015" 
+    file="/ISA_FS2015/src/edu/umkc/cs5573/isa/FileInfo.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="295" width="367" x="225" y="793"/>    
+    <display autosize="false" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="14" language="java" name="edu.umkc.cs5573.isa.CertInfo" project="ISA_FS2015" 
+    file="/ISA_FS2015/src/edu/umkc/cs5573/isa/CertInfo.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="176" width="299" x="639" y="1139"/>    
+    <display autosize="false" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="15" language="java" name="edu.umkc.cs5573.isa.UserInfo" project="ISA_FS2015" 
+    file="/ISA_FS2015/src/edu/umkc/cs5573/isa/UserInfo.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="293" width="345" x="990" y="799"/>    
+    <display autosize="false" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <interface id="16" language="java" name="edu.umkc.cs5573.isa.IWatchDirHandler" project="ISA_FS2015" 
+    file="/ISA_FS2015/src/edu/umkc/cs5573/isa/IWatchDirHandler.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="176" width="321" x="674" y="351"/>    
+    <display autosize="false" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="false" private="false" static="true"/>    
+    </display>  
+  </interface>  
+  <class id="17" language="java" name="edu.umkc.cs5573.isa.CyborgFileManager" project="ISA_FS2015" 
+    file="/ISA_FS2015/src/edu/umkc/cs5573/isa/CyborgFileManager.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="817" y="650"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="18" language="java" name="edu.umkc.cs5573.isa.Logger" project="ISA_FS2015" 
+    file="/ISA_FS2015/src/edu/umkc/cs5573/isa/Logger.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="196" width="259" x="1565" y="1021"/>    
+    <display autosize="false" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="19" language="java" name="edu.umkc.cs5573.isa.MessageQueue" project="ISA_FS2015" 
+    file="/ISA_FS2015/src/edu/umkc/cs5573/isa/MessageQueue.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="160" width="265" x="1562" y="831"/>    
+    <display autosize="false" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="20" language="java" name="edu.umkc.cs5573.isa.Resources" project="ISA_FS2015" 
+    file="/ISA_FS2015/src/edu/umkc/cs5573/isa/Resources.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="156" width="255" x="1862" y="831"/>    
+    <display autosize="false" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="21" language="java" name="edu.umkc.cs5573.isa.SHA256Helper" project="ISA_FS2015" 
+    file="/ISA_FS2015/src/edu/umkc/cs5573/isa/SHA256Helper.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="200" width="259" x="1860" y="609"/>    
+    <display autosize="false" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="22" language="java" name="edu.umkc.cs5573.isa.SQLiteInstance" project="ISA_FS2015" 
+    file="/ISA_FS2015/src/edu/umkc/cs5573/isa/SQLiteInstance.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="292" width="303" x="634" y="799"/>    
+    <display autosize="false" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="23" language="java" name="edu.umkc.cs5573.isa.StaticUtil" project="ISA_FS2015" 
+    file="/ISA_FS2015/src/edu/umkc/cs5573/isa/StaticUtil.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="216" width="261" x="1859" y="1021"/>    
+    <display autosize="false" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="false" private="false" static="true"/>      
+      <operations public="true" package="true" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <association id="24">    
+    <end type="SOURCE" refId="2" navigable="false">      
+      <attribute id="25" name="mSocketManager"/>      
+      <multiplicity id="26" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="3" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <dependency id="27">    
+    <end type="SOURCE" refId="8"/>    
+    <end type="TARGET" refId="11"/>  
+  </dependency>  
+  <realization id="28">    
+    <end type="SOURCE" refId="2"/>    
+    <end type="TARGET" refId="16"/>  
+  </realization>  
+  <nesting id="29">    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="5"/>  
+  </nesting>  
+  <dependency id="30">    
+    <end type="SOURCE" refId="2"/>    
+    <end type="TARGET" refId="17"/>  
+  </dependency>  
+  <dependency id="31">    
+    <end type="SOURCE" refId="22"/>    
+    <end type="TARGET" refId="13"/>  
+  </dependency>  
+  <association id="32">    
+    <end type="SOURCE" refId="2" navigable="false">      
+      <attribute id="33" name="watchDir"/>      
+      <multiplicity id="34" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="9" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="35">    
+    <end type="SOURCE" refId="3" navigable="false">      
+      <attribute id="36" name="udpService"/>      
+      <multiplicity id="37" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="7" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="38">    
+    <end type="SOURCE" refId="3" navigable="false">      
+      <attribute id="39" name="tcpService"/>      
+      <multiplicity id="40" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="4" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <nesting id="41">    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="6"/>  
+  </nesting>  
+  <nesting id="42">    
+    <end type="SOURCE" refId="7"/>    
+    <end type="TARGET" refId="8"/>  
+  </nesting>  
+  <dependency id="43">    
+    <end type="SOURCE" refId="5"/>    
+    <end type="TARGET" refId="12"/>  
+  </dependency>  
+  <association id="44">    
+    <end type="SOURCE" refId="2" navigable="false">      
+      <attribute id="45" name="watchFileExpiration"/>      
+      <multiplicity id="46" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="10" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="47">    
+    <end type="SOURCE" refId="9" navigable="false">      
+      <attribute id="48" name="handler"/>      
+      <multiplicity id="49" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="16" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <dependency id="50">    
+    <end type="SOURCE" refId="22"/>    
+    <end type="TARGET" refId="14"/>  
+  </dependency>  
+  <dependency id="51">    
+    <end type="SOURCE" refId="1"/>    
+    <end type="TARGET" refId="2"/>  
+  </dependency>  
+  <dependency id="52">    
+    <end type="SOURCE" refId="7"/>    
+    <end type="TARGET" refId="11"/>  
+  </dependency>  
+  <dependency id="53">    
+    <end type="SOURCE" refId="22"/>    
+    <end type="TARGET" refId="15"/>  
+  </dependency>  
+  <classifier-display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+    sort-features="false" accessors="true" visibility="true">    
+    <attributes public="true" package="true" protected="false" private="false" static="true"/>    
+    <operations public="true" package="true" protected="false" private="false" static="true"/>  
+  </classifier-display>  
+  <association-display labels="true" multiplicity="true"/>
+</class-diagram>
