@@ -151,7 +151,7 @@ public class CyborgUdpService extends Thread {
         		}else if(CTP.RES_FILE_PROBE.equals(ctp.getDataType())){
         			logger.d(this, "Received: " + ctp.getMessage());
         		}else {
-        			
+        			logger.d(this, "Received: " + ctp.getMessage());
         		}
         		return null;
         	}
@@ -246,7 +246,6 @@ public class CyborgUdpService extends Thread {
 	        			try {
 							broadcastFileList();
 						} catch (IOException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 	        			break;
@@ -258,7 +257,7 @@ public class CyborgUdpService extends Thread {
         private void fileProbe(String fileName) {
         	broadcastPacket(CTP.buildReq_File_Probe(fileName));
 		}
-		@Deprecated
+
         public void reqPeerList(){
         	broadcastPacket(CTP.buildReq_PeerList());
         }
@@ -276,7 +275,6 @@ public class CyborgUdpService extends Thread {
 				SQLiteInstance sql = SQLiteInstance.getInstance();
 				CTP.build_FileList(userName, sql.getFileInfoes());
 			} catch (SQLiteException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
             

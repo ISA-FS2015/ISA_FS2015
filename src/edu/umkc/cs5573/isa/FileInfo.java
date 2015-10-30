@@ -9,7 +9,12 @@ import java.util.Date;
  *
  */
 public class FileInfo {
-	final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+	final static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+	public final static int CYBORG_FILE_TYPE_COPIED = 0x00000000;
+	public final static int CYBORG_FILE_WRITE_PROTECTED = 0x00000000;
+	public final static int CYBORG_FILE_TYPE_ORIGINAL = 0x00000010;
+	public final static int CYBORG_FILE_WRITE_ALLOWED = 0x00000100;
+
 //	+ "id integer primary key autoincrement, "
 //	+ "Filename text not null, "
 //	+ "LastModified text not null, "
@@ -17,6 +22,7 @@ public class FileInfo {
 //	+ "Hash text not null"
 	private int id;
 	private String fileName;
+	private String owner;
 	private Date createdOn;
 	private Date expiresOn;
 	private int type;
@@ -32,6 +38,12 @@ public class FileInfo {
 	}
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
+	}
+	public String getOwner() {
+		return owner;
+	}
+	public void setOwner(String owner) {
+		this.owner = owner;
 	}
 	public Date getCreatedOn() {
 		return createdOn;
@@ -55,13 +67,17 @@ public class FileInfo {
 	public Date getExpiresOn() {
 		return expiresOn;
 	}
+	public String getExpiresOnStr(){
+		return dateFormat.format(this.getExpiresOn());
+	}
 	public void setExpiresOn(Date expiresOn) {
 		this.expiresOn = expiresOn;
 	}
-	public FileInfo(int id, String fileName, String createdOn, String expiresOn, int type, String hash) {
+	public FileInfo(int id, String fileName, String owner, String createdOn, String expiresOn, int type, String hash) {
 		super();
 		this.id = id;
 		this.fileName = fileName;
+		this.owner = owner;
 		try {
 			this.createdOn = dateFormat.parse(createdOn);
 			this.expiresOn = dateFormat.parse(expiresOn);
@@ -73,10 +89,11 @@ public class FileInfo {
 		this.hash = hash;
 	}
 	
-	public FileInfo(String fileName, String createdOn, String expiresOn, int type, String hash) {
+	public FileInfo(String fileName, String owner, String createdOn, String expiresOn, int type, String hash) {
 		super();
 		this.id = 0;
 		this.fileName = fileName;
+		this.owner = owner;
 		try {
 			this.createdOn = dateFormat.parse(createdOn);
 			this.expiresOn = dateFormat.parse(expiresOn);

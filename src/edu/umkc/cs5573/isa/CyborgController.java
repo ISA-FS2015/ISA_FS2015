@@ -14,11 +14,19 @@ import java.util.List;
 
 import com.almworks.sqlite4java.SQLiteException;
 
+/**
+ * <p>The wrapper class of actual Cyborg Security logic process.</p>
+ * <p>It implements {@code IWatchDirHandler} so that the file change event will be handled here</p>
+ * @see IWatchDirHandler
+ * @author Younghwan
+ *
+ */
 public class CyborgController implements IWatchDirHandler{
+	
 	final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 	final static int EXPIRES_DAYS_COPIED = 1;
 	final static int EXPIRES_DAYS_OWNER = 3650; // 10 years for the owner
-
+	private static UserInfo myInfo;
 	// Singleton - Start
 	
 	private volatile static CyborgController mController;
@@ -48,7 +56,14 @@ public class CyborgController implements IWatchDirHandler{
 	private Logger logger;
 	private MessageQueue mQueue;
 
-	
+	/**
+	 * Constructor
+	 * @param userName User Name(SSO)
+	 * @param ifName Interface name(e.g. wlan0)
+	 * @param homeDirectory Directory of files saved
+	 * @throws IOException
+	 * @throws SQLiteException
+	 */
 	private CyborgController(String userName, String ifName, String homeDirectory)
 			throws IOException, SQLiteException{
 		this.logger = Logger.getInstance();
@@ -62,6 +77,9 @@ public class CyborgController implements IWatchDirHandler{
 		this.mQueue = MessageQueue.getInstance();
 	}
 	
+	/**
+	 * Initialization
+	 */
 	public void init(){
 		if(!isInit){
 //			ftpServer.start();
@@ -77,6 +95,9 @@ public class CyborgController implements IWatchDirHandler{
 		}
 	}
 	
+	/**
+	 * Closes services
+	 */
 	public void closeService(){
 		if(isInit){
 			mSocketManager.stopServices();
@@ -92,6 +113,12 @@ public class CyborgController implements IWatchDirHandler{
 		}
 	}
 	
+	/**
+	 * Enters command line interface
+	 * @param out stream from keyboard(or client socket)
+	 * @param in stream to display(or client socket)
+	 * @throws IOException
+	 */
 	public void cli(PrintStream out, InputStream in) throws IOException{
 		logger.setOutputStream(out);
 		if(!isInit || isDisposed){
@@ -107,53 +134,161 @@ public class CyborgController implements IWatchDirHandler{
 				session = false;
 			}
 			else if ("whohas".equals(cmds[0])){
-				if(cmds.length >= 2) mSocketManager.reqFileProbe(cmds[1]);
+				doRequestFileProbe(cmds);
 			}
 			else if ("requestFile".equals(cmds[0])){
-				if(cmds.length >= 3){
-					String ipAddress = cmds[1];
-					String fileName = cmds[2];
-					mSocketManager.reqFile(ipAddress, fileName);
-				}
+				doRequestFile(cmds);
+			}
+			else if ("requestCert".equals(cmds[0])){
+				doRequestCert(cmds);
+			}
+			else if ("setmyinfo".equals(cmds[0])){
+				doSetMyInfo(cmds);
+			}
+			else if ("setfile".equals(cmds[0])){
+				doSetFile(cmds);
 			}
 			else if ("maketestfile".equals(cmds[0])){
 				makeTestFile();
 			}else if("sql".equals(cmds[0])){
-				StringBuilder state = new StringBuilder();
-				for(int i = 1; i < cmds.length ; i++){
-					state.append(cmds[i]);
-					if(i != cmds.length -1){
-						state.append(" ");
-					}
-				}
-    			sql.execSql(state.toString());
+				doSql(cmds);
 			}
 		}
 		logger.d(this, "Exitting...... Byebye!");
 		logger.resetOutputStream();
 	}
 	
+	/**
+	 * Broadcast the file probe into the network. The response will be handled in {@code CyborgUdpService}
+	 * @param cmds Commands
+	 */
+	public void doRequestFileProbe(String[] cmds){
+		if(cmds.length >= 2) mSocketManager.reqFileProbe(cmds[1]);
+	}
+	
+	/**
+	 * Request files into the destination The response will be handled in {@code CybordTcpService}
+	 * @param cmds SSO, FileName
+	 */
+	private void doRequestFile(String[] cmds) {
+		if(cmds.length >= 3){
+			String sso = cmds[1];
+			String fileName = cmds[2];
+			mSocketManager.reqFile(sso, fileName);
+		}
+	}
+
+	/**
+	 * Request trust to destination
+	 * @param cmds SSO
+	 */
+	private void doRequestCert(String[] cmds) {
+		if(cmds.length >= 2){
+			if(myInfo == null){
+				logger.d(this, "My Info has not been set. Please set my info first using 'setmyinfo' command");
+			}else{
+				String sso = cmds[1];
+				mSocketManager.reqCert(sso, myInfo);
+			}
+		}
+	}
+
+	/**
+	 * Sets my file's mode. The violation report will be sent if the prohibited action performed
+	 * @param cmds FileName, Permission
+	 */
+	private void doSetFile(String[] cmds) {
+		if(cmds.length >= 3){
+			String fileName = cmds[1];
+			String permission = cmds[2];
+			if(permission.equals("readwrite")){
+				Path file = Paths.get(homeDirectory + "/" + fileName);
+				FileInfo info = sql.getFileInfo(file);
+				if(info != null){
+					if((info.getType()&FileInfo.CYBORG_FILE_TYPE_ORIGINAL) == FileInfo.CYBORG_FILE_TYPE_ORIGINAL){
+						info.setType(info.getType() | FileInfo.CYBORG_FILE_WRITE_PROTECTED);
+						sql.updateFileInfo(file, info.getExpiresOnStr(),info.getType(),info.getHash());
+					}
+					else{
+						logger.d(this, "Prohibited access. Reporting to the owner...");
+        				mSocketManager.reportViolation(userName, fileName, "ProhibitedModeChange");
+					}
+				}else{
+					logger.d(this, "No file info. please check your filename or permission.");
+				}
+			}
+		}
+	}
+
+	/**
+	 * Sets my information. It needs to be done before requesting certificates
+	 * @param cmds Type, Name, Organization, Email, PhoneNumber
+	 */
+	private void doSetMyInfo(String[] cmds) {
+		if(cmds.length >= 6){
+			int type = 0;
+			if(cmds[1].equals("Student")){
+				type = UserInfo.TYPE_STUDENT;
+			}else{
+				type = UserInfo.TYPE_EMPLOYEE;
+			}
+			String name = cmds[2];
+			String organization = cmds[3];
+			String email = cmds[4];
+			String phoneNumber = cmds[5];
+			myInfo = new UserInfo(userName, type, name, organization, email, phoneNumber, 0, phoneNumber, phoneNumber);
+		}else{
+			logger.d(this, "Usage: setmyinfo <Type: Student/Employee> <Name> <Organization> <e-mail> <PhoneNumber>");
+		}
+	}
+
+	/**
+	 * <p>Make test file represents the copied from other peer.</p>
+	 * <p>Note that it is used for testing</p>
+	 * @throws IOException
+	 */
 	public void makeTestFile() throws IOException{
 //		File testFile = new File(homeDirectory + "/test.txt");
 		Path testPath = Paths.get(homeDirectory + "/test.txt");
 		Files.write(testPath, "This is for test! It represents the copied file and should not be changed.".getBytes());
 		Date now = new Date();
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(now);
-		cal.add(Calendar.DATE, 1);
-		Date expiresOn = cal.getTime();
+		String today = StaticUtil.daysAfter(now, 0);
+		String expiresOn = StaticUtil.daysAfter(now, EXPIRES_DAYS_COPIED);
 		//new SQLiteInstance().pushFileInfo(child,
 		FileInfo info = sql.getFileInfo(testPath);
 		if(info != null) sql.deleteFileInfo(testPath);
-		sql.pushFileInfo(testPath,
-				dateFormat.format(now),
-				dateFormat.format(expiresOn),
-				Resources.CYBORG_FILE_TYPE_COPIED|Resources.CYBORG_FILE_WRITE_PROTECTED,
+		sql.pushFileInfo(testPath, "TestOwner",
+				today,
+				expiresOn,
+				FileInfo.CYBORG_FILE_TYPE_COPIED|FileInfo.CYBORG_FILE_WRITE_PROTECTED,
 				SHA256Helper.getHashStringFromFile(testPath));
 		logger.d(this, "Test Fileinfo successfully created");
 	}
 	
-	public static String[] getCommands(PrintStream out, InputStream in) throws IOException{
+	/**
+	 * <p>Executes SQL query into SQLite DB.</p>
+	 * <p>Note that it is used for debugging.</p>
+	 * @param cmds SQL statements
+	 */
+	private void doSql(String[] cmds) {
+		StringBuilder state = new StringBuilder();
+		for(int i = 1; i < cmds.length ; i++){
+			state.append(cmds[i]);
+			if(i != cmds.length -1){
+				state.append(" ");
+			}
+		}
+		sql.execSql(state.toString());
+	}
+
+	/**
+	 * Parses commands and split them into a String array
+	 * @param out OutStream from keyboard or socket
+	 * @param in InStream to display or socket
+	 * @return The string array splitted by space
+	 * @throws IOException
+	 */
+	private static String[] getCommands(PrintStream out, InputStream in) throws IOException{
 		out.print(">");
 		InputStreamReader cin = new InputStreamReader(in);
 		char[] buf = new char[1024];
@@ -162,24 +297,22 @@ public class CyborgController implements IWatchDirHandler{
 		return inputLine.trim().split(" ");
 	}
 
+	// File change events - start
+	
 	@Override
 	public void onFileCreated(Path child) {
     	//String filePath = child.toString();
 		logger.d(this, "HASH:" + SHA256Helper.getHashStringFromFile(child));
 		Date now = new Date();
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(now);
-		cal.add(Calendar.DATE, EXPIRES_DAYS_OWNER);
-		Date expiresOn = cal.getTime();
+		String today = StaticUtil.daysAfter(now, 0);
+		String expiresOn = StaticUtil.daysAfter(now, EXPIRES_DAYS_OWNER);
 		//new SQLiteInstance().pushFileInfo(child,
 		FileInfo info = sql.getFileInfo(child);
-		if(info == null || info.getType() == Resources.CYBORG_FILE_TYPE_ORIGINAL){
-			sql.pushFileInfo(child,
-					dateFormat.format(now),
-					dateFormat.format(expiresOn),
-					Resources.CYBORG_FILE_TYPE_ORIGINAL|Resources.CYBORG_FILE_WRITE_ALLOWED,
+		if(info == null || info.getType() == FileInfo.CYBORG_FILE_TYPE_ORIGINAL){
+			sql.pushFileInfo(child, userName, today, expiresOn,
+					FileInfo.CYBORG_FILE_TYPE_ORIGINAL|FileInfo.CYBORG_FILE_WRITE_ALLOWED,
 					SHA256Helper.getHashStringFromFile(child));
-			logger.d(this, "Fileinfo successfully created");
+			logger.d(this, "Fileinfo successfully created.\nPlease type 'setfile " + child.toFile().getName() + " readwrite' to make it write-allowed for other peers.");
 		}
 		
 		// TODO For Later step!!
@@ -196,27 +329,23 @@ public class CyborgController implements IWatchDirHandler{
     		if(info == null){
     			logger.d(this, "No fileinfo. Creating...");
     			Date now = new Date();
-    			Calendar cal = Calendar.getInstance();
-    			cal.setTime(now);
-    			cal.add(Calendar.DATE, EXPIRES_DAYS_OWNER);
-    			Date expiresOn = cal.getTime();
+    			String today = StaticUtil.daysAfter(now, 0);
+    			String expiresOn = StaticUtil.daysAfter(now, EXPIRES_DAYS_OWNER);
     			//new SQLiteInstance().pushFileInfo(child,
-    			sql.pushFileInfo(child,
-    					dateFormat.format(now),
-    					dateFormat.format(expiresOn),
-    					Resources.CYBORG_FILE_TYPE_ORIGINAL|Resources.CYBORG_FILE_WRITE_ALLOWED,
+    			sql.pushFileInfo(child, userName, today, expiresOn,
+    					FileInfo.CYBORG_FILE_TYPE_ORIGINAL|FileInfo.CYBORG_FILE_WRITE_ALLOWED,
     					SHA256Helper.getHashStringFromFile(child));
     		}else{
     			if(!SHA256Helper.getHashStringFromFile(child).equals(info.getHash())){
-    				int copied_and_protected = Resources.CYBORG_FILE_TYPE_COPIED | Resources.CYBORG_FILE_WRITE_PROTECTED;
+    				int copied_and_protected = FileInfo.CYBORG_FILE_TYPE_COPIED | FileInfo.CYBORG_FILE_WRITE_PROTECTED;
     				if((info.getType()&copied_and_protected) == copied_and_protected){
     					// The user violates the access rule! File should be deleted!!
     					logger.d(this, "Alert! File contents has been attemped to be changed!! Deleting");
         				//child.toFile().delete();
-        				mSocketManager.reportViolation(userName, child.toString());
+        				mSocketManager.reportViolation(userName, child.toString(), "WritingReadOnly");
     				}else{
     					// This file is original or write-allowed. Update the file info
-    					sql.updateFileInfo(child, dateFormat.format(info.getExpiresOn()), info.getType(), SHA256Helper.getHashStringFromFile(child));
+    					sql.updateFileInfo(child, info.getExpiresOnStr(), info.getType(), SHA256Helper.getHashStringFromFile(child));
     				}
     			}
     		}
@@ -250,4 +379,6 @@ public class CyborgController implements IWatchDirHandler{
 	public void onRegisterCallback(List<Path> dirs) {
 		
 	}
+	
+	// File change events - end
 }

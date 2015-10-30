@@ -49,6 +49,10 @@ public class SHA256Helper {
 		return null;
 	}
 	
+	public static String getHashStringFromBytes(byte[] data){
+		return StaticUtil.byteToBase64(hashSHA256(data));
+	}
+	
 	/**
 	 * Make a SHA256 hash from the file. If the file is larger than 2GB it throws OutOfMemoryError
 	 * @param path

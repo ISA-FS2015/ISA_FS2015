@@ -8,15 +8,23 @@ import com.almworks.sqlite4java.SQLiteException;
 public class CyborgSocketManager {	
 	private CyborgUdpService udpService;
 	private CyborgTcpService tcpService;
+	private SQLiteInstance sql;
+	private int tcpPort;
+	private int udpPort;
 
 	public CyborgSocketManager(String userName, String ifName, String homeDirectory, int tcpPort, int udpPort, boolean softBroadcast) throws IOException, SQLiteException{
 		this.udpService = new CyborgUdpService("UDPThread", udpPort, userName, ifName, homeDirectory);
 		this.tcpService = new CyborgTcpService("TCPThread", tcpPort, userName, homeDirectory);
+		this.tcpPort = tcpPort;
+		this.udpPort = udpPort;
+		this.sql = SQLiteInstance.getInstance();
 	}
 	
 	public void init(){
 		udpService.start();
 		tcpService.start();
+		udpService.reqJoinUser();
+		udpService.reqUserList();
 	}
 	
 	public void stopServices(){
@@ -52,20 +60,38 @@ public class CyborgSocketManager {
 //	}
 //	
 	
+	public Map<String, String> getUserList(){
+		return udpService.getUserList();
+	}
 	public void reqFileProbe(String fileName) {
 		udpService.reqFileProbe(fileName);
 	}
 
-	public void reqFile(String ipAddress, String fileName) {
+	public void reqFile(String sso, String fileName) {
 		// TODO Using TCPClient get file!!
 		// Make TCP Client Socket and req file!!!
+		Map<String, String> userList = udpService.getUserList();
+		String ipAddress = userList.get(sso);
+		if(ipAddress != null) tcpService.reqFile(ipAddress, tcpPort, sso, fileName);
 		
 	}
 	
-	public void reportViolation(String userName, String fileName){
+	public void reportViolation(String sso, String fileName, String violation){
 		Map<String, String> userList = udpService.getUserList();
-		String ipAddress = userList.get(userName);
-		// TODO Using TCPClient report the violation!! 
 		//Make TCP Client Socket and report!
+		String ipAddress = userList.get(sso);
+		if(ipAddress != null) tcpService.reportViolation(ipAddress, tcpPort, sso, violation);
+	}
+
+	public void reqCert(String sso, UserInfo myInfo) {
+		// Request x509 cert
+		CertInfo info = sql.getCertInfo(sso);
+		if(info == null){
+			Map<String, String> userList = udpService.getUserList();
+			String ipAddress = userList.get(sso);
+			if(ipAddress != null) tcpService.reqCert(ipAddress, tcpPort, sso, myInfo);
+		}else{
+			Logger.getInstance().d(this, "The certificate is already exist. Skipping...");
+		}
 	}
 }

@@ -19,6 +19,7 @@ public class SQLiteInstance {
 	SQLiteQueue queue = null;
 	private final static String TABLE_FILE_INFO = "FileInfo";
 	private final static String TABLE_USER_INFO = "UserInfo";
+	private final static String TABLE_CERT_INFO = "CertInfo";
 	private Logger logger;
 	
 	private SQLiteInstance(){
@@ -72,6 +73,7 @@ public class SQLiteInstance {
 				String sqlState = "create table " + TABLE_FILE_INFO + " ("
 						+ "id integer primary key autoincrement, "
 						+ "Filename text not null, "
+						+ "Owner text not null, "
 						+ "CreatedOn text not null, "
 						+ "ExpiresOn text not null, "
 						+ "Type integer not null, "
@@ -99,6 +101,22 @@ public class SQLiteInstance {
 						+ "Score integer not null, "
 						+ "PrivateKey text not null, "
 						+ "PublicKey text not null"
+						+ ")";
+				try{
+					connection.exec(sqlState);
+				}catch(SQLiteException e){
+					logger.d(this, e.getMessage());
+				}
+				return null;
+			}
+		});
+		// User Info Table Initialization
+		queue.execute(new SQLiteJob<Object>() {
+			@Override
+			protected Object job(SQLiteConnection connection) throws Throwable {
+				String sqlState = "create table " + TABLE_CERT_INFO + " ("
+						+ "SSO text primary key not null, "
+						+ "Cert text not null"
 						+ ")";
 				try{
 					connection.exec(sqlState);
@@ -146,11 +164,12 @@ public class SQLiteInstance {
 					while (st.step()) {
 						int id = st.columnInt(0);
 						String fileName = st.columnString(1);
-						String createdOn = st.columnString(2);
-						String expiresOn = st.columnString(3);
-						int type = st.columnInt(4);
-						String hash = st.columnString(5);
-						FileInfo info = new FileInfo(id, fileName, createdOn, expiresOn, type, hash);
+						String owner = st.columnString(2);
+						String createdOn = st.columnString(3);
+						String expiresOn = st.columnString(4);
+						int type = st.columnInt(5);
+						String hash = st.columnString(6);
+						FileInfo info = new FileInfo(id, fileName, owner, createdOn, expiresOn, type, hash);
 						return info;
 					}
 					st.dispose();
@@ -174,11 +193,12 @@ public class SQLiteInstance {
 					while (st.step()) {
 						int id = st.columnInt(0);
 						String fileName = st.columnString(1);
-						String createdOn = st.columnString(2);
-						String expiresOn = st.columnString(3);
-						int type = st.columnInt(4);
-						String hash = st.columnString(5);
-						list.add(new FileInfo(id, fileName, createdOn, expiresOn, type, hash));
+						String owner = st.columnString(2);
+						String createdOn = st.columnString(3);
+						String expiresOn = st.columnString(4);
+						int type = st.columnInt(5);
+						String hash = st.columnString(6);
+						list.add(new FileInfo(id, fileName, owner, createdOn, expiresOn, type, hash));
 					}
 					st.dispose();
 					return list;
@@ -236,16 +256,17 @@ public class SQLiteInstance {
 		}).complete();
 	}
 	
-	public boolean pushFileInfo(Path path, String createdOn, String expiresOn, int type, String hash){
+	public boolean pushFileInfo(Path path, String owner, String createdOn, String expiresOn, int type, String hash){
 		//Check if there are any items with the same file
 //		FileInfo info = getFileInfo(path);
 //		if(info == null){
 //			
 //		}
 		final String sqlState = "insert into " + TABLE_FILE_INFO
-				+ "(Filename, CreatedOn, ExpiresOn, Type, Hash)"
+				+ "(Filename, Owner, CreatedOn, ExpiresOn, Type, Hash)"
 				+ " values ("
 				+ "\"" + path.toString() + "\"" + ","
+				+ "\"" + owner + "\"" + ","
 				+ "\"" + createdOn + "\"" + ","
 				+ "\"" + expiresOn + "\"" + ","
 				+ Integer.toString(type) + ","
@@ -283,11 +304,12 @@ public class SQLiteInstance {
 					while (st.step()) {
 						int id = st.columnInt(0);
 						String fileName = st.columnString(1);
-						String createdOn = st.columnString(2);
-						String expiresOn = st.columnString(3);
-						int type = st.columnInt(4);
-						String hash = st.columnString(5);
-						FileInfo info = new FileInfo(id, fileName, createdOn, expiresOn, type, hash);
+						String owner = st.columnString(2);
+						String createdOn = st.columnString(3);
+						String expiresOn = st.columnString(4);
+						int type = st.columnInt(5);
+						String hash = st.columnString(6);
+						FileInfo info = new FileInfo(id, fileName, owner, createdOn, expiresOn, type, hash);
 						if(info.isExpired()){
 							list.add(info);
 						}
@@ -428,6 +450,59 @@ public class SQLiteInstance {
 		return item;
 	}
 
+	public boolean pushCertInfo(CertInfo info){
+		//Check if there are any items with the same file
+//		FileInfo info = getFileInfo(path);
+//		if(info == null){
+//			
+//		}
+		final String sqlState = "insert into " + TABLE_CERT_INFO
+				+ "(SSO, Cert)"
+				+ " values ("
+				+ "\"" + info.getSso() + "\"" + ","
+				+ "\"" + info.getCert() + "\""
+				+ ")";
+		return queue.execute(new SQLiteJob<Boolean>(){
+			@Override
+			protected Boolean job(SQLiteConnection connection) throws Throwable {
+				try {
+					connection.open();
+					SQLiteStatement st = connection.prepare(sqlState);
+					logger.d(this, "Result: " + st.columnCount());
+					while (st.step()) {
+						logger.d(this, "Insert Result: " + st.columnString(0));
+					}
+					st.dispose();
+					return true;
+				} catch (SQLiteException e) {
+					e.printStackTrace();
+				}
+				return false;
+			}
+		}).complete();
+	}
+	
+	public CertInfo getCertInfo(final String sso){
+		final String sql = "SELECT * FROM " + TABLE_CERT_INFO + "WHERE SSO=\"" + sso + "\"";
+		CertInfo item = queue.execute(new SQLiteJob<CertInfo>(){
+			@Override
+			protected CertInfo job(SQLiteConnection connection) throws Throwable {
+				try {
+					SQLiteStatement st = connection.prepare(sql);
+					while (st.step()) {
+						String cert = st.columnString(1);
+						CertInfo info = new CertInfo(sso, cert);
+						return info;
+					}
+					st.dispose();
+				} catch (SQLiteException e) {
+					e.printStackTrace();
+				}
+				return null;
+			}
+		}).complete();
+		return item;
+	}
 	
 	public void execSql(final String sql){
 		String result = queue.execute(new SQLiteJob<String>(){
