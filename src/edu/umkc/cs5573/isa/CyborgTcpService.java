@@ -524,8 +524,10 @@ public class CyborgTcpService extends Thread {
 		            new InputStreamReader(mSocket.getInputStream()));
 	    	StringBuilder payload = new StringBuilder(mReqType);
 	    	payload.append(joinStrs(mPayLoad, DELIMITER));
+	    	logger.d(this, "Sending:" + payload.toString());
 		    out.write(payload.toString());
 		    String result = in.readLine();
+	    	logger.d(this, "Received:" + result);
 		    if(result.startsWith(RESPONSE_X509_CERT)){
 		    	String[] payloads = result.split(DELIMITER);
 		    	if(payloads.length > 1){
@@ -570,8 +572,10 @@ public class CyborgTcpService extends Thread {
 		            new InputStreamReader(mSocket.getInputStream()));
 	    	StringBuilder payload = new StringBuilder(mReqType);
 	    	payload.append(joinStrs(mPayLoad, DELIMITER));
+	    	logger.d(this, "Sending:" + payload.toString());
 		    out.write(payload.toString());
 		    String result = in.readLine();
+	    	logger.d(this, "Received:" + result);
 		    if(result.startsWith(RESPONSE_FILE_SIZE)){
 		    	String[] payloads = result.split(DELIMITER);
 		    	if(payloads.length > 3){
@@ -618,8 +622,10 @@ public class CyborgTcpService extends Thread {
 		            new InputStreamReader(mSocket.getInputStream()));
 	    	StringBuilder payload = new StringBuilder(mReqType);
 	    	payload.append(joinStrs(mPayLoad, DELIMITER));
+	    	logger.d(this, "Sending:" + payload.toString());
 		    out.write(payload.toString());
 		    String result = in.readLine();
+	    	logger.d(this, "Received:" + result);
 		    if(result.startsWith(RESPONSE_REACTION)){
 		    	String[] reaction = result.split(DELIMITER);
 		    	if(reaction.length > 1){
