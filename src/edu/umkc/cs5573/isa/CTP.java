@@ -222,7 +222,7 @@ public class CTP {
         		JSONArray jArr = payload.getJSONArray(KEY_USERLIST);
         		for(int i=0; i < jArr.length() ; i++){
         			JSONObject obj = jArr.getJSONObject(i);
-        			if(obj.getString(KEY_IP).split(".").length == 4){
+        			if(obj.getString(KEY_IP).split("\\.").length == 4){
         				userList.put(obj.getString(KEY_USER), obj.getString(KEY_IP));
         			}else{
         				logger.d(this, "IP Parsing error: " + obj.getString(KEY_IP));
