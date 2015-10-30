@@ -13,15 +13,21 @@ import com.almworks.sqlite4java.SQLiteException;
 import com.almworks.sqlite4java.SQLiteJob;
 import com.almworks.sqlite4java.SQLiteQueue;
 import com.almworks.sqlite4java.SQLiteStatement;
-
+/**
+ * SQLite interfacing class which manipulates local DB
+ * @author Younghwan
+ *
+ */
 public class SQLiteInstance {
-//	private SQLiteConnection db;
 	SQLiteQueue queue = null;
 	private final static String TABLE_FILE_INFO = "FileInfo";
 	private final static String TABLE_USER_INFO = "UserInfo";
 	private final static String TABLE_CERT_INFO = "CertInfo";
 	private Logger logger;
 	
+	/**
+	 * Private constructor. It is singleton so it needs to be called internally
+	 */
 	private SQLiteInstance(){
 //		db = new SQLiteConnection(new File("res/db/database.db"));
 		this.queue = new SQLiteQueue(new File("res/db/database.db"));
@@ -29,18 +35,12 @@ public class SQLiteInstance {
 		init();
 	}
 
-	// Not anymore singleton due to thread issue
 	// Singleton - Start
-	
+	/**
+	 * Singleton
+	 */
 	private volatile static SQLiteInstance sqLiteInstance;
-//
-//	private SQLiteInstance() throws SQLiteException{
-//		db = new SQLiteConnection(new File("res/db/database.db"));
-//		dateFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
-//		db.open(true);
-//		init();
-////		db.dispose();
-//	}
+	
 	/**
 	 * Singleton
 	 * @param in 
@@ -61,8 +61,9 @@ public class SQLiteInstance {
 	
 	// Singleton - End
 	
-//	private SimpleDateFormat dateFormat = null;
-	
+	/**
+	 * Initialization. Creating tables if not exist
+	 */
 	void init(){
 		queue.start();
 		logger.d(this, "SQLite Queue running...");
@@ -131,6 +132,11 @@ public class SQLiteInstance {
 	
 	/* Following methods are for file info DB */
 	
+	/**
+	 * Retrieves filehash corresponding to the path
+	 * @param path
+	 * @return
+	 */
 	public String getFileHash(Path path){
 		final String sql = "SELECT Hash FROM " + TABLE_FILE_INFO + " WHERE Filename = \"" + path.toString() + "\"";
 		String hash = queue.execute(new SQLiteJob<String>(){
@@ -155,6 +161,11 @@ public class SQLiteInstance {
 		return hash;
 	}
 	
+	/**
+	 * Retrieves the file info from the path
+	 * @param path
+	 * @return
+	 */
 	public FileInfo getFileInfo(Path path){
 		final String sql = "SELECT * FROM " + TABLE_FILE_INFO + " WHERE Filename = \"" + path.toString() + "\"";
 		FileInfo item = queue.execute(new SQLiteJob<FileInfo>(){
@@ -184,6 +195,10 @@ public class SQLiteInstance {
 		return item;
 	}
 	
+	/**
+	 * Get the list of all files
+	 * @return
+	 */
 	public List<FileInfo> getFileInfoes(){
 		final String sql = "SELECT * FROM " + TABLE_FILE_INFO;
 		List<FileInfo> item = queue.execute(new SQLiteJob<List<FileInfo>>(){
@@ -214,6 +229,14 @@ public class SQLiteInstance {
 		return item;
 	}
 	
+	/**
+	 * Update the file info
+	 * @param path
+	 * @param expiresOn
+	 * @param type
+	 * @param hash
+	 * @param lock
+	 */
 	public void updateFileInfo(Path path, String expiresOn, int type, String hash, int lock){
 		final String sql = "UPDATE from " + TABLE_FILE_INFO + " set "
 				+ "ExpiresOn=\"" + expiresOn + "\""
@@ -237,6 +260,11 @@ public class SQLiteInstance {
 		}).complete();
 	}
 	
+	/**
+	 * Deletes the file info
+	 * @param path
+	 * @return
+	 */
 	public boolean deleteFileInfo(Path path){
 		final String sqlState = "delete from " + TABLE_FILE_INFO
 				+ " where Filename= " + "\"" + path.toString() + "\"";
@@ -260,6 +288,16 @@ public class SQLiteInstance {
 		}).complete();
 	}
 	
+	/**
+	 * Inserts the file info
+	 * @param path
+	 * @param owner
+	 * @param createdOn
+	 * @param expiresOn
+	 * @param type
+	 * @param hash
+	 * @return
+	 */
 	public boolean pushFileInfo(Path path, String owner, String createdOn, String expiresOn, int type, String hash){
 		//Check if there are any items with the same file
 //		FileInfo info = getFileInfo(path);
@@ -297,6 +335,10 @@ public class SQLiteInstance {
 		}).complete();
 	}
 	
+	/**
+	 * Retrieves the list of file infoes only expired
+	 * @return
+	 */
 	public List<FileInfo> getExpiredFileInfoes(){
 		final String sql = "SELECT * FROM " + TABLE_FILE_INFO;
 		List<FileInfo> item = queue.execute(new SQLiteJob<List<FileInfo>>(){
@@ -330,7 +372,6 @@ public class SQLiteInstance {
 		return item;
 	}
 
-	
 	public Date getLastModified(String fileName){
 		return null;
 		
@@ -338,6 +379,11 @@ public class SQLiteInstance {
 	
 	/* Following methods are for user info DB */
 	
+	/**
+	 * Inserts the user info
+	 * @param info
+	 * @return
+	 */
 	public boolean pushUserInfo(UserInfo info){
 		//Check if there are any items with the same file
 //		FileInfo info = getFileInfo(path);
@@ -377,6 +423,10 @@ public class SQLiteInstance {
 		}).complete();
 	}
 
+	/**
+	 * Updates the user info
+	 * @param info
+	 */
 	public void updateUserInfo(UserInfo info)
 	{
 		final String sql = "UPDATE from " + TABLE_USER_INFO + " set "
@@ -404,6 +454,11 @@ public class SQLiteInstance {
 		}).complete();
 	}
 	
+	/**
+	 * Deletes the user info
+	 * @param info
+	 * @return
+	 */
 	public boolean deleteUserInfo(UserInfo info){
 		final String sqlState = "delete from " + TABLE_USER_INFO
 				+ "WHERE SSO = \"" + info.getSso() + "\"";
@@ -427,6 +482,11 @@ public class SQLiteInstance {
 		}).complete();
 	}
 	
+	/**
+	 * Retrieves the User info
+	 * @param sso
+	 * @return
+	 */
 	public UserInfo getUserInfo(final String sso){
 		final String sql = "SELECT * FROM " + TABLE_USER_INFO + "WHERE SSO=\"" + sso + "\"";
 		UserInfo item = queue.execute(new SQLiteJob<UserInfo>(){
@@ -456,12 +516,13 @@ public class SQLiteInstance {
 		return item;
 	}
 
+	/**
+	 * Inserts the cert info
+	 * @param info
+	 * @return
+	 */
 	public boolean pushCertInfo(CertInfo info){
 		//Check if there are any items with the same file
-//		FileInfo info = getFileInfo(path);
-//		if(info == null){
-//			
-//		}
 		final String sqlState = "insert into " + TABLE_CERT_INFO
 				+ "(SSO, Cert)"
 				+ " values ("
@@ -488,6 +549,11 @@ public class SQLiteInstance {
 		}).complete();
 	}
 	
+	/**
+	 * retrieves the cert info
+	 * @param sso
+	 * @return
+	 */
 	public CertInfo getCertInfo(final String sso){
 		final String sql = "SELECT * FROM " + TABLE_CERT_INFO + "WHERE SSO=\"" + sso + "\"";
 		CertInfo item = queue.execute(new SQLiteJob<CertInfo>(){
@@ -510,6 +576,10 @@ public class SQLiteInstance {
 		return item;
 	}
 	
+	/**
+	 * Executes the SQL statements. Used for debugging
+	 * @param sql
+	 */
 	public void execSql(final String sql){
 		String result = queue.execute(new SQLiteJob<String>(){
 			@Override
@@ -544,23 +614,5 @@ public class SQLiteInstance {
 	
 	public void dispose() throws InterruptedException{
 		queue.stop(true).join();
-//		db.dispose();
-//		db = null;
 	}
-	
-//	void sqlTest() {
-//		try {
-//			SQLiteStatement st;
-//			st = db.prepare("SELECT order_id FROM orders WHERE quantity >= ?");
-//			//st.bind(1, minimumQuantity);
-//			while (st.step()) {
-//			//  orders.add(st.columnLong(0));
-//			}
-//			st.dispose();
-////			db.dispose();
-//		} catch (SQLiteException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//	}
 }

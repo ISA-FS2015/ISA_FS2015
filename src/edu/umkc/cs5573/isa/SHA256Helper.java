@@ -48,7 +48,11 @@ public class SHA256Helper {
 		}
 		return null;
 	}
-	
+	/**
+	 * Retrieves hash string from byte array
+	 * @param data
+	 * @return
+	 */
 	public static String getHashStringFromBytes(byte[] data){
 		return StaticUtil.byteToBase64(hashSHA256(data));
 	}

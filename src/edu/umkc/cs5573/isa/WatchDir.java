@@ -166,7 +166,7 @@ public class WatchDir extends Thread{
                         if (Files.isDirectory(child, NOFOLLOW_LINKS)) {
                             registerAll(child);
                         }else{
-                        	handleCreatEvent(child);
+                        	handleCreateEvent(child);
                         }
                     } catch (IOException x) {
                         // ignore to keep sample readbale
@@ -191,6 +191,9 @@ public class WatchDir extends Thread{
         }
     }
     
+    /**
+     * Stops the service
+     */
     public void stopService(){
     	System.out.println("Stopping Watchdir service...");
     	isRunning = false;
@@ -198,7 +201,7 @@ public class WatchDir extends Thread{
  
     // Now handle every file event so that we can control our security!! - Start
     
-    public void handleCreatEvent(Path child){
+    public void handleCreateEvent(Path child){
         if(handler != null) handler.onFileCreated(child);
     }
     
@@ -216,24 +219,4 @@ public class WatchDir extends Thread{
         System.err.println("usage: java WatchDir [-r] dir");
         System.exit(-1);
     }
-    
-    
- 
-//    public static void main(String[] args) throws IOException {
-//        // parse arguments
-//        if (args.length == 0 || args.length > 2)
-//            usage();
-//        boolean recursive = false;
-//        int dirArg = 0;
-//        if (args[0].equals("-r")) {
-//            if (args.length < 2)
-//                usage();
-//            recursive = true;
-//            dirArg++;
-//        }
-// 
-//        // register directory and process its events
-//        Path dir = Paths.get(args[dirArg]);
-//        new WatchDir(dir, recursive).processEvents();
-//    }
 }

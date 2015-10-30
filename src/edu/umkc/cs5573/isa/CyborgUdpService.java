@@ -187,7 +187,11 @@ public class CyborgUdpService extends Thread {
     // Incoming process functions - Start
 
     // Incoming process functions - End
-    
+    /**
+     * UDP Client thread class
+     * @author Younghwan
+     *
+     */
     class UdpRequestThread extends Thread{
 		final static int REQUEST_USER_LIST = 0;
     	final static int REQUEST_JOIN_USER = 1;
@@ -254,22 +258,41 @@ public class CyborgUdpService extends Thread {
         	}
         }
 
+        /**
+         * Broadcasts file probe message
+         * @param fileName
+         */
         private void fileProbe(String fileName) {
         	broadcastPacket(CTP.buildReq_File_Probe(fileName));
 		}
 
+        /**
+         * Broadcast the peer list
+         */
         public void reqPeerList(){
         	broadcastPacket(CTP.buildReq_PeerList());
         }
         
+        /**
+         * Broadcast to join the list of users
+         * @param userName
+         */
         public void joinUser(String userName){
         	broadcastPacket(CTP.buildReq_JoinUser(userName, localIpAddress));
         }
         
+        /**
+         * Probe if the user is exist
+         * @param userName
+         */
         public void probe(String userName){
         	broadcastPacket(CTP.buildReq_Probe(userName, localIpAddress));
         }
         
+        /**
+         * Broadcast File list
+         * @throws IOException
+         */
         public void broadcastFileList() throws IOException{
             try {
 				SQLiteInstance sql = SQLiteInstance.getInstance();
@@ -280,10 +303,19 @@ public class CyborgUdpService extends Thread {
             
         }
 
-        
+        /**
+         * Sends packet to the specific IP address
+         * @param packet
+         * @param ipAddress
+         */
         public void sendPacketTo(String packet, String ipAddress){
         	sendPacket(packet, ipAddress);
         }
+        
+        /**
+         * Broadcasts packet into the network
+         * @param packet
+         */
         public void broadcastPacket(String packet){
         	if(softBroadcast){
         		String[] ipSets = localIpAddress.split("\\.");

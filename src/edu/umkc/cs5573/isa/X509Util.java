@@ -33,11 +33,22 @@ import sun.security.x509.X500Name;
 import sun.security.x509.X509CertImpl;
 import sun.security.x509.X509CertInfo;
 
+/**
+ * Class which manipulates X509 certificates easily
+ * @author Younghwan
+ *
+ */
 @SuppressWarnings("restriction")
 public class X509Util{
 	CertificateFactory certificatefactory = CertificateFactory.getInstance("X.509");
 	X509Certificate x509cert;
 	//CertificateFactory certificatefactory;
+	/**
+	 * Constructor. Builds X509 certificates from base64-encoded bytes
+	 * @param base64Bytes
+	 * @throws CertificateException
+	 * @throws IOException
+	 */
 	public X509Util(String base64Bytes) throws CertificateException, IOException {
 		// Each file specified on the command line must contain a single
 		// DER-encoded X.509 certificate.  The DER-encoded certificate
@@ -49,6 +60,12 @@ public class X509Util{
 		  (X509Certificate)certificatefactory.generateCertificate(is);
 		is.close();
 	}
+	/**
+	 * Constructor. Builds X509 from .cer file
+	 * @param file
+	 * @throws CertificateException
+	 * @throws IOException
+	 */
 	public X509Util(File file) throws CertificateException, IOException {
 		FileInputStream fileinputstream = new FileInputStream(file);
 		// Generate a certificate from the data in the file.
@@ -56,14 +73,30 @@ public class X509Util{
 		  (X509Certificate)certificatefactory.generateCertificate(fileinputstream);
 		fileinputstream.close();
 	}
+	/**
+	 * Constructor. Builds X509 from byte information
+	 * @param byteInformation
+	 * @throws CertificateException
+	 */
 	public X509Util(byte[] byteInformation) throws CertificateException {
 		InputStream stream = new ByteArrayInputStream(byteInformation);
 		this.x509cert =
 		  (X509Certificate)certificatefactory.generateCertificate(stream);
 	}
+	/**
+	 * Retrieves the X509 certificate
+	 * @return
+	 */
 	public X509Certificate getCertificate() {
 		return this.x509cert;
 	}
+	/**
+	 * Checks if the certification is valid
+	 * @param pbk
+	 * @param issuer
+	 * @param user
+	 * @return true if the cert is valid, issuer is valid, user is valid, public key is valud, false otherwise
+	 */
 	public boolean isCertValid(PublicKey pbk, String issuer, String user){
 		try {
 			x509cert.checkValidity();
@@ -79,6 +112,10 @@ public class X509Util{
 		}
 		return false;
 	}
+	/**
+	 * Retrieves the brief key info
+	 * @return
+	 */
 	public String getBriefKeyInfo() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("---Certificate---")
@@ -145,6 +182,13 @@ public class X509Util{
 	  cert.sign(privkey, algorithm);
 	  return cert;
 	}
+	
+	/**
+	 * Saves into .cer file.
+	 * @param filePath
+	 * @throws CertificateEncodingException
+	 * @throws IOException
+	 */
 	public void saveToCerFile(String filePath) throws CertificateEncodingException, IOException{
 		FileOutputStream fos = new FileOutputStream(filePath);
 		fos.write( x509cert.getEncoded() );
@@ -152,6 +196,14 @@ public class X509Util{
 		fos.close();		
 	}
 	
+	/**
+	 * Make the Distinguished Name from the given arguments
+	 * @param commonName CN
+	 * @param organization O
+	 * @param location L
+	 * @param country C
+	 * @return
+	 */
 	public static String makeDN(String commonName, String organization, String location, String country){
 		return String.format("CN=%s, O=%s, L=%s, C=%s", commonName, organization, location, country);
 	}

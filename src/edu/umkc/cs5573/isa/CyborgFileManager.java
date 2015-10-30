@@ -9,6 +9,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Used for changing the file permission
+ * @author Younghwan
+ *
+ */
 public class CyborgFileManager {
 	final static int READ		= 0x00000100;
 	final static int WRITE		= 0x00000010;

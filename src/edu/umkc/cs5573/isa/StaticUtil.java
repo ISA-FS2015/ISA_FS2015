@@ -30,6 +30,12 @@ public class StaticUtil {
 	public static byte[] base64ToBytes(String data){
 		return Base64.getDecoder().decode(data);
 	}
+	/**
+	 * Converts file contents into base64 format
+	 * @param fileName
+	 * @return
+	 * @throws IOException
+	 */
 	public static String encodeFileToBase64Binary(String fileName)
 			throws IOException {
 
@@ -38,11 +44,27 @@ public class StaticUtil {
 		return byteToBase64(bytes);
 	}
 	
+	/**
+	 * Converts base64 encoded bytes into the file
+	 * @param path
+	 * @param fileName
+	 * @param contents
+	 * @return
+	 * @throws IOException
+	 */
 	public static File decodeBase64BinaryToFile(String path, String fileName, String contents)
 			throws IOException {
 		File file = saveToFile(path + "/" + fileName, base64ToBytes(contents));
 		return file;
 	}
+	
+	/**
+	 * Saves the byte contents into a file
+	 * @param filePath
+	 * @param contents
+	 * @return
+	 * @throws IOException
+	 */
 	public static File saveToFile(String filePath, byte[] contents) throws IOException{
 		File newFile = new File(filePath);
 		OutputStream os = new FileOutputStream(newFile);
@@ -50,6 +72,12 @@ public class StaticUtil {
 		os.close();
 		return newFile;
 	}
+	/**
+	 * Gets byte array from the file content
+	 * @param file
+	 * @return
+	 * @throws IOException
+	 */
 	private static byte[] loadFile(File file) throws IOException {
 	    InputStream is = new FileInputStream(file);
 
@@ -74,6 +102,12 @@ public class StaticUtil {
 	    is.close();
 	    return bytes;
 	}
+	/**
+	 * Gets the date after the specific days
+	 * @param date
+	 * @param after
+	 * @return
+	 */
 	public static String daysAfter(Date date, int after){
 		final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 		Calendar cal = Calendar.getInstance();
