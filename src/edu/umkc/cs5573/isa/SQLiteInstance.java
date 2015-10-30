@@ -239,10 +239,10 @@ public class SQLiteInstance {
 	 */
 	public void updateFileInfo(Path path, String expiresOn, int type, String hash, int lock){
 		final String sql = "UPDATE from " + TABLE_FILE_INFO + " set "
-				+ "ExpiresOn=\"" + expiresOn + "\""
-				+ "Type=" + Integer.toString(type)
-				+ "Hash=\"" + hash + "\""
-				+ "Lock=\"" + lock + "\""
+				+ "ExpiresOn=\"" + expiresOn + "\"" + ","
+				+ "Type=" + Integer.toString(type) + ","
+				+ "Hash=\"" + hash + "\"" + ","
+				+ "Lock=\"" + lock + "\"" + ","
 				+ "WHERE Filename = \"" + path.toString() + "\"";
 		queue.execute(new SQLiteJob<Void>(){
 			@Override
@@ -431,13 +431,13 @@ public class SQLiteInstance {
 	public void updateUserInfo(UserInfo info)
 	{
 		final String sql = "UPDATE from " + TABLE_USER_INFO + " set "
-				+ "Name=\"" + info.getName() + "\""
-				+ "Organization=\"" + info.getOrganization() + "\""
-				+ "Email=\"" + info.getEmail() + "\""
-				+ "PhoneNumber=\"" + info.getPhoneNumber() + "\""
-				+ "Score=\"" + Integer.toString(info.getScore())
-				+ "PrivateKey=\"" + info.getPrivateKey() + "\""
-				+ "PublicKey=\"" + info.getPublicKey() + "\""
+				+ "Name=\"" + info.getName() + "\"" + ","
+				+ "Organization=\"" + info.getOrganization() + "\"" + ","
+				+ "Email=\"" + info.getEmail() + "\"" + ","
+				+ "PhoneNumber=\"" + info.getPhoneNumber() + "\"" + ","
+				+ "Score=\"" + Integer.toString(info.getScore()) + ","
+				+ "PrivateKey=\"" + info.getPrivateKey() + "\"" + ","
+				+ "PublicKey=\"" + info.getPublicKey() + "\"" + ","
 				+ "WHERE SSO = \"" + info.getSso() + "\"";
 		queue.execute(new SQLiteJob<Void>(){
 			@Override

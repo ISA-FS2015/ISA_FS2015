@@ -131,6 +131,7 @@ public class CTP {
     		}
     		catch (JSONException e){
     			e.printStackTrace();
+    			logger.d(this, payload.toString());
     		}
     	}
     	return buildErr_Unrecognized();
