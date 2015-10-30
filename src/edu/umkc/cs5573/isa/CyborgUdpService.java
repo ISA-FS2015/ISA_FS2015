@@ -332,7 +332,8 @@ public class CyborgUdpService extends Thread {
             	sendPacket(packet, broadcastIpAddress);
         	}
         }
-        private void sendPacket(String packet, String ipAddress){
+        
+        private synchronized void sendPacket(String packet, String ipAddress){
             try {
             	buf = packet.getBytes(CHARSET_UTF8);
             	InetAddress address = InetAddress.getByName(ipAddress);
