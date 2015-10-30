@@ -1,8 +1,6 @@
 package edu.umkc.cs5573.isa;
 
 import java.io.File;
-import java.io.InputStream;
-import java.io.PrintStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
@@ -462,7 +460,7 @@ public class SQLiteInstance {
 	 */
 	public boolean deleteUserInfo(UserInfo info){
 		final String sqlState = "delete from " + TABLE_USER_INFO
-				+ "WHERE SSO = \"" + info.getSso() + "\"";
+				+ " WHERE SSO = \"" + info.getSso() + "\"";
 		return queue.execute(new SQLiteJob<Boolean>(){
 			@Override
 			protected Boolean job(SQLiteConnection connection) throws Throwable {
@@ -489,7 +487,7 @@ public class SQLiteInstance {
 	 * @return
 	 */
 	public UserInfo getUserInfo(final String sso){
-		final String sql = "SELECT * FROM " + TABLE_USER_INFO + "WHERE SSO=\"" + sso + "\"";
+		final String sql = "SELECT * FROM " + TABLE_USER_INFO + " WHERE SSO=\"" + sso + "\"";
 		UserInfo item = queue.execute(new SQLiteJob<UserInfo>(){
 			@Override
 			protected UserInfo job(SQLiteConnection connection) throws Throwable {
@@ -556,7 +554,7 @@ public class SQLiteInstance {
 	 * @return
 	 */
 	public CertInfo getCertInfo(final String sso){
-		final String sql = "SELECT * FROM " + TABLE_CERT_INFO + "WHERE SSO=\"" + sso + "\"";
+		final String sql = "SELECT * FROM " + TABLE_CERT_INFO + " WHERE SSO=\"" + sso + "\"";
 		CertInfo item = queue.execute(new SQLiteJob<CertInfo>(){
 			@Override
 			protected CertInfo job(SQLiteConnection connection) throws Throwable {
