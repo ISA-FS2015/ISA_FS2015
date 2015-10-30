@@ -305,14 +305,15 @@ public class SQLiteInstance {
 //			
 //		}
 		final String sqlState = "insert into " + TABLE_FILE_INFO
-				+ "(Filename, Owner, CreatedOn, ExpiresOn, Type, Hash)"
+				+ "(Filename, Owner, CreatedOn, ExpiresOn, Type, Hash, Lock)"
 				+ " values ("
 				+ "\"" + path.toString() + "\"" + ","
 				+ "\"" + owner + "\"" + ","
 				+ "\"" + createdOn + "\"" + ","
 				+ "\"" + expiresOn + "\"" + ","
 				+ Integer.toString(type) + ","
-				+ "\"" + hash + "\""
+				+ "\"" + hash + "\"" + ","
+				+ FileInfo.UNLOCK
 				+ ")";
 		return queue.execute(new SQLiteJob<Boolean>(){
 			@Override

@@ -1,0 +1,196 @@
+Unable to insert to server.
+[Errno 113] No route to host
+2015-10-30 00:17:37.448479Temp=23.3*C  Humidity=55.1%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":4833051275633929144,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446184020291837%4f70a5b4f9fd7ecd"}]}
+2015-10-30 00:49:00.978110Temp=23.3*C  Humidity=55.7%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":8357231871576681231,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446184144154099%4f70a5b4f9fd7ecd"}]}
+2015-10-30 00:51:04.825875Temp=23.3*C  Humidity=55.5%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":5842487477075676417,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446184268041526%4f70a5b4f9fd7ecd"}]}
+2015-10-30 00:53:08.628432Temp=23.3*C  Humidity=55.5%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":9112785018659196330,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446184391853754%4f70a5b4f9fd7ecd"}]}
+2015-10-30 00:55:12.519749Temp=23.3*C  Humidity=55.5%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":6745269403241369947,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446184515685176%4f70a5b4f9fd7ecd"}]}
+2015-10-30 00:57:16.328443Temp=23.3*C  Humidity=55.3%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":8845892537572375093,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446184639489567%4f70a5b4f9fd7ecd"}]}
+2015-10-30 00:59:20.159187Temp=23.3*C  Humidity=55.2%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":7209832317541472115,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446184768333296%4f70a5b4f9fd7ecd"}]}
+2015-10-30 01:01:28.928461Temp=23.2*C  Humidity=55.3%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":8428058829574310410,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446184892093106%4f70a5b4f9fd7ecd"}]}
+2015-10-30 01:03:37.720656Temp=23.2*C  Humidity=55.4%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":6810488458676893538,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446185020925030%4f70a5b4f9fd7ecd"}]}
+2015-10-30 01:05:41.568340Temp=23.2*C  Humidity=55.4%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":7454145098301377426,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446185144768381%4f70a5b4f9fd7ecd"}]}
+2015-10-30 01:07:45.428707Temp=23.3*C  Humidity=55.5%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":8143591021338253218,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446185268600596%4f70a5b4f9fd7ecd"}]}
+2015-10-30 01:09:49.184212Temp=23.2*C  Humidity=55.5%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":6291386896909291027,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446185392376044%4f70a5b4f9fd7ecd"}]}
+2015-10-30 01:11:53.018463Temp=23.2*C  Humidity=55.4%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":4955582843712405691,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446185516237546%4f70a5b4f9fd7ecd"}]}
+2015-10-30 01:13:56.887399Temp=23.2*C  Humidity=55.3%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":8678011826899351630,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446185640075762%4f70a5b4f9fd7ecd"}]}
+2015-10-30 01:16:00.728401Temp=23.2*C  Humidity=55.3%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":6700215587423141806,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446185763968899%4f70a5b4f9fd7ecd"}]}
+2015-10-30 01:18:04.628351Temp=23.2*C  Humidity=55.3%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":4906719783300353098,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446185887809771%4f70a5b4f9fd7ecd"}]}
+2015-10-30 01:20:08.465654Temp=23.2*C  Humidity=55.3%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":5180101198863423159,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446186011776528%4f70a5b4f9fd7ecd"}]}
+2015-10-30 01:22:12.437729Temp=23.1*C  Humidity=55.4%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":6170030291142015687,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446186135624481%4f70a5b4f9fd7ecd"}]}
+2015-10-30 01:24:18.815731Temp=23.1*C  Humidity=55.4%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":5227508970457992111,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446186261996692%4f70a5b4f9fd7ecd"}]}
+2015-10-30 01:26:22.663506Temp=23.1*C  Humidity=55.4%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":8978627445026752420,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446186385851109%4f70a5b4f9fd7ecd"}]}
+2015-10-30 01:28:26.508181Temp=23.1*C  Humidity=55.4%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":8687929904984745164,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446186509779062%4f70a5b4f9fd7ecd"}]}
+2015-10-30 01:30:30.449306Temp=23.1*C  Humidity=55.3%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":9006527032560261190,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446186633634975%4f70a5b4f9fd7ecd"}]}
+2015-10-30 01:32:36.749273Temp=23.0*C  Humidity=55.3%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":6352862375181549025,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446186759938314%4f70a5b4f9fd7ecd"}]}
+2015-10-30 01:34:40.593910Temp=23.1*C  Humidity=55.4%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":5545676984719577737,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446186883775192%4f70a5b4f9fd7ecd"}]}
+2015-10-30 01:36:44.447421Temp=23.0*C  Humidity=55.4%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":9073937271570029397,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446187007703259%4f70a5b4f9fd7ecd"}]}
+2015-10-30 01:38:48.363438Temp=23.0*C  Humidity=55.3%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":8004025998212856468,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446187131567275%4f70a5b4f9fd7ecd"}]}
+2015-10-30 01:40:52.184111Temp=23.0*C  Humidity=55.4%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":9152393351411429280,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446187256014948%4f70a5b4f9fd7ecd"}]}
+2015-10-30 01:42:56.628373Temp=23.0*C  Humidity=55.4%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":7095631697652420352,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446187379846980%4f70a5b4f9fd7ecd"}]}
+2015-10-30 01:45:00.496657Temp=23.0*C  Humidity=55.3%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":8258935055001571132,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446187503726871%4f70a5b4f9fd7ecd"}]}
+2015-10-30 01:47:04.384889Temp=23.0*C  Humidity=55.4%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":4648636674279993846,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446187627587847%4f70a5b4f9fd7ecd"}]}
+Unable to insert to server.
+[Errno 113] No route to host
+2015-10-30 01:49:11.618591Temp=23.0*C  Humidity=55.5%
+
+Unable to insert to server.
+[Errno 113] No route to host
+200 OK
+{"multicast_id":6891196952854986745,"success":1,"failure":0,"canonical_ids":1,"results":[{"registration_id":"APA91bHVxucl0cPMTH56t6Thz2laeNrvHPu9WoQKP3V19xjRROzPQnQA2MsRCzhjziWO_Czsisy9XAEVVP14ovTlQXUy5zchoug3t6_5vhF2zyH9cLVPOGELKs1oQ5v5DicfMnB-3gjN3mz1nmQ_DpPiM6proQoVnA","message_id":"0:1446187754394237%4f70a5b4f9fd7ecd"}]}
+2015-10-30 01:51:15.028461Temp=22.9*C  Humidity=55.4%
+The room too cold. Turn heater on!
+Traceback (most recent call last):
+  File "/home/pi/HomeAuto.py", line 259, in <module>
+    noti_server(temperature, humidity, message, is_temp + "," + is_humi)
+TypeError: cannot concatenate 'str' and 'NoneType' objects
