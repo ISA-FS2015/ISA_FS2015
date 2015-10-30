@@ -171,8 +171,9 @@ public class CTP {
     
     public static String buildRes_PeerList(Map<String, String> userList){
     	JSONArray jArr = new JSONArray();
-		JSONObject obj = new JSONObject();
+		JSONObject obj = null;
 		for(Map.Entry<String, String> entry : userList.entrySet()){
+			obj = new JSONObject();
 			obj.put(KEY_USER, entry.getKey());
 			obj.put(KEY_IP, entry.getValue());
 			jArr.put(obj);
