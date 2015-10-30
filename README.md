@@ -32,6 +32,11 @@ sudo ./start.sh yjvxf wlan0 myfolder B
 ```sh
 java -jar isaclient.jar 127.0.0.1 55732
 ```
+<p> Project directory description</p>
+1. src - source code
+2. jbin - executable jar files including isaclient.jar
+3. res - resource files including db files
+4. 
 
 <p> Source Code description </p>
 1. 
