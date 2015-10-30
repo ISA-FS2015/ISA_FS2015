@@ -242,8 +242,8 @@ public class SQLiteInstance {
 				+ "ExpiresOn=\"" + expiresOn + "\"" + ","
 				+ "Type=" + type + ","
 				+ "Hash=\"" + hash + "\"" + ","
-				+ "Lock=" + lock + ","
-				+ "WHERE Filename = \"" + path.toString() + "\"";
+				+ "Lock=" + lock
+				+ " WHERE Filename = \"" + path.toString() + "\"";
 		queue.execute(new SQLiteJob<Void>(){
 			@Override
 			protected Void job(SQLiteConnection connection) throws Throwable {
@@ -437,8 +437,8 @@ public class SQLiteInstance {
 				+ "PhoneNumber=\"" + info.getPhoneNumber() + "\"" + ","
 				+ "Score=\"" + Integer.toString(info.getScore()) + ","
 				+ "PrivateKey=\"" + info.getPrivateKey() + "\"" + ","
-				+ "PublicKey=\"" + info.getPublicKey() + "\"" + ","
-				+ "WHERE SSO = \"" + info.getSso() + "\"";
+				+ "PublicKey=\"" + info.getPublicKey() + "\""
+				+ " WHERE SSO = \"" + info.getSso() + "\"";
 		queue.execute(new SQLiteJob<Void>(){
 			@Override
 			protected Void job(SQLiteConnection connection) throws Throwable {
