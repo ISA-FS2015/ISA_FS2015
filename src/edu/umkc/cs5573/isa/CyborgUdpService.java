@@ -148,6 +148,7 @@ public class CyborgUdpService extends Thread {
         		if(CTP.RES_OK.equals(ctp.getDataType())){
         			logger.d(this, "Received: " + ctp.getMessage());
         		}else if(CTP.RES_USERLIST.equals(ctp.getDataType())){
+        			logger.d(this, "Received: " + ctp.getMessage());
         			ctp.putPeerList(userList);
         		}else if(CTP.RES_FILE_PROBE.equals(ctp.getDataType())){
         			logger.d(this, "Received: " + ctp.getMessage());
