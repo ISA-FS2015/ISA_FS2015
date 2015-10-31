@@ -28,8 +28,7 @@ public class CyborgUdpService extends Thread {
     protected BufferedReader in = null;
     private Logger logger;
     private boolean isRunning = false;
-    private String userName;
-    private String homeDirectory;
+    private CyborgController controller;
     private String localIpAddress;
     private String broadcastIpAddress;
     private int portNum;
@@ -40,12 +39,14 @@ public class CyborgUdpService extends Thread {
     /**
      * Creates UDP communication thread.
      * @param threadName The name of thread
+     * @param controller 
      * @param userName User name to be userd
      * @param ifName Name of the interface such as eth0 or wlan0. wlan0 is mainly used.
      * @throws IOException
      */
-    public CyborgUdpService(String threadName, int portNum, String userName, String ifName, String homeDirectory) throws IOException {
-        super(threadName + "_" + userName);
+    public CyborgUdpService(String threadName, CyborgController controller, int portNum, String ifName) throws IOException {
+        super(threadName + "_" + controller);
+        this.controller = controller;
         this.logger = Logger.getInstance();
         for(Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces(); e.hasMoreElements();){
         	NetworkInterface iface = e.nextElement();
@@ -75,10 +76,8 @@ public class CyborgUdpService extends Thread {
 //    		throw new IOException("IP Error. Something wrong!!");
 //    	}
         this.isRunning = true;
-        this.homeDirectory = homeDirectory;
-        this.userName = userName;
         this.userList = new HashMap<String, String>();
-        this.userList.put(userName, localIpAddress);
+        this.userList.put(controller.getUserName(), localIpAddress);
     }
     // Getter
 	public boolean isRunning() {
@@ -139,7 +138,7 @@ public class CyborgUdpService extends Thread {
         		}else if(CTP.REQ_PROBE.equals(ctp.getDataType())){
         			return ctp.buildRes_Probe(userList);
         		}else if(CTP.REQ_FILE_PROBE.equals(ctp.getDataType())){
-        			return ctp.buildRes_File_Probe(homeDirectory, userName, localIpAddress);
+        			return ctp.buildRes_File_Probe(controller.getHomeDirectory(), controller.getUserName(), localIpAddress);
         		}else{
         			return CTP.buildErr_Unrecognized();
         		}
@@ -234,12 +233,12 @@ public class CyborgUdpService extends Thread {
 		        	}
 	        		case REQUEST_JOIN_USER:
 	        		{
-	        			joinUser(userName);
+	        			joinUser(controller.getUserName());
 	        			break;
 	        		}
 	        		case REQUEST_PROBE:
 	        		{
-	        			probe(userName);
+	        			probe(controller.getUserName());
 	        			break;
 	        		}
 	        		case REQUEST_FILE_PROBE:
@@ -298,7 +297,7 @@ public class CyborgUdpService extends Thread {
         public void broadcastFileList() throws IOException{
             try {
 				SQLiteInstance sql = SQLiteInstance.getInstance();
-				CTP.build_FileList(userName, sql.getFileInfoes());
+				CTP.build_FileList(controller.getUserName(), sql.getFileInfoes());
 			} catch (SQLiteException e) {
 				e.printStackTrace();
 			}

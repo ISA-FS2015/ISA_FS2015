@@ -50,18 +50,20 @@ public class CyborgTcpService extends Thread {
 	private static final String REACTION_RESTORE = "Restore";
 	private static final String REACTION_ALLOW = "Allow";
 	private boolean isRunning = false;
+	private CyborgController controller;
 	private ServerSocket mServerSocket;
 	private String mUserName;
 	private String mHomeDirectory;
 	private SQLiteInstance sql;
 	private Logger logger;
 	private MessageQueue mQueue;
-	public CyborgTcpService(String threadName, int portNum, String userName, String homeDirectory)
+	public CyborgTcpService(String threadName, CyborgController controller, int portNum)
 			throws IOException, SQLiteException{
 		super(threadName);
+        this.controller = controller;
 		this.mServerSocket = new ServerSocket(portNum);
-		this.mUserName = userName;
-		this.mHomeDirectory = homeDirectory;
+		this.mUserName = controller.getUserName();
+		this.mHomeDirectory = controller.getHomeDirectory();
 		this.isRunning = true;
 		this.sql = SQLiteInstance.getInstance();
 		this.logger = Logger.getInstance();
@@ -157,21 +159,25 @@ public class CyborgTcpService extends Thread {
 					+ "\nSSO: " + sso
 					+ "\nName: " + name
 					+ "\nAccess attempted: " + access
-					+ "\nPlease type 'delete " + fileName + " from " + sso + "' to delete remotely,"
-					+ "\nor 'restore " + fileName + " from " + sso + "' to restore remotely,"
-					+ "\nor 'allow " + fileName + " from " + sso + "' to do nothing.";
+					+ "\nPlease type 'react delete " + fileName + " from " + sso + "' to delete remotely,"
+					+ "\nor 'react restore " + fileName + " from " + sso + "' to restore remotely,"
+					+ "\nor 'react allow " + fileName + " from " + sso + "' to do nothing.";
 			logger.d(this, msg);
 			msg = null;
 			String response = "";
 			while(msg == null){
 				try {
 					msg = mQueue.getFirstMessage();
-					if(msg.startsWith("delete ")){
+					if(msg == null) continue;
+					if(msg.startsWith("react delete ")){
+						synchronized(mQueue){
+							mQueue.deque();
+						}
 						String[] cmds = msg.split(" ");
-						if(cmds.length > 3){
-							if(cmds[1].equals(fileName) &&
-								cmds[2].equals("from") &&
-								cmds[3].equals(sso)){
+						if(cmds.length > 4){
+							if(cmds[2].equals(fileName) &&
+								cmds[3].equals("from") &&
+								cmds[4].equals(sso)){
 				    			// Decrements the user's trust
 				    			UserInfo info = sql.getUserInfo(sso);
 				    			info.setScore(info.getScore() - SCORE_INCREMENT);
@@ -180,12 +186,15 @@ public class CyborgTcpService extends Thread {
 								response = RESPONSE_REACTION + DELIMITER + REACTION_DELETE + DELIMITER + fileName;
 							}
 						}
-					}else if(msg.startsWith("restore ")){
+					}else if(msg.startsWith("react restore ")){
+						synchronized(mQueue){
+							mQueue.deque();
+						}
 						String[] cmds = msg.split(" ");
-						if(cmds.length > 3){
-							if(cmds[1].equals(fileName) &&
-								cmds[2].equals("from") &&
-								cmds[3].equals(sso)){
+						if(cmds.length > 4){
+							if(cmds[2].equals(fileName) &&
+								cmds[3].equals("from") &&
+								cmds[4].equals(sso)){
 				    			// Decrements the user's trust
 				    			UserInfo info = sql.getUserInfo(sso);
 				    			info.setScore(info.getScore() - SCORE_INCREMENT/2);
@@ -206,12 +215,15 @@ public class CyborgTcpService extends Thread {
 								}
 							}
 						}
-					}else if(msg.startsWith("allow ")){
+					}else if(msg.startsWith("react allow ")){
+						synchronized(mQueue){
+							mQueue.deque();
+						}
 						String[] cmds = msg.split(" ");
-						if(cmds.length > 3){
-							if(cmds[1].equals(fileName) &&
-								cmds[2].equals("from") &&
-								cmds[3].equals(sso)){
+						if(cmds.length > 4){
+							if(cmds[2].equals(fileName) &&
+								cmds[3].equals("from") &&
+								cmds[4].equals(sso)){
 								// Do nothing
 								response = RESPONSE_REACTION + DELIMITER + REACTION_ALLOW;
 							}
@@ -344,28 +356,33 @@ public class CyborgTcpService extends Thread {
 						+ "\nOrganization: " + organization
 						+ "\ne-mail: " + email
 						+ "\nphone number: " + phoneNumber
-						+ "\nPlease type 'allow " + sso + "' to allow,"
-						+ "\notherwise 'revoke " + sso + "' to revoke.";
+						+ "\nPlease type 'cert allow " + sso + "' to allow,"
+						+ "\notherwise 'cert revoke " + sso + "' to revoke.";
 				logger.d(this, msg);
 				msg = null;
 				while(msg == null){
 					try {
 						msg = mQueue.getFirstMessage();
-						if(msg.startsWith("allow ")){
+						if(msg == null) continue;
+						if(msg.startsWith("cert allow ")){
+							synchronized(mQueue){
+								mQueue.deque();
+							}
 							String[] cmds = msg.split(" ");
 							if(cmds.length > 1){
-								String requestor = cmds[1];
+								String requestor = cmds[2];
 								if(sso.equals(requestor)){
-									mQueue.deque();
 									return true;
 								}
 							}
-						}else if(msg.startsWith("revoke ")){
+						}else if(msg.startsWith("cert revoke ")){
+							synchronized(mQueue){
+								mQueue.deque();
+							}
 							String[] cmds = msg.split(" ");
 							if(cmds.length > 1){
 								String requestor = cmds[1];
 								if(sso.equals(requestor)){
-									mQueue.deque();
 									return false;
 								}
 							}

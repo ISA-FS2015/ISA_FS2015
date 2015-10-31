@@ -13,6 +13,7 @@ import com.almworks.sqlite4java.SQLiteException;
 public class CyborgSocketManager {
 	private CyborgUdpService udpService;
 	private CyborgTcpService tcpService;
+	private CyborgController controller;
 	private SQLiteInstance sql;
 	private int tcpPort;
 //	private int udpPort;
@@ -28,9 +29,10 @@ public class CyborgSocketManager {
 	 * @throws IOException
 	 * @throws SQLiteException
 	 */
-	public CyborgSocketManager(String userName, String ifName, String homeDirectory, int tcpPort, int udpPort, boolean softBroadcast) throws IOException, SQLiteException{
-		this.udpService = new CyborgUdpService("UDPThread", udpPort, userName, ifName, homeDirectory);
-		this.tcpService = new CyborgTcpService("TCPThread", tcpPort, userName, homeDirectory);
+	public CyborgSocketManager(CyborgController controller, String userName, String ifName, String homeDirectory, int tcpPort, int udpPort, boolean softBroadcast) throws IOException, SQLiteException{
+		this.udpService = new CyborgUdpService("UDPThread", controller, udpPort, ifName);
+		this.tcpService = new CyborgTcpService("TCPThread", controller, tcpPort);
+		this.controller = controller;
 		this.tcpPort = tcpPort;
 //		this.udpPort = udpPort;
 		this.sql = SQLiteInstance.getInstance();

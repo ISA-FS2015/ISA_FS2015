@@ -27,7 +27,7 @@ public class MessageQueue {
 	private MessageQueue(){
 		this.mQueue = new LinkedList<String>();
 	}
-	public synchronized String getFirstMessage() throws InterruptedException{
+	public String getFirstMessage() throws InterruptedException{
 		if(mQueue.isEmpty()){
 			return null;
 		}
