@@ -152,13 +152,11 @@ public class CyborgTcpService extends Thread {
 		 */
 		private String doReaction(String[] reqs)
 		{
-			String sso = reqs[0];
-			String name = reqs[1];
-			String fileName = reqs[2];
+			String fileName = reqs[1];
+			String sso = reqs[2];
 			String access = reqs[3];
 			String msg = "The prohibited access detected from the following user:"
 					+ "\nSSO: " + sso
-					+ "\nName: " + name
 					+ "\nAccess attempted: " + access
 					+ "\nPlease type 'react delete " + fileName + " from " + sso + "' to delete remotely,"
 					+ "\nor 'react restore " + fileName + " from " + sso + "' to restore remotely,"
@@ -443,11 +441,11 @@ public class CyborgTcpService extends Thread {
 		}
 	}
 	
-	public void reportViolation(String ipAddress, int portNum, String sso, String fileName, String violation)
+	public void reportViolation(String ipAddress, int portNum, String sso, String fileName, String violation, String mySso)
 	{
 		StringBuilder payload = new StringBuilder();
 		payload.append(fileName).append(DELIMITER)
-				.append(sso).append(DELIMITER)
+				.append(mySso).append(DELIMITER)
 				.append(violation);
 		Requestor req = new Requestor(ipAddress, portNum, sso);
 		req.setRequest(REQTYPE_REPORT_VIOLATION, payload.toString().split(DELIMITER));

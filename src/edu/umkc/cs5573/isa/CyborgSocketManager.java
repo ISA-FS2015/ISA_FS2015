@@ -100,7 +100,7 @@ public class CyborgSocketManager {
 		Map<String, String> userList = getUserList();
 		//Make TCP Client Socket and report!
 		String ipAddress = userList.get(sso);
-		if(ipAddress != null) tcpService.reportViolation(ipAddress, tcpPort, sso, fileName, violation);
+		if(ipAddress != null) tcpService.reportViolation(ipAddress, tcpPort, sso, fileName, controller.getUserName(), violation);
 	}
 
 	/**
