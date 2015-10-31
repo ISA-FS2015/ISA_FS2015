@@ -447,6 +447,7 @@ public class CyborgTcpService extends Thread {
 	{
 		StringBuilder payload = new StringBuilder();
 		payload.append(fileName).append(DELIMITER)
+				.append(sso).append(DELIMITER)
 				.append(violation);
 		Requestor req = new Requestor(ipAddress, portNum, sso);
 		req.setRequest(REQTYPE_REPORT_VIOLATION, payload.toString().split(DELIMITER));
