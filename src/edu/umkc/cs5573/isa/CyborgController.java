@@ -55,6 +55,9 @@ public class CyborgController implements IWatchDirHandler{
 	private boolean isDisposed = false;
 	private int certReqTriggered = 0;
 	private int reactReqTriggered = 0;
+	/**
+	 * The user name(SSO) which corresponds to my name
+	 */
 	private String userName;
 	private String homeDirectory;
 	private Logger logger;
@@ -236,7 +239,6 @@ public class CyborgController implements IWatchDirHandler{
 	}
 	
 	private void doCommandList() {
-		// TODO Auto-generated method stub
 		StringBuilder sb = new StringBuilder();
 		sb.append("---Available command list---\n")
 			.append("byby\n")
@@ -314,7 +316,7 @@ public class CyborgController implements IWatchDirHandler{
 					}
 					else{
 						logger.d(this, "Prohibited access. Reporting to the owner...");
-        				mSocketManager.reportViolation(userName, fileName, "ProhibitedModeChange");
+        				mSocketManager.reportViolation(info.getOwner(), fileName, "ProhibitedModeChange");
 					}
 				}else{
 					logger.d(this, "No file info. please check your filename or permission.");
@@ -465,7 +467,7 @@ public class CyborgController implements IWatchDirHandler{
     					// Lock the file
     					sql.updateFileInfo(child, info.getExpiresOnStr(), info.getType(), SHA256Helper.getHashStringFromFile(child), FileInfo.LOCK);
     					CyborgFileManager.setPermissions(child.toString(), "000");
-        				mSocketManager.reportViolation(userName, child.toFile().getName(), "WritingReadOnly");
+        				mSocketManager.reportViolation(info.getOwner(), child.toFile().getName(), "WritingReadOnly");
     				}else{
     					// This file is original or write-allowed. Update the file info
     					if(info.getLock() == FileInfo.LOCK){
