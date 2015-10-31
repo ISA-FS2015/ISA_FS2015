@@ -48,7 +48,7 @@ public class CyborgFileManager {
 		try {
 			Files.setPosixFilePermissions(Paths.get(filePath), perms);
 			return true;
-		} catch (IOException e) {
+		} catch (IOException | UnsupportedOperationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
