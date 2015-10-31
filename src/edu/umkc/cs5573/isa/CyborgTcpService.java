@@ -274,7 +274,7 @@ public class CyborgTcpService extends Thread {
         			FileInfo fileInfo = sql.getFileInfo(file.toPath());
     	            return RESPONSE_FILE_SIZE + DELIMITER
     	            		+ Long.toString(file.length()) + DELIMITER
-    	            		+ StaticUtil.encodeFileToBase64Binary(fileName) +DELIMITER
+    	            		+ StaticUtil.encodeFileToBase64Binary(file.toPath().toString()) +DELIMITER
     	            		+ fileInfo.getType();
     			}else{
     				return RESPONSE_ERROR+DELIMITER+"Insufficient Trust Score";
