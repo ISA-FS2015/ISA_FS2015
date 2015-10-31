@@ -152,10 +152,10 @@ public class CyborgTcpService extends Thread {
 		 */
 		private String doReaction(String[] reqs)
 		{
-			String sso = reqs[1];
-			String name = reqs[2];
-			String fileName = reqs[3];
-			String access = reqs[4];
+			String sso = reqs[0];
+			String name = reqs[1];
+			String fileName = reqs[2];
+			String access = reqs[3];
 			String msg = "The prohibited access detected from the following user:"
 					+ "\nSSO: " + sso
 					+ "\nName: " + name
