@@ -433,7 +433,7 @@ public class SQLiteInstance {
 				+ "Organization=\"" + info.getOrganization() + "\"" + ","
 				+ "Email=\"" + info.getEmail() + "\"" + ","
 				+ "PhoneNumber=\"" + info.getPhoneNumber() + "\"" + ","
-				+ "Score=\"" + Integer.toString(info.getScore()) + ","
+				+ "Score=" + Integer.toString(info.getScore()) + ","
 				+ "PrivateKey=\"" + info.getPrivateKey() + "\"" + ","
 				+ "PublicKey=\"" + info.getPublicKey() + "\""
 				+ " WHERE SSO = \"" + info.getSso() + "\"";
