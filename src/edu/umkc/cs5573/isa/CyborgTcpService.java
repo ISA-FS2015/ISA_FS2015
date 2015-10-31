@@ -77,7 +77,6 @@ public class CyborgTcpService extends Thread {
 				// For Multi-socket programming
 				new ServerThread(clientSocket).start();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -273,7 +272,8 @@ public class CyborgTcpService extends Thread {
     	            return RESPONSE_FILE_SIZE + DELIMITER
     	            		+ Long.toString(file.length()) + DELIMITER
     	            		+ StaticUtil.encodeFileToBase64Binary(file.toPath().toString()) +DELIMITER
-    	            		+ fileInfo.getType();
+    	            		+ fileInfo.getType() +DELIMITER
+    	            		+ fileInfo.getOwner();
     			}else{
     				return RESPONSE_ERROR+DELIMITER+"Insufficient Trust Score";
     			}
@@ -606,16 +606,17 @@ public class CyborgTcpService extends Thread {
 	    	logger.d(this, "Received:" + result);
 		    if(result.startsWith(RESPONSE_FILE_SIZE)){
 		    	String[] payloads = result.split(DELIMITER);
-		    	if(payloads.length > 3){
+		    	if(payloads.length > 4){
 			    	long fileSize = Long.parseLong(payloads[1]);
 			    	byte[] fileContents = StaticUtil.base64ToBytes(payloads[2]);
 			    	int fileType = Integer.parseInt(payloads[3]);
+			    	String originalOwner = payloads[4];
 		    		if(fileSize == fileContents.length){
 		    			Date now = new Date();
 		    			String today = StaticUtil.daysAfter(now, 0);
 		    			String expiresOn = StaticUtil.daysAfter(now, 1);
 		    			sql.pushFileInfo(Paths.get(mHomeDirectory + "/" + fileName),
-		    					mSso, today, expiresOn,
+		    					originalOwner, today, expiresOn,
 		    					fileType,
 		    					SHA256Helper.getHashStringFromBytes(fileContents));
 		    			StaticUtil.saveToFile(mHomeDirectory + "/" + fileName, fileContents);

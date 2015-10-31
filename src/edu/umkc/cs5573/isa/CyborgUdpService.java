@@ -257,6 +257,11 @@ public class CyborgUdpService extends Thread {
 	        		}
         		}
         	}
+        	try {
+				this.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
         }
 
         /**
