@@ -27,15 +27,15 @@ public class MessageQueue {
 	private MessageQueue(){
 		this.mQueue = new LinkedList<String>();
 	}
-	public String getFirstMessage() throws InterruptedException{
+	public synchronized String getFirstMessage() throws InterruptedException{
 		if(mQueue.isEmpty()){
-			mQueue.wait();
+			return null;
 		}
 		return mQueue.peek();
 	}
+	
 	public synchronized void queue(String item){
 		mQueue.add(item);
-		mQueue.notifyAll();
 	}
 	
 	public synchronized String deque() throws NoSuchElementException{
