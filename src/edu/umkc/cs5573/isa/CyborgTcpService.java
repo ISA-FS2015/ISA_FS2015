@@ -227,7 +227,7 @@ public class CyborgTcpService extends Thread {
 								cmds[3].equals("from") &&
 								cmds[4].equals(sso)){
 								// Do nothing
-								return RESPONSE_REACTION + DELIMITER + REACTION_ALLOW;
+								return RESPONSE_REACTION + DELIMITER + REACTION_ALLOW + DELIMITER + fileName;
 							}
 						}
 					}
