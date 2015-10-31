@@ -118,13 +118,13 @@ public class CyborgTcpService extends Thread {
 	            if(recvd.length() >= PREFIX){
 	            	String[] reqs = recvd.split(DELIMITER);
 	            	if(REQTYPE_FILE.equals(reqs[0])){
-	            		os.writeBytes(doFileTransferProcess(reqs));
+	            		os.writeBytes(doFileTransferProcess(reqs) + "\n");
 	        		    os.flush();
 	            	}else if(REQTYPE_TRST.equals(reqs[0])){
-	            		os.writeBytes(doIssueCertificates(reqs));
+	            		os.writeBytes(doIssueCertificates(reqs) + "\n");
 	        		    os.flush();
 	            	}else if(REQTYPE_REPORT_VIOLATION.equals(reqs[0])){
-	            		os.writeBytes(doReaction(reqs));
+	            		os.writeBytes(doReaction(reqs) + "\n");
 	        		    os.flush();
 	            	}
 	            }
@@ -526,7 +526,7 @@ public class CyborgTcpService extends Thread {
 		        new BufferedReader(
 		            new InputStreamReader(mSocket.getInputStream()));
 	    	StringBuilder payload = new StringBuilder(mReqType).append(DELIMITER);
-	    	payload.append(joinStrs(mPayLoad, DELIMITER));
+	    	payload.append(joinStrs(mPayLoad, DELIMITER)).append("\n");
 	    	logger.d(this, "Sending:" + payload.toString());
 		    out.write(payload.toString());
 		    out.flush();
@@ -575,7 +575,7 @@ public class CyborgTcpService extends Thread {
 		        new BufferedReader(
 		            new InputStreamReader(mSocket.getInputStream()));
 	    	StringBuilder payload = new StringBuilder(mReqType).append(DELIMITER);
-	    	payload.append(joinStrs(mPayLoad, DELIMITER));
+	    	payload.append(joinStrs(mPayLoad, DELIMITER)).append("\n");
 	    	logger.d(this, "Sending:" + payload.toString());
 		    out.write(payload.toString());
 		    out.flush();
@@ -626,7 +626,7 @@ public class CyborgTcpService extends Thread {
 		        new BufferedReader(
 		            new InputStreamReader(mSocket.getInputStream()));
 	    	StringBuilder payload = new StringBuilder(mReqType).append(DELIMITER);
-	    	payload.append(joinStrs(mPayLoad, DELIMITER));
+	    	payload.append(joinStrs(mPayLoad, DELIMITER)).append("\n");
 	    	logger.d(this, "Sending:" + payload.toString());
 		    out.write(payload.toString());
 		    out.flush();

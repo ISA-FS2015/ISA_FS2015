@@ -42,8 +42,8 @@ public class CyborgSocketManager {
 	public void init(){
 		udpService.start();
 		tcpService.start();
-		udpService.reqJoinUser();
 		udpService.reqUserList();
+		udpService.reqJoinUser();
 	}
 	
 	/**
