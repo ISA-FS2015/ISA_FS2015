@@ -330,7 +330,7 @@ public class CyborgTcpService extends Thread {
 		private boolean validateUser(String[] reqs)
 		{
 			// the index start from 1 because 0 is used by prefix
-			if(reqs.length == 6){
+			if(reqs.length == 7){
 				String sso = reqs[1];
 				int type = Integer.parseInt(reqs[2]);
 				String name = reqs[3];
