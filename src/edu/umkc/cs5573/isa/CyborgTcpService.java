@@ -592,7 +592,7 @@ public class CyborgTcpService extends Thread {
 		 */
 		private void doFileRequest() throws IOException
 		{
-			String fileName = mPayLoad[1];
+			String fileName = mPayLoad[0];
 			PrintWriter out =
 			        new PrintWriter(mSocket.getOutputStream(), true);
 		    BufferedReader in =
@@ -619,7 +619,7 @@ public class CyborgTcpService extends Thread {
 		    					mSso, today, expiresOn,
 		    					fileType,
 		    					SHA256Helper.getHashStringFromBytes(fileContents));
-		    			StaticUtil.saveToFile(mHomeDirectory + fileName, fileContents);
+		    			StaticUtil.saveToFile(mHomeDirectory + "/" + fileName, fileContents);
 		    			// Retrieving file finished. If we have the sso who gave file,
 		    			// Then we will raise his/her score by 10
 		    			UserInfo info = sql.getUserInfo(mSso);
