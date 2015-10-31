@@ -203,7 +203,7 @@ public class CyborgTcpService extends Thread {
 								// Restore the file remotely
 								String fileBase64;
 								try {
-									fileBase64 = StaticUtil.encodeFileToBase64Binary(fileName);
+									fileBase64 = StaticUtil.encodeFileToBase64Binary(mHomeDirectory + "/" + fileName);
 									File file = new File(mHomeDirectory + "/" + fileName);
 									return RESPONSE_REACTION + DELIMITER
 											+ REACTION_RESTORE + DELIMITER
