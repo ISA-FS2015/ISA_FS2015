@@ -103,9 +103,7 @@ public class CyborgUdpService extends Thread {
         		byte[] buf = new byte[BUFFER_SIZE];
                 // receive request
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
-                synchronized(socket){
-    				socket.receive(packet);
-                }
+				socket.receive(packet);
 				InetAddress address = packet.getAddress();
 				if(!localIpAddress.equals(address.getHostAddress())) {
 					String received = new String(packet.getData(), CHARSET_UTF8);
@@ -340,9 +338,7 @@ public class CyborgUdpService extends Thread {
             	buf = packet.getBytes(CHARSET_UTF8);
             	InetAddress address = InetAddress.getByName(ipAddress);
                 DatagramPacket sPacket = new DatagramPacket(buf, buf.length, address, portNum);
-                synchronized(socket){
-                    this.socket.send(sPacket);
-                }
+                this.socket.send(sPacket);
     		} catch (IOException | JSONException e) {
     			e.printStackTrace();
     		}
