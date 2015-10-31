@@ -225,7 +225,13 @@ public class CyborgTcpService extends Thread {
 							if(cmds[2].equals(fileName) &&
 								cmds[3].equals("from") &&
 								cmds[4].equals(sso)){
-								// Do nothing
+								// Do nothing but change the file mode as readwrite
+								Path filePath = Paths.get(mHomeDirectory + "/" + fileName);
+								FileInfo info = sql.getFileInfo(filePath);
+								if(info != null){
+									info.setType(FileInfo.TYPE_ORIGINAL | FileInfo.WRITE_ALLOWED);
+									sql.updateFileInfo(filePath, info.getExpiresOnStr(), info.getType(), info.getHash(), FileInfo.UNLOCK);
+								}
 								return RESPONSE_REACTION + DELIMITER + REACTION_ALLOW + DELIMITER + fileName;
 							}
 						}
@@ -680,6 +686,7 @@ public class CyborgTcpService extends Thread {
 		    			String fileName = reaction[2];
 		    			Path filePath = Paths.get(mHomeDirectory + "/" + fileName);
 		    			FileInfo info = sql.getFileInfo(filePath);
+		    			info.setType(FileInfo.TYPE_COPIED | FileInfo.WRITE_ALLOWED);
 		    			sql.updateFileInfo(filePath, info.getExpiresOnStr(), info.getType(),
 		    					SHA256Helper.getHashStringFromFile(filePath), FileInfo.UNLOCK);
 		    		}else{
