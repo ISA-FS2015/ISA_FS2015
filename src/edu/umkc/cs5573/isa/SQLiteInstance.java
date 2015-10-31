@@ -390,7 +390,7 @@ public class SQLiteInstance {
 //			
 //		}
 		final String sqlState = "insert into " + TABLE_USER_INFO
-				+ "(SSO, Type, Name, Organization, Email, PhoneNumber, Score)"
+				+ "(SSO, Type, Name, Organization, Email, PhoneNumber, Score, PrivateKey, PublicKey)"
 				+ " values ("
 				+ "\"" + info.getSso() + "\"" + ","
 				+ Integer.toString(info.getType()) + ","
