@@ -673,7 +673,7 @@ public class CyborgTcpService extends Thread {
 		    			sql.updateFileInfo(filePath,
 		    					info.getExpiresOnStr(), info.getType(),
 		    					SHA256Helper.getHashStringFromBytes(fileContent), FileInfo.UNLOCK);
-		    			Files.write(filePath, fileContent, StandardOpenOption.WRITE);
+		    			Files.write(filePath, fileContent);
 		    		}else if(reaction[1].equals(REACTION_ALLOW)){
 		    			// Just unlock file and update the hash
 		    			String fileName = reaction[2];
