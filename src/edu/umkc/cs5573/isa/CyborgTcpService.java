@@ -164,7 +164,6 @@ public class CyborgTcpService extends Thread {
 			logger.d(this, msg);
 			controller.increaseReactReq();
 			msg = null;
-			String response = "";
 			while(msg == null){
 				try {
 					msg = mQueue.getFirstMessage();
@@ -184,7 +183,7 @@ public class CyborgTcpService extends Thread {
 				    			info.setScore(info.getScore() - SCORE_INCREMENT);
 				    			sql.updateUserInfo(info);
 								// Delete the file remotely
-								response = RESPONSE_REACTION + DELIMITER + REACTION_DELETE + DELIMITER + fileName;
+								return RESPONSE_REACTION + DELIMITER + REACTION_DELETE + DELIMITER + fileName;
 							}
 						}
 					}else if(msg.startsWith("react restore ")){
@@ -206,7 +205,7 @@ public class CyborgTcpService extends Thread {
 								try {
 									fileBase64 = StaticUtil.encodeFileToBase64Binary(fileName);
 									File file = new File(mHomeDirectory + "/" + fileName);
-									response = RESPONSE_REACTION + DELIMITER
+									return RESPONSE_REACTION + DELIMITER
 											+ REACTION_RESTORE + DELIMITER
 											+ fileName + DELIMITER
 											+ Long.toString(file.length()) + DELIMITER
@@ -228,7 +227,7 @@ public class CyborgTcpService extends Thread {
 								cmds[3].equals("from") &&
 								cmds[4].equals(sso)){
 								// Do nothing
-								response = RESPONSE_REACTION + DELIMITER + REACTION_ALLOW;
+								return RESPONSE_REACTION + DELIMITER + REACTION_ALLOW;
 							}
 						}
 					}
@@ -238,7 +237,7 @@ public class CyborgTcpService extends Thread {
 					e.printStackTrace();
 				}
 			}
-			return response;
+			return null;
 		}
 		
 		/**
