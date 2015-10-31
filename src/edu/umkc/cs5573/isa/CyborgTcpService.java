@@ -117,6 +117,7 @@ public class CyborgTcpService extends Thread {
 		public void processReq(BufferedReader is, DataOutputStream os){
 			try {
 	            String recvd = is.readLine();
+	            if(recvd == null) return;
 	            if(recvd.length() >= PREFIX){
 	            	String[] reqs = recvd.split(DELIMITER);
 	            	if(REQTYPE_FILE.equals(reqs[0])){
@@ -623,8 +624,10 @@ public class CyborgTcpService extends Thread {
 		    			// Retrieving file finished. If we have the sso who gave file,
 		    			// Then we will raise his/her score by 10
 		    			UserInfo info = sql.getUserInfo(mSso);
-		    			info.setScore(info.getScore() + SCORE_INCREMENT);
-		    			sql.updateUserInfo(info);
+		    			if(info != null){
+			    			info.setScore(info.getScore() + SCORE_INCREMENT);
+			    			sql.updateUserInfo(info);
+		    			}
 		    		}else{
 			    		logger.d(this, "File received is currupted. Please try again.");
 		    		}
