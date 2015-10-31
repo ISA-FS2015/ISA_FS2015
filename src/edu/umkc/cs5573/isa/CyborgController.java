@@ -53,6 +53,8 @@ public class CyborgController implements IWatchDirHandler{
 	SQLiteInstance sql;
 	private boolean isInit = false;
 	private boolean isDisposed = false;
+	private int certReqTriggered = 0;
+	private int reactReqTriggered = 0;
 	private String userName;
 	private String homeDirectory;
 	private Logger logger;
@@ -105,6 +107,48 @@ public class CyborgController implements IWatchDirHandler{
 	 */
 	public void setHomeDirectory(String homeDirectory) {
 		this.homeDirectory = homeDirectory;
+	}
+	
+	
+
+	/**
+	 * @return the certReqTriggered
+	 */
+	public int getCertReqTriggered() {
+		return certReqTriggered;
+	}
+
+	/**
+	 * @param certReqTriggered the certReqTriggered to set
+	 */
+	public void setCertReqTriggered(int certReqTriggered) {
+		this.certReqTriggered = certReqTriggered;
+	}
+	public int increaseCertReq(){
+		return ++certReqTriggered;
+	}
+	public int decreaseCertReq(){
+		return --certReqTriggered;
+	}
+
+	/**
+	 * @return the reactReqTriggered
+	 */
+	public int getReactReqTriggered() {
+		return reactReqTriggered;
+	}
+
+	/**
+	 * @param reactReqTriggered the reactReqTriggered to set
+	 */
+	public void setReactReqTriggered(int reactReqTriggered) {
+		this.reactReqTriggered = reactReqTriggered;
+	}
+	public int increaseReactReq(){
+		return ++reactReqTriggered;
+	}
+	public int decreaseReactReq(){
+		return --reactReqTriggered;
 	}
 
 	/**
@@ -176,6 +220,10 @@ public class CyborgController implements IWatchDirHandler{
 				doSetFile(cmds);
 			}else if ("maketestfile".equals(cmds[0])){
 				makeTestFile();
+			}else if ("cert".equals(cmds[0])){
+				if(certReqTriggered > 0) mQueue.queue(StaticUtil.joinWith(cmds, " "));
+			}else if ("react".equals(cmds[0])){
+				if(reactReqTriggered > 0) mQueue.queue(StaticUtil.joinWith(cmds, " "));
 			}else if("sql".equals(cmds[0])){
 				doSql(cmds);
 			}

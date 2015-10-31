@@ -115,4 +115,14 @@ public class StaticUtil {
 		cal.add(Calendar.DATE, after);
 		return dateFormat.format(cal.getTime());
 	}
+	
+	public static String joinWith(String[] items, String delimiter){
+		String delim = "";
+		StringBuilder sb = new StringBuilder();
+		for (String i : items) {
+		    sb.append(delim).append(i);
+		    delim = delimiter;
+		}
+		return sb.toString();
+	}
 }

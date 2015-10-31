@@ -163,6 +163,7 @@ public class CyborgTcpService extends Thread {
 					+ "\nor 'react restore " + fileName + " from " + sso + "' to restore remotely,"
 					+ "\nor 'react allow " + fileName + " from " + sso + "' to do nothing.";
 			logger.d(this, msg);
+			controller.increaseReactReq();
 			msg = null;
 			String response = "";
 			while(msg == null){
@@ -172,6 +173,7 @@ public class CyborgTcpService extends Thread {
 					if(msg.startsWith("react delete ")){
 						synchronized(mQueue){
 							mQueue.deque();
+							controller.decreaseReactReq();
 						}
 						String[] cmds = msg.split(" ");
 						if(cmds.length > 4){
@@ -189,6 +191,7 @@ public class CyborgTcpService extends Thread {
 					}else if(msg.startsWith("react restore ")){
 						synchronized(mQueue){
 							mQueue.deque();
+							controller.decreaseReactReq();
 						}
 						String[] cmds = msg.split(" ");
 						if(cmds.length > 4){
@@ -218,6 +221,7 @@ public class CyborgTcpService extends Thread {
 					}else if(msg.startsWith("react allow ")){
 						synchronized(mQueue){
 							mQueue.deque();
+							controller.decreaseReactReq();
 						}
 						String[] cmds = msg.split(" ");
 						if(cmds.length > 4){
@@ -359,6 +363,7 @@ public class CyborgTcpService extends Thread {
 						+ "\nPlease type 'cert allow " + sso + "' to allow,"
 						+ "\notherwise 'cert revoke " + sso + "' to revoke.";
 				logger.d(this, msg);
+				controller.increaseCertReq();
 				msg = null;
 				while(msg == null){
 					try {
@@ -367,6 +372,7 @@ public class CyborgTcpService extends Thread {
 						if(msg.startsWith("cert allow ")){
 							synchronized(mQueue){
 								mQueue.deque();
+								controller.decreaseCertReq();
 							}
 							String[] cmds = msg.split(" ");
 							if(cmds.length > 1){
@@ -378,6 +384,7 @@ public class CyborgTcpService extends Thread {
 						}else if(msg.startsWith("cert revoke ")){
 							synchronized(mQueue){
 								mQueue.deque();
+								controller.decreaseCertReq();
 							}
 							String[] cmds = msg.split(" ");
 							if(cmds.length > 1){
