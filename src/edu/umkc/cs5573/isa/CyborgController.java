@@ -202,6 +202,7 @@ public class CyborgController implements IWatchDirHandler{
 		boolean session = true;
 		while(session){
 			// Get into CLI mode
+			logger.d(this, "Type 'help' anytime for getting the command list.");
 			String[] cmds = getCommands(out, in);
 			if(cmds.length == 0) continue;
 			if("byby".equals(cmds[0])){
@@ -226,12 +227,29 @@ public class CyborgController implements IWatchDirHandler{
 				if(reactReqTriggered > 0) mQueue.queue(StaticUtil.joinWith(cmds, " "));
 			}else if("sql".equals(cmds[0])){
 				doSql(cmds);
+			}else if ("help".equals(cmds[0])){
+				doCommandList();
 			}
 		}
 		logger.d(this, "Exitting...... Byebye!");
 		logger.resetOutputStream();
 	}
 	
+	private void doCommandList() {
+		// TODO Auto-generated method stub
+		StringBuilder sb = new StringBuilder();
+		sb.append("---Available command list---\n")
+			.append("byby\n")
+			.append("userlist\n")
+			.append("whohas <filename>")
+			.append("requestFile <SSO> <filename>")
+			.append("requestCert <SSO>")
+			.append("setmyinfo <Student/Employee> <name> <organization> <e-mail> <phoneNumber>\n")
+			.append("setfile <filename> <type:readwrite/readonly>\n");
+		logger.i(this, sb.toString());
+		
+	}
+
 	private void doUserList() {
 		Map<String, String> userList = mSocketManager.getUserList();
     	for(Entry<String, String> entry : userList.entrySet()){
@@ -443,7 +461,7 @@ public class CyborgController implements IWatchDirHandler{
     				if(!info.getOwner().equals(userName) &&
     						(info.getType()&copied_and_protected) == copied_and_protected){
     					// The user violates the access rule! File should be deleted!!
-    					logger.d(this, "Alert! File contents has been attemped to be changed!! Deleting");
+    					logger.d(this, "Alert! File contents has been attemped to be changed!! Reporting to the owner...");
     					// Lock the file
     					sql.updateFileInfo(child, info.getExpiresOnStr(), info.getType(), SHA256Helper.getHashStringFromFile(child), FileInfo.LOCK);
     					CyborgFileManager.setPermissions(child.toString(), "000");
