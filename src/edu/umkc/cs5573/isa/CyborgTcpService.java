@@ -437,7 +437,7 @@ public class CyborgTcpService extends Thread {
 			StringBuilder payload = new StringBuilder();
 			payload.append(fileName).append(DELIMITER)
 					.append(certStr);
-			req.setRequest(REQTYPE_TRST, payload.toString().split(DELIMITER));
+			req.setRequest(REQTYPE_FILE, payload.toString().split(DELIMITER));
 			req.start();
 		}
 	}
