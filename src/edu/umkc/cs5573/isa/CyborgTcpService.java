@@ -252,8 +252,10 @@ public class CyborgTcpService extends Thread {
 		 */
 		public String doFileTransferProcess(String[] reqs)
 				throws CertificateException, IOException{
+    		// Get filename
+    		String fileName = reqs[1];
     		// Do some trust process
-    		String trust = reqs[1];
+    		String trust = reqs[2];
     		X509Util x509Util = new X509Util(StaticUtil.base64ToBytes(trust));
     		// Checking if the user is trusted by me
     		String sso = X509Util.parseDN(x509Util.getCertificate().getSubjectDN().getName())[0];
@@ -265,8 +267,6 @@ public class CyborgTcpService extends Thread {
 			if(!x509Util.isCertValid(x509Util.getCertificate().getPublicKey(), mUserName, info.getSso())){
                 return RESPONSE_ERROR+DELIMITER+"InvalidCert";
 			}
-    		// Get filename
-    		String fileName = reqs[2];
     		// Send the file to the requestor
     		File file = new File(mHomeDirectory + "/" + fileName);
     		if(file.exists()){
