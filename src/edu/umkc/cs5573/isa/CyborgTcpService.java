@@ -118,11 +118,14 @@ public class CyborgTcpService extends Thread {
 	            if(recvd.length() >= PREFIX){
 	            	String[] reqs = recvd.split(DELIMITER);
 	            	if(REQTYPE_FILE.equals(reqs[0])){
-	            		os.writeBytes(doFileTransferProcess(reqs) + "\n");
+	            		os.writeBytes(doFileTransferProcess(reqs));
+	        		    os.flush();
 	            	}else if(REQTYPE_TRST.equals(reqs[0])){
-	            		os.writeBytes(doIssueCertificates(reqs) + "\n");
+	            		os.writeBytes(doIssueCertificates(reqs));
+	        		    os.flush();
 	            	}else if(REQTYPE_REPORT_VIOLATION.equals(reqs[0])){
-	            		os.writeBytes(doReaction(reqs) + "\n");
+	            		os.writeBytes(doReaction(reqs));
+	        		    os.flush();
 	            	}
 	            }
 			} catch (IOException | GeneralSecurityException e) {
@@ -523,9 +526,10 @@ public class CyborgTcpService extends Thread {
 		        new BufferedReader(
 		            new InputStreamReader(mSocket.getInputStream()));
 	    	StringBuilder payload = new StringBuilder(mReqType).append(DELIMITER);
-	    	payload.append(joinStrs(mPayLoad, DELIMITER)).append('\n');
+	    	payload.append(joinStrs(mPayLoad, DELIMITER));
 	    	logger.d(this, "Sending:" + payload.toString());
 		    out.write(payload.toString());
+		    out.flush();
 		    String result = in.readLine();
 	    	logger.d(this, "Received:" + result);
 		    if(result.startsWith(RESPONSE_X509_CERT)){
@@ -571,9 +575,10 @@ public class CyborgTcpService extends Thread {
 		        new BufferedReader(
 		            new InputStreamReader(mSocket.getInputStream()));
 	    	StringBuilder payload = new StringBuilder(mReqType).append(DELIMITER);
-	    	payload.append(joinStrs(mPayLoad, DELIMITER)).append('\n');
+	    	payload.append(joinStrs(mPayLoad, DELIMITER));
 	    	logger.d(this, "Sending:" + payload.toString());
 		    out.write(payload.toString());
+		    out.flush();
 		    String result = in.readLine();
 	    	logger.d(this, "Received:" + result);
 		    if(result.startsWith(RESPONSE_FILE_SIZE)){
@@ -621,9 +626,10 @@ public class CyborgTcpService extends Thread {
 		        new BufferedReader(
 		            new InputStreamReader(mSocket.getInputStream()));
 	    	StringBuilder payload = new StringBuilder(mReqType).append(DELIMITER);
-	    	payload.append(joinStrs(mPayLoad, DELIMITER)).append('\n');
+	    	payload.append(joinStrs(mPayLoad, DELIMITER));
 	    	logger.d(this, "Sending:" + payload.toString());
 		    out.write(payload.toString());
+		    out.flush();
 		    String result = in.readLine();
 	    	logger.d(this, "Received:" + result);
 		    if(result.startsWith(RESPONSE_REACTION)){
