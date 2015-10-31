@@ -203,35 +203,37 @@ public class CyborgController implements IWatchDirHandler{
 			return;
 		}
 		boolean session = true;
+		logger.d(this, "Type 'help' anytime for getting the command list.");
 		while(session){
 			// Get into CLI mode
-			logger.d(this, "Type 'help' anytime for getting the command list.");
 			String[] cmds = getCommands(out, in);
 			if(cmds.length == 0) continue;
 			if("byby".equals(cmds[0])){
 				session = false;
 			}else if ("userlist".equals(cmds[0])){
 				doUserList();
-			}else if ("whohas".equals(cmds[0])){
+			}else if ("whohas".equals(cmds[0].toLowerCase())){
 				doRequestFileProbe(cmds);
-			}else if ("requestFile".equals(cmds[0])){
+			}else if ("requestfile".equals(cmds[0].toLowerCase())){
 				doRequestFile(cmds);
-			}else if ("requestCert".equals(cmds[0])){
+			}else if ("requestfert".equals(cmds[0].toLowerCase())){
 				doRequestCert(cmds);
-			}else if ("setmyinfo".equals(cmds[0])){
+			}else if ("setmyinfo".equals(cmds[0].toLowerCase())){
 				doSetMyInfo(cmds);
-			}else if ("setfile".equals(cmds[0])){
+			}else if ("setfile".equals(cmds[0].toLowerCase())){
 				doSetFile(cmds);
-			}else if ("maketestfile".equals(cmds[0])){
+			}else if ("maketestfile".equals(cmds[0].toLowerCase())){
 				makeTestFile();
-			}else if ("cert".equals(cmds[0])){
+			}else if ("cert".equals(cmds[0].toLowerCase())){
 				if(certReqTriggered > 0) mQueue.queue(StaticUtil.joinWith(cmds, " "));
-			}else if ("react".equals(cmds[0])){
+			}else if ("react".equals(cmds[0].toLowerCase())){
 				if(reactReqTriggered > 0) mQueue.queue(StaticUtil.joinWith(cmds, " "));
-			}else if("sql".equals(cmds[0])){
+			}else if("sql".equals(cmds[0].toLowerCase())){
 				doSql(cmds);
-			}else if ("help".equals(cmds[0])){
+			}else if ("help".equals(cmds[0].toLowerCase())){
 				doCommandList();
+			}else{
+				logger.d(this, "Unknown command.");
 			}
 		}
 		logger.d(this, "Exitting...... Byebye!");
