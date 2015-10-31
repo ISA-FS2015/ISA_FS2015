@@ -75,7 +75,7 @@ public class CyborgController implements IWatchDirHandler{
 		this.watchFileExpiration = new WatchFileExpiration("FileExpirationWatcher", sql);
 		this.userName = userName;
 		this.homeDirectory = homeDirectory;
-		this.mSocketManager = new CyborgSocketManager(userName, ifName, homeDirectory, Resources.UDP_PORT, Resources.TCP_PORT, true);
+		this.mSocketManager = new CyborgSocketManager(userName, ifName, homeDirectory, Resources.UDP_PORT, Resources.TCP_PORT, false);
 		this.mQueue = MessageQueue.getInstance();
 	}
 	
