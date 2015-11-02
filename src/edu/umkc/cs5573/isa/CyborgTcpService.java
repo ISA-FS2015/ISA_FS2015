@@ -8,11 +8,9 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -688,6 +686,8 @@ public class CyborgTcpService extends Thread {
 		    			FileInfo info = sql.getFileInfo(filePath);
 		    			info.setType(FileInfo.TYPE_COPIED | FileInfo.WRITE_ALLOWED);
 		    			sql.updateFileInfo(filePath, info.getExpiresOnStr(), info.getType(),
+		    	
+		    					
 		    					SHA256Helper.getHashStringFromFile(filePath), FileInfo.UNLOCK);
 		    		}else{
 				    	logger.d(this, result);

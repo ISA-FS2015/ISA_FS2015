@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -166,9 +165,9 @@ public class CyborgController implements IWatchDirHandler{
 			isInit = true;
 			//new SQLiteInstance().init();
 		}else if(isDisposed){
-			logger.d(this, "Already disposed. Skipping...");
+			logger.i(this, "Already disposed. Skipping...");
 		}else{
-			logger.d(this, "Already initialized. Skipping...");
+			logger.i(this, "Already initialized. Skipping...");
 		}
 	}
 	
@@ -199,11 +198,11 @@ public class CyborgController implements IWatchDirHandler{
 	public void cli(PrintStream out, InputStream in) throws IOException{
 		logger.setOutputStream(out);
 		if(!isInit || isDisposed){
-			logger.d(this, "Not initialized or already disposed. Skipping...");
+			logger.i(this, "Not initialized or already disposed. Skipping...");
 			return;
 		}
 		boolean session = true;
-		logger.d(this, "Type 'help' anytime for getting the command list.");
+		logger.i(this, "Type 'help' anytime for getting the command list.");
 		while(session){
 			// Get into CLI mode
 			String[] cmds = getCommands(out, in);
@@ -233,10 +232,10 @@ public class CyborgController implements IWatchDirHandler{
 			}else if ("help".equals(cmds[0].toLowerCase())){
 				doCommandList();
 			}else{
-				logger.d(this, "Unknown command.");
+				logger.i(this, "Unknown command.");
 			}
 		}
-		logger.d(this, "Exitting...... Byebye!");
+		logger.i(this, "Exitting...... Byebye!");
 		logger.resetOutputStream();
 	}
 	
@@ -257,7 +256,7 @@ public class CyborgController implements IWatchDirHandler{
 	private void doUserList() {
 		Map<String, String> userList = mSocketManager.getUserList();
     	for(Entry<String, String> entry : userList.entrySet()){
-        	logger.d(this, entry.getKey() + ":" + entry.getValue());
+        	logger.i(this, entry.getKey() + ":" + entry.getValue());
     	}
 	}
 
@@ -291,7 +290,7 @@ public class CyborgController implements IWatchDirHandler{
 	{
 		if(cmds.length >= 2){
 			if(myInfo == null){
-				logger.d(this, "My Info has not been set. Please set my info first using 'setmyinfo' command");
+				logger.i(this, "My Info has not been set. Please set my info first using 'setmyinfo' command");
 			}else{
 				String sso = cmds[1];
 				mSocketManager.reqCert(sso, myInfo);
@@ -317,11 +316,11 @@ public class CyborgController implements IWatchDirHandler{
 						sql.updateFileInfo(file, info.getExpiresOnStr(),info.getType(),info.getHash(), FileInfo.UNLOCK);
 					}
 					else{
-						logger.d(this, "Prohibited access. Reporting to the owner...");
+						logger.i(this, "Prohibited access. Reporting to the owner...");
         				mSocketManager.reportViolation(info.getOwner(), fileName, "ProhibitedModeChange");
 					}
 				}else{
-					logger.d(this, "No file info. please check your filename or permission.");
+					logger.i(this, "No file info. please check your filename or permission.");
 				}
 			}else if(permission.equals("readonly")){
 				Path file = Paths.get(homeDirectory + "/" + fileName);
@@ -332,10 +331,10 @@ public class CyborgController implements IWatchDirHandler{
 						sql.updateFileInfo(file, info.getExpiresOnStr(),info.getType(),info.getHash(), FileInfo.UNLOCK);
 					}
 					else{
-						logger.d(this, "The owner allowed write permission, but do you really need to make it readonly??");
+						logger.i(this, "The owner allowed write permission, but do you really need to make it readonly??");
 					}
 				}else{
-					logger.d(this, "No file info. please check your filename or permission.");
+					logger.i(this, "No file info. please check your filename or permission.");
 				}
 			}
 		}
@@ -360,7 +359,7 @@ public class CyborgController implements IWatchDirHandler{
 			String phoneNumber = cmds[5];
 			myInfo = new UserInfo(userName, type, name, organization, email, phoneNumber, 0, phoneNumber, phoneNumber);
 		}else{
-			logger.d(this, "Usage: setmyinfo <Type: Student/Employee> <Name> <Organization> <e-mail> <PhoneNumber>");
+			logger.i(this, "Usage: setmyinfo <Type: Student/Employee> <Name> <Organization> <e-mail> <PhoneNumber>");
 		}
 	}
 
@@ -384,7 +383,7 @@ public class CyborgController implements IWatchDirHandler{
 				expiresOn,
 				FileInfo.TYPE_COPIED|FileInfo.WRITE_PROTECTED,
 				SHA256Helper.getHashStringFromFile(testPath));
-		logger.d(this, "Test Fileinfo successfully created");
+		logger.i(this, "Test Fileinfo successfully created");
 	}
 	
 	/**
@@ -436,7 +435,7 @@ public class CyborgController implements IWatchDirHandler{
 			sql.pushFileInfo(child, userName, today, expiresOn,
 					FileInfo.TYPE_ORIGINAL|FileInfo.WRITE_ALLOWED,
 					SHA256Helper.getHashStringFromFile(child));
-			logger.d(this, "Fileinfo successfully created.\nPlease type 'setfile " + child.toFile().getName() + " readwrite' to make it write-allowed for other peers.");
+			logger.i(this, "Fileinfo successfully created.\nPlease type 'setfile " + child.toFile().getName() + " readwrite' to make it write-allowed for other peers.");
 		}
 		// Set file permission as read-only. Commenting for now
 //		CyborgFileManager.setPermissions(child.toString(), "600");
@@ -465,7 +464,7 @@ public class CyborgController implements IWatchDirHandler{
     				if(!info.getOwner().equals(userName) &&
     						(info.getType()&copied_and_protected) == copied_and_protected){
     					// The user violates the access rule! File should be deleted!!
-    					logger.d(this, "Alert! File contents has been attemped to be changed!! Reporting to the owner...");
+    					logger.i(this, "Alert! File contents has been attemped to be changed!! Reporting to the owner...");
     					// Lock the file
     					sql.updateFileInfo(child, info.getExpiresOnStr(), info.getType(), SHA256Helper.getHashStringFromFile(child), FileInfo.LOCK);
     					CyborgFileManager.setPermissions(child.toString(), "000");
@@ -473,7 +472,7 @@ public class CyborgController implements IWatchDirHandler{
     				}else{
     					// This file is original or write-allowed. Update the file info
     					if(info.getLock() == FileInfo.LOCK){
-        					logger.d(this, "Alert! This file is locked. Access Denied.");
+        					logger.i(this, "Alert! This file is locked. Access Denied.");
     					}else{
         					sql.updateFileInfo(child, info.getExpiresOnStr(), info.getType(), SHA256Helper.getHashStringFromFile(child), FileInfo.UNLOCK);
     					}
