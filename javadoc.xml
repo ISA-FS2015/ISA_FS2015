@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="javadoc">
+    <target name="javadoc">
+        <javadoc access="private" additionalparam=" -noqualifier java.lang:java.io:java.text:java.net" author="true" classpath="libs/sqlite/sqlite4java.jar" destdir="doc" doctitle="Cyborg Framework" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" packagenames="edu.umkc.cs5573.isa" source="1.7" sourcepath="src" splitindex="true" use="true" version="true">
+            <link href="file:/C:/Users/IBM_ADMIN/git/ISA_FS2015/doc/"/>
+        </javadoc>
+    </target>
+</project>
