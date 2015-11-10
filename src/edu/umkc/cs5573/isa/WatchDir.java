@@ -57,7 +57,7 @@ import java.util.Map;
  * watch a directory (or tree) for changes to files.
  */
  
-public class WatchDir extends Thread{
+public class WatchDir extends Thread implements Runnable {
  
     private final WatchService watcher;
     private final Map<WatchKey,Path> keys;
@@ -136,6 +136,7 @@ public class WatchDir extends Thread{
     /**
      * Process all events for keys queued to the watcher
      */
+    @Override
     public void run() {
         while (isRunning) {
  

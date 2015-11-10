@@ -20,14 +20,12 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 
-import com.almworks.sqlite4java.SQLiteException;
-
 /**
  * The actual TCP communication is processed here.
  * @author Younghwan
  *
  */
-public class CyborgTcpService extends Thread {
+public class CyborgTcpService extends Thread implements Runnable{
 	/**
 	 * The default score for trust.
 	 */
@@ -52,22 +50,28 @@ public class CyborgTcpService extends Thread {
 	private ServerSocket mServerSocket;
 	private String mUserName;
 	private String mHomeDirectory;
-	private SQLiteInstance sql;
+	private SQLiteInstanceAbstract sql;
+	private ICyborgEventHandler handler;
 	private Logger logger;
 	private MessageQueue mQueue;
-	public CyborgTcpService(String threadName, CyborgController controller, int portNum)
-			throws IOException, SQLiteException{
+	public CyborgTcpService(String threadName, CyborgController controller, int portNum, SQLiteInstanceAbstract sql)
+			throws IOException{
 		super(threadName);
         this.controller = controller;
 		this.mServerSocket = new ServerSocket(portNum);
 		this.mUserName = controller.getUserName();
 		this.mHomeDirectory = controller.getHomeDirectory();
 		this.isRunning = true;
-		this.sql = SQLiteInstance.getInstance();
+		this.sql = sql;
 		this.logger = Logger.getInstance();
 		this.mQueue = MessageQueue.getInstance();
 	}
 	
+	public void setEventHandler(ICyborgEventHandler handler){
+		this.handler = handler;
+	}
+	
+	@Override
 	public void run(){
 		while(isRunning && !mServerSocket.isClosed()){
 			try {
@@ -85,7 +89,7 @@ public class CyborgTcpService extends Thread {
 		this.isRunning = false;
 	}
 	
-	public class ServerThread extends Thread{
+	public class ServerThread extends Thread implements Runnable{
 		private static final int PREFIX = 8;
 		private boolean isRunning = false;
 		private Socket mSocket;
@@ -94,6 +98,7 @@ public class CyborgTcpService extends Thread {
 			this.mSocket = sock;
 			this.isRunning = true;
 		}
+		@Override
 		public void run()
 		{
 			try {
@@ -158,8 +163,9 @@ public class CyborgTcpService extends Thread {
 					+ "\nPlease type 'react delete " + fileName + " from " + sso + "' to delete remotely,"
 					+ "\nor 'react restore " + fileName + " from " + sso + "' to restore remotely,"
 					+ "\nor 'react allow " + fileName + " from " + sso + "' to do nothing.";
-			logger.d(this, msg);
-			controller.increaseReactReq();
+			logger.i(this, msg);
+			if(controller != null) controller.increaseReactReq();
+			if(handler != null) handler.onReactionRequired(ICyborgEventHandler.REACT_VIOLATION, msg);
 			msg = null;
 			while(msg == null){
 				try {
@@ -168,7 +174,7 @@ public class CyborgTcpService extends Thread {
 					if(msg.startsWith("react delete ")){
 						synchronized(mQueue){
 							mQueue.deque();
-							controller.decreaseReactReq();
+							if(controller != null) controller.decreaseReactReq();
 						}
 						String[] cmds = msg.split(" ");
 						if(cmds.length > 4){
@@ -186,7 +192,7 @@ public class CyborgTcpService extends Thread {
 					}else if(msg.startsWith("react restore ")){
 						synchronized(mQueue){
 							mQueue.deque();
-							controller.decreaseReactReq();
+							if(controller != null) controller.decreaseReactReq();
 						}
 						String[] cmds = msg.split(" ");
 						if(cmds.length > 4){
@@ -216,7 +222,7 @@ public class CyborgTcpService extends Thread {
 					}else if(msg.startsWith("react allow ")){
 						synchronized(mQueue){
 							mQueue.deque();
-							controller.decreaseReactReq();
+							if(controller != null) controller.decreaseReactReq();
 						}
 						String[] cmds = msg.split(" ");
 						if(cmds.length > 4){
@@ -314,7 +320,7 @@ public class CyborgTcpService extends Thread {
     			// Insert userinfo into DB
     			insertUserInfoIntoDB(reqs, prk, pbk);
     			//os.write( issuedX509.getEncoded() );
-    			return RESPONSE_X509_CERT+ DELIMITER + StaticUtil.byteToBase64(issuedX509.getEncoded());
+    			return RESPONSE_X509_CERT + DELIMITER + StaticUtil.byteToBase64(issuedX509.getEncoded()) + DELIMITER + StaticUtil.byteToBase64(prk.getEncoded());
     		}else{
     			return RESPONSE_ERROR + DELIMITER + "Revoked";
     		}
@@ -364,8 +370,9 @@ public class CyborgTcpService extends Thread {
 						+ "\nphone number: " + phoneNumber
 						+ "\nPlease type 'cert allow " + sso + "' to allow,"
 						+ "\notherwise 'cert revoke " + sso + "' to revoke.";
-				logger.d(this, msg);
-				controller.increaseCertReq();
+				logger.i(this, msg);
+				if(handler != null) handler.onReactionRequired(ICyborgEventHandler.REACT_VALIDATION_USER, msg);
+				if(controller != null) controller.increaseCertReq();
 				msg = null;
 				while(msg == null){
 					try {
@@ -374,7 +381,7 @@ public class CyborgTcpService extends Thread {
 						if(msg.startsWith("cert allow ")){
 							synchronized(mQueue){
 								mQueue.deque();
-								controller.decreaseCertReq();
+								if(controller != null) controller.decreaseCertReq();
 							}
 							String[] cmds = msg.split(" ");
 							if(cmds.length > 1){
@@ -386,7 +393,7 @@ public class CyborgTcpService extends Thread {
 						}else if(msg.startsWith("cert revoke ")){
 							synchronized(mQueue){
 								mQueue.deque();
-								controller.decreaseCertReq();
+								if(controller != null) controller.decreaseCertReq();
 							}
 							String[] cmds = msg.split(" ");
 							if(cmds.length > 1){
@@ -462,7 +469,7 @@ public class CyborgTcpService extends Thread {
 	 * @author Younghwan
 	 *
 	 */
-	public class Requestor extends Thread{
+	public class Requestor extends Thread implements Runnable{
 		/**
 		 * The client socket
 		 */
@@ -567,21 +574,27 @@ public class CyborgTcpService extends Thread {
 						X509Util x509Util = new X509Util(cert);
 						String dn = x509Util.getCertificate().getIssuerDN().getName();
 						String sso = X509Util.parseDN(dn)[0];
+						String prk = payloads[2];
 						CertInfo info = sql.getCertInfo(sso);
 						if(info == null){
-							info = new CertInfo(sso, cert);
+							info = new CertInfo(sso, cert, prk);
 							sql.pushCertInfo(info);
+					    	if(handler != null) handler.onTcpReqSuccess("Certification Successfully Received.");
 						}else{
 							logger.d(this, "");
 						}
 					} catch (CertificateException e) {
 						e.printStackTrace();
 						logger.d(this, e.getMessage());
+				    	if(handler != null) handler.onTcpReqFailed(e.getMessage());
 					}
 		    	}else{
-		    		logger.d(this, "Error while getting cert. Please try again.");
+		    		final String error = "Error while getting cert. Please try again.";
+			    	if(handler != null) handler.onTcpReqFailed(error);
+		    		logger.d(this, error);
 		    	}
 		    }else{
+		    	if(handler != null) handler.onTcpReqFailed(result);
 		    	logger.d(this, result);
 		    }
 			in.close();
@@ -624,6 +637,7 @@ public class CyborgTcpService extends Thread {
 		    					fileType,
 		    					SHA256Helper.getHashStringFromBytes(fileContents));
 		    			StaticUtil.saveToFile(mHomeDirectory + "/" + fileName, fileContents);
+		    			if(handler != null)handler.onTcpReqSuccess("File " + fileName + " successfully received.");
 		    			// Retrieving file finished. If we have the sso who gave file,
 		    			// Then we will raise his/her score by 10
 		    			UserInfo info = sql.getUserInfo(mSso);
@@ -632,10 +646,14 @@ public class CyborgTcpService extends Thread {
 			    			sql.updateUserInfo(info);
 		    			}
 		    		}else{
-			    		logger.d(this, "File received is currupted. Please try again.");
+			    		final String error = "File received is currupted. Please try again.";
+				    	if(handler != null) handler.onTcpReqFailed(error);
+			    		logger.d(this, error);
 		    		}
 		    	}else{
-		    		logger.d(this, "Error while getting file. Please try again.");
+		    		final String error = "Error while getting file. Please try again.";
+			    	if(handler != null) handler.onTcpReqFailed(error);
+		    		logger.d(this, error);
 		    	}
 		    }else{
 		    	logger.d(this, result);			    	
@@ -669,6 +687,7 @@ public class CyborgTcpService extends Thread {
 		    			String fileName = reaction[2];
 		    			File file = new File(mHomeDirectory + "/" + fileName);
 		    			file.delete();
+		    			if(handler != null)handler.onReactionPerformed("File deleted by owner");
 		    		}else if(reaction[1].equals(REACTION_RESTORE)){
 		    			String fileName = reaction[2];
 		    			Path filePath = Paths.get(mHomeDirectory + "/" + fileName);
@@ -679,6 +698,7 @@ public class CyborgTcpService extends Thread {
 		    					info.getExpiresOnStr(), info.getType(),
 		    					SHA256Helper.getHashStringFromBytes(fileContent), FileInfo.UNLOCK);
 		    			Files.write(filePath, fileContent);
+		    			if(handler != null)handler.onReactionPerformed("File restored by owner");
 		    		}else if(reaction[1].equals(REACTION_ALLOW)){
 		    			// Just unlock file and update the hash
 		    			String fileName = reaction[2];
@@ -686,9 +706,8 @@ public class CyborgTcpService extends Thread {
 		    			FileInfo info = sql.getFileInfo(filePath);
 		    			info.setType(FileInfo.TYPE_COPIED | FileInfo.WRITE_ALLOWED);
 		    			sql.updateFileInfo(filePath, info.getExpiresOnStr(), info.getType(),
-		    	
-		    					
 		    					SHA256Helper.getHashStringFromFile(filePath), FileInfo.UNLOCK);
+		    			if(handler != null)handler.onReactionPerformed("File allowed modification by owner");
 		    		}else{
 				    	logger.d(this, result);
 		    		}

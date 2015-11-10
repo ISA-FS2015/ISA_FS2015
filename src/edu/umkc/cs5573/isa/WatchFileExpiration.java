@@ -4,17 +4,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-public class WatchFileExpiration extends Thread{
+public class WatchFileExpiration extends Thread implements Runnable {
 	private final static long INTERVAL = 30 * 60 * 1000;
-	private SQLiteInstance sql;
-	private Logger logger;
+	private SQLiteInstanceAbstract sql;
 	private boolean isRunning;
+	private IWatchExpHandler handler;
 	
 
-	public WatchFileExpiration(String threadName, SQLiteInstance sql) {
+	public WatchFileExpiration(String threadName, SQLiteInstanceAbstract sql) {
 		super(threadName);
 		this.sql = sql;
-		this.logger = Logger.getInstance();
+		Logger.getInstance();
 		this.isRunning = true;
 	}
 	
@@ -24,15 +24,16 @@ public class WatchFileExpiration extends Thread{
 	public void stopThread(){
 		isRunning = false;
 	}
-	
+	public void setExpirationHandler(IWatchExpHandler handler){
+		this.handler = handler;
+	}
+	@Override
 	public void run(){
 		while(isRunning){
 			List<FileInfo> infoes = sql.getExpiredFileInfoes();
 			for (FileInfo info : infoes){
 				Path path = Paths.get(info.getFileName());
-				path.toFile().delete();
-				sql.deleteFileInfo(path);
-				logger.d(this, "The file " + path.toString() + " has been expired. deleting...");
+				if(handler != null) handler.onFileExpired(path);
 			}
 			try {
 				// Runs every 30 min.

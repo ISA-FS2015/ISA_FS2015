@@ -22,11 +22,12 @@ import com.almworks.sqlite4java.SQLiteException;
  * @author Younghwan
  *
  */
-public class CyborgController implements IWatchDirHandler{
+public class CyborgController implements IWatchDirHandler, IWatchExpHandler{
 	
 	final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 	final static int EXPIRES_DAYS_COPIED = 1;
 	final static int EXPIRES_DAYS_OWNER = 3650; // 10 years for the owner
+	private ICyborgEventHandler mHandler = null;
 	private static UserInfo myInfo;
 	// Singleton - Start
 	
@@ -49,7 +50,7 @@ public class CyborgController implements IWatchDirHandler{
 //	CyborgFtpServer ftpServer;
 	WatchDir watchDir;
 	WatchFileExpiration watchFileExpiration;
-	SQLiteInstance sql;
+	SQLiteInstanceAbstract sql;
 	private boolean isInit = false;
 	private boolean isDisposed = false;
 	private int certReqTriggered = 0;
@@ -79,7 +80,7 @@ public class CyborgController implements IWatchDirHandler{
 		this.watchFileExpiration = new WatchFileExpiration("FileExpirationWatcher", sql);
 		this.userName = userName;
 		this.homeDirectory = homeDirectory;
-		this.mSocketManager = new CyborgSocketManager(this, userName, ifName, homeDirectory, Resources.UDP_PORT, Resources.TCP_PORT, false);
+		this.mSocketManager = new CyborgSocketManager(this, userName, ifName, homeDirectory, Resources.UDP_PORT, Resources.TCP_PORT, false, sql);
 		this.mQueue = MessageQueue.getInstance();
 	}
 	
@@ -154,6 +155,20 @@ public class CyborgController implements IWatchDirHandler{
 	}
 
 	/**
+	 * @return the mHandler
+	 */
+	public ICyborgEventHandler getEventHandler() {
+		return mHandler;
+	}
+
+	/**
+	 * @param mHandler the mHandler to set
+	 */
+	public void setEventHandler(ICyborgEventHandler mHandler) {
+		this.mHandler = mHandler;
+	}
+
+	/**
 	 * Initialization
 	 */
 	public void init(){
@@ -181,7 +196,7 @@ public class CyborgController implements IWatchDirHandler{
 			watchDir.stopService();
 			watchFileExpiration.stopThread();
 			try {
-				sql.dispose();
+				((SQLiteInstance) sql).dispose();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -199,6 +214,7 @@ public class CyborgController implements IWatchDirHandler{
 		logger.setOutputStream(out);
 		if(!isInit || isDisposed){
 			logger.i(this, "Not initialized or already disposed. Skipping...");
+			if(mHandler != null) mHandler.onResultFailed(ICyborgEventHandler.NOT_INITIALIZED);
 			return;
 		}
 		boolean session = true;
@@ -228,7 +244,11 @@ public class CyborgController implements IWatchDirHandler{
 			}else if ("react".equals(cmds[0].toLowerCase())){
 				if(reactReqTriggered > 0) mQueue.queue(StaticUtil.joinWith(cmds, " "));
 			}else if("sql".equals(cmds[0].toLowerCase())){
-				doSql(cmds);
+				if(Logger.DEBUG){
+					doSql(cmds);
+				}else{
+					logger.i(this, "Permission denied.");
+				}
 			}else if ("help".equals(cmds[0].toLowerCase())){
 				doCommandList();
 			}else{
@@ -236,6 +256,7 @@ public class CyborgController implements IWatchDirHandler{
 			}
 		}
 		logger.i(this, "Exitting...... Byebye!");
+		if(mHandler != null) mHandler.onConnectionEnds();
 		logger.resetOutputStream();
 	}
 	
@@ -258,6 +279,7 @@ public class CyborgController implements IWatchDirHandler{
     	for(Entry<String, String> entry : userList.entrySet()){
         	logger.i(this, entry.getKey() + ":" + entry.getValue());
     	}
+		if(mHandler != null) mHandler.onUserListResult(userList);
 	}
 
 	/**
@@ -292,8 +314,14 @@ public class CyborgController implements IWatchDirHandler{
 			if(myInfo == null){
 				logger.i(this, "My Info has not been set. Please set my info first using 'setmyinfo' command");
 			}else{
+				// Request x509 cert
 				String sso = cmds[1];
-				mSocketManager.reqCert(sso, myInfo);
+				CertInfo info = sql.getCertInfo(sso);
+				if(info == null){
+					mSocketManager.reqCert(sso, myInfo);
+				}else{
+					Logger.getInstance().d(this, "The certificate is already exist. Skipping...");
+				}
 			}
 		}
 	}
@@ -317,6 +345,7 @@ public class CyborgController implements IWatchDirHandler{
 					}
 					else{
 						logger.i(this, "Prohibited access. Reporting to the owner...");
+						
         				mSocketManager.reportViolation(info.getOwner(), fileName, "ProhibitedModeChange");
 					}
 				}else{
@@ -507,6 +536,14 @@ public class CyborgController implements IWatchDirHandler{
 
 	@Override
 	public void onRegisterCallback(List<Path> dirs) {
+		
+	}
+
+	@Override
+	public void onFileExpired(Path child) {
+		child.toFile().delete();
+		sql.deleteFileInfo(child);
+		logger.i(this, "The file " + child.toString() + " has been expired. deleting...");
 		
 	}
 	
