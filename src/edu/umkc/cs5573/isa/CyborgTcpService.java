@@ -45,6 +45,7 @@ public class CyborgTcpService extends Thread implements Runnable{
 	private static final String REACTION_DELETE = "Delete";
 	private static final String REACTION_RESTORE = "Restore";
 	private static final String REACTION_ALLOW = "Allow";
+	private static final String HEAD_ENCRYPTION = "ENC";
 	private boolean isRunning = false;
 	private CyborgController controller;
 	private ServerSocket mServerSocket;
@@ -121,7 +122,8 @@ public class CyborgTcpService extends Thread implements Runnable{
 	            String recvd = is.readLine();
 	            if(recvd == null) return;
 	            if(recvd.length() >= PREFIX){
-	            	String[] reqs = recvd.split(DELIMITER);
+	    	    	String decResult = decryptOrAsIs(recvd);
+	            	String[] reqs = decResult.split(DELIMITER);
 	            	if(REQTYPE_FILE.equals(reqs[0])){
 	            		os.writeBytes(doFileTransferProcess(reqs) + "\n");
 	        		    os.flush();
@@ -130,6 +132,9 @@ public class CyborgTcpService extends Thread implements Runnable{
 	        		    os.flush();
 	            	}else if(REQTYPE_REPORT_VIOLATION.equals(reqs[0])){
 	            		os.writeBytes(doReaction(reqs) + "\n");
+	        		    os.flush();
+	            	}else{
+	            		os.writeBytes(RESPONSE_ERROR + DELIMITER + "Invalid Packet" + DELIMITER + decResult + "\n");
 	        		    os.flush();
 	            	}
 	            }
@@ -213,7 +218,7 @@ public class CyborgTcpService extends Thread implements Runnable{
 											+ fileName + DELIMITER
 											+ Long.toString(file.length()) + DELIMITER
 											+ fileBase64;
-								} catch (IOException e) {
+								} catch (IOException | FileTooBigException e) {
 									e.printStackTrace();
 									logger.d(this, e.getMessage());
 								}
@@ -280,11 +285,17 @@ public class CyborgTcpService extends Thread implements Runnable{
     			if(info.getScore() >= BASE_SCORE){
         			FileInfo fileInfo = sql.getFileInfo(file.toPath().toString()
         					);
-    	            return RESPONSE_FILE_SIZE + DELIMITER
-    	            		+ Long.toString(file.length()) + DELIMITER
-    	            		+ StaticUtil.encodeFileToBase64Binary(file.toPath().toString()) +DELIMITER
-    	            		+ fileInfo.getType() +DELIMITER
-    	            		+ fileInfo.getOwner();
+    	            try {
+						return RESPONSE_FILE_SIZE + DELIMITER
+								+ Long.toString(file.length()) + DELIMITER
+								+ StaticUtil.encodeFileToBase64Binary(file.toPath().toString()) +DELIMITER
+								+ fileInfo.getType() +DELIMITER
+								+ fileInfo.getOwner();
+					} catch (FileTooBigException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+	    				return RESPONSE_ERROR+DELIMITER+"File Too Big";
+					}
     			}else{
     				return RESPONSE_ERROR+DELIMITER+"Insufficient Trust Score";
     			}
@@ -448,6 +459,14 @@ public class CyborgTcpService extends Thread implements Runnable{
 			payload.append(fileName).append(DELIMITER)
 					.append(certStr);
 			req.setRequest(REQTYPE_FILE, payload.toString().split(DELIMITER));
+			X509Util x509;
+			try {
+				x509 = new X509Util(certStr);
+				req.setEncryption(x509.getCertificate().getPublicKey());
+			} catch (CertificateException | IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			req.start();
 		}
 	}
@@ -499,6 +518,11 @@ public class CyborgTcpService extends Thread implements Runnable{
 		 * Logger
 		 */
 		private Logger logger;
+		
+		private boolean isEncrypted = false;
+		private PublicKey mPbk;
+		
+		
 		/**
 		 * Constructor
 		 * @param ipAddress the destination IP address
@@ -520,6 +544,11 @@ public class CyborgTcpService extends Thread implements Runnable{
 		public void setRequest(String reqtype, String[] payload){
 			this.mReqType = reqtype;
 			this.mPayLoad = payload;
+		}
+		
+		public void setEncryption(PublicKey pbk){
+			this.isEncrypted = true;
+			this.mPbk = pbk;
 		}
 		
 		@Override
@@ -563,12 +592,13 @@ public class CyborgTcpService extends Thread implements Runnable{
 	    	StringBuilder payload = new StringBuilder(mReqType).append(DELIMITER);
 	    	payload.append(joinStrs(mPayLoad, DELIMITER)).append("\n");
 	    	logger.d(this, "Sending:" + payload.toString());
-		    out.write(payload.toString());
+		    out.write(encryptOrAsIs(payload.toString()));
 		    out.flush();
 		    String result = in.readLine();
 	    	logger.d(this, "Received:" + result);
-		    if(result.startsWith(RESPONSE_X509_CERT)){
-		    	String[] payloads = result.split(DELIMITER);
+	    	String decResult = decryptOrAsIs(result);
+		    if(decResult.startsWith(RESPONSE_X509_CERT)){
+		    	String[] payloads = decResult.split(DELIMITER);
 		    	if(payloads.length > 1){
 		    		String cert = payloads[1];
 		    		try {
@@ -618,12 +648,13 @@ public class CyborgTcpService extends Thread implements Runnable{
 	    	StringBuilder payload = new StringBuilder(mReqType).append(DELIMITER);
 	    	payload.append(joinStrs(mPayLoad, DELIMITER)).append("\n");
 	    	logger.d(this, "Sending:" + payload.toString());
-		    out.write(payload.toString());
+		    out.write(encryptOrAsIs(payload.toString()));
 		    out.flush();
 		    String result = in.readLine();
 	    	logger.d(this, "Received:" + result);
-		    if(result.startsWith(RESPONSE_FILE_SIZE)){
-		    	String[] payloads = result.split(DELIMITER);
+	    	String decResult = decryptOrAsIs(result);
+		    if(decResult.startsWith(RESPONSE_FILE_SIZE)){
+		    	String[] payloads = decResult.split(DELIMITER);
 		    	if(payloads.length > 4){
 			    	long fileSize = Long.parseLong(payloads[1]);
 			    	byte[] fileContents = StaticUtil.base64ToBytes(payloads[2]);
@@ -677,12 +708,13 @@ public class CyborgTcpService extends Thread implements Runnable{
 	    	StringBuilder payload = new StringBuilder(mReqType).append(DELIMITER);
 	    	payload.append(joinStrs(mPayLoad, DELIMITER)).append("\n");
 	    	logger.d(this, "Sending:" + payload.toString());
-		    out.write(payload.toString());
+		    out.write(encryptOrAsIs(payload.toString()));
 		    out.flush();
 		    String result = in.readLine();
 	    	logger.d(this, "Received:" + result);
-		    if(result.startsWith(RESPONSE_REACTION)){
-		    	String[] reaction = result.split(DELIMITER);
+	    	String decResult = decryptOrAsIs(result);
+		    if(decResult.startsWith(RESPONSE_REACTION)){
+		    	String[] reaction = decResult.split(DELIMITER);
 		    	if(reaction.length > 1){
 		    		if(reaction[1].equals(REACTION_DELETE)){
 		    			String fileName = reaction[2];
@@ -706,19 +738,87 @@ public class CyborgTcpService extends Thread implements Runnable{
 		    			Path filePath = Paths.get(mHomeDirectory + "/" + fileName);
 		    			FileInfo info = sql.getFileInfo(filePath.toString());
 		    			info.setType(FileInfo.TYPE_COPIED | FileInfo.WRITE_ALLOWED);
-		    			sql.updateFileInfo(filePath.toString(), info.getExpiresOnStr(), info.getType(),
-		    					SHA256Helper.getHashStringFromFile(filePath), FileInfo.UNLOCK);
+		    			try {
+							sql.updateFileInfo(filePath.toString(), info.getExpiresOnStr(), info.getType(),
+									SHA256Helper.getHashStringFromFile(filePath.toFile()), FileInfo.UNLOCK);
+						} catch (FileTooBigException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 		    			if(handler != null)handler.onReactionPerformed("File allowed modification by owner");
 		    		}else{
-				    	logger.d(this, result);
+				    	logger.d(this, decResult);
 		    		}
 		    	}
 		    }else{
-		    	logger.d(this, result);
+		    	logger.d(this, decResult);
 		    }
+		}
+		private String decryptOrAsIs(String result) {
+			if(result.startsWith(HEAD_ENCRYPTION)){
+				String[] enPayload = result.split(DELIMITER);
+				String sso = enPayload[1];
+				String encrypted = enPayload[2];
+				CertInfo info = sql.getCertInfo(sso);
+				if(info != null){
+					try {
+						PrivateKey prk;
+						prk = CyborgSecurity.getPrivateKey(StaticUtil.base64ToBytes(info.getPrivateKey()));
+						String decrypted = CyborgSecurity.decrypt(StaticUtil.base64ToBytes(encrypted), prk);
+						return decrypted;
+					} catch (GeneralSecurityException e) {
+						e.printStackTrace();
+						return result;
+					}
+				}else{
+					return result;
+				}
+			}else{
+				return result;
+			}
+		}
+
+		public String encryptOrAsIs(String payload){
+	    	if(isEncrypted){
+	    		String ePayload = StaticUtil.byteToBase64(CyborgSecurity.encrypt(payload.toString(), mPbk));
+	    		String ePacket = HEAD_ENCRYPTION + DELIMITER + this.mSso + DELIMITER + ePayload; 
+			    return ePacket;
+	    	}else{
+			    return payload;
+	    	}
+			
 		}
 	}
 	
+	private String decryptOrAsIs(String result) {
+		if(result.startsWith(HEAD_ENCRYPTION)){
+			String[] enPayload = result.split(DELIMITER);
+			String sso = enPayload[1];
+			String encrypted = enPayload[2];
+			CertInfo info = sql.getCertInfo(sso);
+			if(info != null){
+				try {
+					PrivateKey prk;
+					prk = CyborgSecurity.getPrivateKey(StaticUtil.base64ToBytes(info.getPrivateKey()));
+					String decrypted = CyborgSecurity.decrypt(StaticUtil.base64ToBytes(encrypted), prk);
+					return decrypted;
+				} catch (GeneralSecurityException e) {
+					e.printStackTrace();
+					return result;
+				}
+			}else{
+				return result;
+			}
+		}else{
+			return result;
+		}
+	}
+
+	public String encryptOrAsIs(String payload, String sso, PublicKey pbk){
+		String ePayload = StaticUtil.byteToBase64(CyborgSecurity.encrypt(payload.toString(), pbk));
+		String ePacket = HEAD_ENCRYPTION + DELIMITER + sso + DELIMITER + ePayload; 
+	    return ePacket;
+	}
 	/**
 	 * Join string arrays into one string separated by a delimiter
 	 * @param strings

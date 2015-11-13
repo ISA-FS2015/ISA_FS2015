@@ -88,7 +88,7 @@ public class WatchDir extends Thread implements Runnable {
             }
         }
         if(!dir.toFile().isDirectory()){
-            if(handler != null) handler.onRegisterCallback(dir);
+            if(handler != null) handler.onRegisterCallback(dir.toFile());
         }
         keys.put(key, dir);
     }
@@ -113,7 +113,7 @@ public class WatchDir extends Thread implements Runnable {
     /**
      * Creates a WatchService and registers the given directory
      */
-    WatchDir(String dirPath, boolean recursive, IWatchDirHandler handler) throws IOException {
+    public WatchDir(String dirPath, boolean recursive, IWatchDirHandler handler) throws IOException {
     	Logger logger = Logger.getInstance();
     	logger.d(this, "Starting Directory Watcher...");
 		Path dir = Paths.get(dirPath);
@@ -213,15 +213,15 @@ public class WatchDir extends Thread implements Runnable {
     // Now handle every file event so that we can control our security!! - Start
     
     public void handleCreateEvent(Path child){
-        if(handler != null) handler.onFileCreated(child);
+        if(handler != null) handler.onFileCreated(child.toFile());
     }
     
     public void handleModifyEvent(Path child){
-        if(handler != null) handler.onFileModified(child);
+        if(handler != null) handler.onFileModified(child.toFile());
     }
     
     public void handleDeleteEvent(Path child){
-        if(handler != null) handler.onFileDeleted(child);
+        if(handler != null) handler.onFileDeleted(child.toFile());
     }
     
     // Now handle every file event so that we can control our security!! - End

@@ -4,10 +4,10 @@ import java.util.Date;
 import java.util.List;
 
 public abstract class SQLiteInstanceAbstract {
-	final static String TABLE_FILE_INFO = "FileInfo";
-	final static String TABLE_USER_INFO = "UserInfo";
-	final static String TABLE_CERT_INFO = "CertInfo";
-	final static String SQL_CREATE_FILE_INFO = "create table " + TABLE_FILE_INFO + " ("
+	public final static String TABLE_FILE_INFO = "FileInfo";
+	public final static String TABLE_USER_INFO = "UserInfo";
+	public final static String TABLE_CERT_INFO = "CertInfo";
+	public final static String SQL_CREATE_FILE_INFO = "create table " + TABLE_FILE_INFO + " ("
 			+ "id integer primary key autoincrement, "
 			+ "Filename text not null, "
 			+ "Owner text not null, "
@@ -17,7 +17,7 @@ public abstract class SQLiteInstanceAbstract {
 			+ "Hash text not null,"
 			+ "Lock integer text"
 			+ ")";
-	final static String SQL_CREATE_USER_INFO = "create table " + TABLE_USER_INFO + " ("
+	public final static String SQL_CREATE_USER_INFO = "create table " + TABLE_USER_INFO + " ("
 			+ "SSO text primary key not null, "
 			+ "Type integer not null, "
 			+ "Name text not null, "
@@ -28,7 +28,7 @@ public abstract class SQLiteInstanceAbstract {
 			+ "PrivateKey text not null, "
 			+ "PublicKey text not null"
 			+ ")";
-	final static String SQL_CREATE_CERT_INFO = "create table " + TABLE_CERT_INFO + " ("
+	public final static String SQL_CREATE_CERT_INFO = "create table " + TABLE_CERT_INFO + " ("
 			+ "SSO text primary key not null, "
 			+ "Cert text not null, "
 			+ "PrivateKey text not null"

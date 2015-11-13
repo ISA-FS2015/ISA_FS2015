@@ -33,7 +33,7 @@ public class WatchFileExpiration extends Thread implements Runnable {
 			List<FileInfo> infoes = sql.getExpiredFileInfoes();
 			for (FileInfo info : infoes){
 				Path path = Paths.get(info.getFileName());
-				if(handler != null) handler.onFileExpired(path);
+				if(handler != null) handler.onFileExpired(path.toFile());
 			}
 			try {
 				// Runs every 30 min.

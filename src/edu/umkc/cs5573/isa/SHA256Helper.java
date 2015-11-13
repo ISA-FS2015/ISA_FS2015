@@ -1,5 +1,6 @@
 package edu.umkc.cs5573.isa;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
@@ -19,7 +20,7 @@ public class SHA256Helper {
 	 * @param text
 	 * @return hashed bytes
 	 */
-	static byte[] getHash(String text){
+	public static byte[] getHash(String text){
 		try {
 			return hashSHA256(text.getBytes("UTF-8"));
 		} catch (UnsupportedEncodingException e) {
@@ -35,11 +36,11 @@ public class SHA256Helper {
 	 * @param filePath
 	 * @return
 	 * @throws OutOfMemoryError
+	 * @throws FileTooBigException 
 	 */
-	static byte[] getHashFromFile(String filePath) throws OutOfMemoryError {
-		Path path = Paths.get(filePath);
+	public static byte[] getHashFromFile(String filePath) throws FileTooBigException {
 		try {
-			byte[] data = Files.readAllBytes(path);
+			byte[] data = StaticUtil.loadFile(new File(filePath));
 			return hashSHA256(data);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -58,13 +59,14 @@ public class SHA256Helper {
 	
 	/**
 	 * Make a SHA256 hash from the file. If the file is larger than 2GB it throws OutOfMemoryError
-	 * @param path
+	 * @param file
 	 * @return
 	 * @throws OutOfMemoryError
+	 * @throws FileTooBigException 
 	 */
-	static byte[] getHashFromFile(Path path) throws OutOfMemoryError {
+	public static byte[] getHashFromFile(File file) throws FileTooBigException {
 		try {
-			byte[] data = Files.readAllBytes(path);
+			byte[] data = StaticUtil.loadFile(file);
 			return hashSHA256(data);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -76,9 +78,10 @@ public class SHA256Helper {
 	 * Make a SHA256 hash from the file. If the file is larger than 2GB it throws OutOfMemoryError
 	 * @param filePath
 	 * @return
+	 * @throws FileTooBigException 
 	 * @throws OutOfMemoryError
 	 */
-	static String getHashStringFromFile(String filePath) throws OutOfMemoryError {
+	public static String getHashStringFromFile(String filePath) throws FileTooBigException {
 		return StaticUtil.byteToBase64(getHashFromFile(filePath));
 	}
 	
@@ -86,10 +89,11 @@ public class SHA256Helper {
 	 * Make a SHA256 hash from the file. If the file is larger than 2GB it throws OutOfMemoryError
 	 * @param path
 	 * @return
+	 * @throws FileTooBigException 
 	 * @throws OutOfMemoryError
 	 */
-	static String getHashStringFromFile(Path path) throws OutOfMemoryError {
-		return StaticUtil.byteToBase64(getHashFromFile(path));
+	public static String getHashStringFromFile(File file) throws FileTooBigException {
+		return StaticUtil.byteToBase64(getHashFromFile(file));
 	}
 	
 	/**
@@ -97,7 +101,7 @@ public class SHA256Helper {
 	 * @param text
 	 * @return
 	 */
-	static String getHashString(String text){
+	public static String getHashString(String text){
 		return StaticUtil.byteToBase64(getHash(text));
 	}
 	
