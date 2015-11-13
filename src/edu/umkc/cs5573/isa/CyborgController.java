@@ -462,16 +462,16 @@ public class CyborgController implements IWatchDirHandler, IWatchExpHandler{
 	public void onFileCreated(File child) {
     	//String filePath = child.toString();
 		try {
-			logger.d(this, "HASH:" + SHA256Helper.getHashStringFromFile(child.getAbsolutePath()));
+			logger.d(this, "HASH:" + SHA256Helper.getHashStringFromFile(child.getPath()));
 			Date now = new Date();
 			String today = StaticUtil.daysAfter(now, 0);
 			String expiresOn = StaticUtil.daysAfter(now, EXPIRES_DAYS_OWNER);
 			//new SQLiteInstance().pushFileInfo(child,
-			FileInfo info = sql.getFileInfo(child.getAbsolutePath());
+			FileInfo info = sql.getFileInfo(child.getPath());
 			if(info == null || info.getType() == FileInfo.TYPE_ORIGINAL){
-				sql.pushFileInfo(child.getAbsolutePath(), userName, today, expiresOn,
+				sql.pushFileInfo(child.getPath(), userName, today, expiresOn,
 						FileInfo.TYPE_ORIGINAL|FileInfo.WRITE_ALLOWED,
-						SHA256Helper.getHashStringFromFile(child.getAbsolutePath()));
+						SHA256Helper.getHashStringFromFile(child.getPath()));
 				logger.i(this, "Fileinfo successfully created.\nPlease type 'setfile " + child.getName() + " readwrite' to make it write-allowed for other peers.");
 			}
 		} catch (FileTooBigException e) {
@@ -489,7 +489,7 @@ public class CyborgController implements IWatchDirHandler, IWatchExpHandler{
     	if(child.exists()){
         	//String filePath = child.toString();
     		try {
-				logger.d(this, "HASH:" + SHA256Helper.getHashStringFromFile(child.getAbsolutePath()));
+				logger.d(this, "HASH:" + SHA256Helper.getHashStringFromFile(child.getPath()));
 	    		FileInfo info = sql.getFileInfo(child.toString());
 	    		if(info == null){
 	    			logger.d(this, "No fileinfo. Creating...");
@@ -497,11 +497,11 @@ public class CyborgController implements IWatchDirHandler, IWatchExpHandler{
 	    			String today = StaticUtil.daysAfter(now, 0);
 	    			String expiresOn = StaticUtil.daysAfter(now, EXPIRES_DAYS_OWNER);
 	    			//new SQLiteInstance().pushFileInfo(child,
-	    			sql.pushFileInfo(child.getAbsolutePath(), userName, today, expiresOn,
+	    			sql.pushFileInfo(child.getPath(), userName, today, expiresOn,
 	    					FileInfo.TYPE_ORIGINAL|FileInfo.WRITE_ALLOWED,
-	    					SHA256Helper.getHashStringFromFile(child.getAbsolutePath()));
+	    					SHA256Helper.getHashStringFromFile(child.getPath()));
 	    		}else{
-	    			if(!SHA256Helper.getHashStringFromFile(child.getAbsolutePath()).equals(info.getHash())){
+	    			if(!SHA256Helper.getHashStringFromFile(child.getPath()).equals(info.getHash())){
 	    				int copied_and_protected = FileInfo.TYPE_COPIED | FileInfo.WRITE_PROTECTED;
 	    				// If the file is not mine and copy protected
 	    				if(!info.getOwner().equals(userName) &&
@@ -509,7 +509,7 @@ public class CyborgController implements IWatchDirHandler, IWatchExpHandler{
 	    					// The user violates the access rule! File should be deleted!!
 	    					logger.i(this, "Alert! File contents has been attemped to be changed!! Reporting to the owner...");
 	    					// Lock the file
-	    					sql.updateFileInfo(child.toString(), info.getExpiresOnStr(), info.getType(), SHA256Helper.getHashStringFromFile(child.getAbsolutePath()), FileInfo.LOCK);
+	    					sql.updateFileInfo(child.toString(), info.getExpiresOnStr(), info.getType(), SHA256Helper.getHashStringFromFile(child.getPath()), FileInfo.LOCK);
 	    					CyborgFileManager.setPermissions(child.toString(), "000");
 	        				mSocketManager.reportViolation(info.getOwner(), child.getName(), "WritingReadOnly");
 	    				}else{
@@ -517,7 +517,7 @@ public class CyborgController implements IWatchDirHandler, IWatchExpHandler{
 	    					if(info.getLock() == FileInfo.LOCK){
 	        					logger.i(this, "Alert! This file is locked. Access Denied.");
 	    					}else{
-	        					sql.updateFileInfo(child.toString(), info.getExpiresOnStr(), info.getType(), SHA256Helper.getHashStringFromFile(child.getAbsolutePath()), FileInfo.UNLOCK);
+	        					sql.updateFileInfo(child.toString(), info.getExpiresOnStr(), info.getType(), SHA256Helper.getHashStringFromFile(child.getPath()), FileInfo.UNLOCK);
 	    					}
 	    				}
 	    			}
@@ -560,8 +560,8 @@ public class CyborgController implements IWatchDirHandler, IWatchExpHandler{
 	@Override
 	public void onFileExpired(File child) {
 		child.delete();
-		sql.deleteFileInfo(child.getAbsolutePath());
-		logger.i(this, "The file " + child.getAbsolutePath() + " has been expired. deleting...");
+		sql.deleteFileInfo(child.getPath());
+		logger.i(this, "The file " + child.getPath() + " has been expired. deleting...");
 		
 	}
 	
