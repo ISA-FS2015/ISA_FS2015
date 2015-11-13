@@ -232,7 +232,7 @@ public class CyborgController implements IWatchDirHandler, IWatchExpHandler{
 				doRequestFileProbe(cmds);
 			}else if ("requestfile".equals(cmds[0].toLowerCase())){
 				doRequestFile(cmds);
-			}else if ("requestfert".equals(cmds[0].toLowerCase())){
+			}else if ("requestcert".equals(cmds[0].toLowerCase())){
 				doRequestCert(cmds);
 			}else if ("setmyinfo".equals(cmds[0].toLowerCase())){
 				doSetMyInfo(cmds);
