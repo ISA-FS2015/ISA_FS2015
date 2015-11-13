@@ -1,7 +1,6 @@
 package edu.umkc.cs5573.isa;
 
 import java.io.File;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -108,8 +107,8 @@ public class SQLiteInstance extends SQLiteInstanceAbstract {
 	/* Following methods are for file info DB */
 	
 	@Override
-	public String getFileHash(Path path){
-		final String sql = "SELECT Hash FROM " + TABLE_FILE_INFO + " WHERE Filename = \"" + path.toString() + "\"";
+	public String getFileHash(String path){
+		final String sql = "SELECT Hash FROM " + TABLE_FILE_INFO + " WHERE Filename = \"" + path + "\"";
 		String hash = queue.execute(new SQLiteJob<String>(){
 			@Override
 			protected String job(SQLiteConnection connection) throws Throwable {
@@ -132,8 +131,8 @@ public class SQLiteInstance extends SQLiteInstanceAbstract {
 	}
 	
 	@Override
-	public FileInfo getFileInfo(Path path){
-		final String sql = "SELECT * FROM " + TABLE_FILE_INFO + " WHERE Filename = \"" + path.toString() + "\"";
+	public FileInfo getFileInfo(String path){
+		final String sql = "SELECT * FROM " + TABLE_FILE_INFO + " WHERE Filename = \"" + path + "\"";
 		FileInfo item = queue.execute(new SQLiteJob<FileInfo>(){
 			@Override
 			protected FileInfo job(SQLiteConnection connection) throws Throwable {
@@ -193,13 +192,13 @@ public class SQLiteInstance extends SQLiteInstanceAbstract {
 	}
 	
 	@Override
-	public void updateFileInfo(Path path, String expiresOn, int type, String hash, int lock){
+	public void updateFileInfo(String path, String expiresOn, int type, String hash, int lock){
 		final String sql = "UPDATE " + TABLE_FILE_INFO + " set "
 				+ "ExpiresOn=\"" + expiresOn + "\"" + ","
 				+ "Type=" + type + ","
 				+ "Hash=\"" + hash + "\"" + ","
 				+ "Lock=" + lock
-				+ " WHERE Filename = \"" + path.toString() + "\"";
+				+ " WHERE Filename = \"" + path + "\"";
 		queue.execute(new SQLiteJob<Void>(){
 			@Override
 			protected Void job(SQLiteConnection connection) throws Throwable {
@@ -217,9 +216,9 @@ public class SQLiteInstance extends SQLiteInstanceAbstract {
 	}
 	
 	@Override
-	public boolean deleteFileInfo(Path path){
+	public boolean deleteFileInfo(String path){
 		final String sqlState = "delete from " + TABLE_FILE_INFO
-				+ " where Filename= " + "\"" + path.toString() + "\"";
+				+ " where Filename= " + "\"" + path + "\"";
 		return queue.execute(new SQLiteJob<Boolean>(){
 			@Override
 			protected Boolean job(SQLiteConnection connection) throws Throwable {
@@ -241,7 +240,7 @@ public class SQLiteInstance extends SQLiteInstanceAbstract {
 	}
 	
 	@Override
-	public boolean pushFileInfo(Path path, String owner, String createdOn, String expiresOn, int type, String hash){
+	public boolean pushFileInfo(String path, String owner, String createdOn, String expiresOn, int type, String hash){
 		//Check if there are any items with the same file
 //		FileInfo info = getFileInfo(path);
 //		if(info == null){
@@ -250,7 +249,7 @@ public class SQLiteInstance extends SQLiteInstanceAbstract {
 		final String sqlState = "insert into " + TABLE_FILE_INFO
 				+ "(Filename, Owner, CreatedOn, ExpiresOn, Type, Hash, Lock)"
 				+ " values ("
-				+ "\"" + path.toString() + "\"" + ","
+				+ "\"" + path + "\"" + ","
 				+ "\"" + owner + "\"" + ","
 				+ "\"" + createdOn + "\"" + ","
 				+ "\"" + expiresOn + "\"" + ","

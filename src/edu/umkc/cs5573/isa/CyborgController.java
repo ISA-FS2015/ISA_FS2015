@@ -337,11 +337,11 @@ public class CyborgController implements IWatchDirHandler, IWatchExpHandler{
 			String permission = cmds[2];
 			if(permission.equals("readwrite")){
 				Path file = Paths.get(homeDirectory + "/" + fileName);
-				FileInfo info = sql.getFileInfo(file);
+				FileInfo info = sql.getFileInfo(file.toString());
 				if(info != null){
 					if((info.getType()&FileInfo.TYPE_ORIGINAL) == FileInfo.TYPE_ORIGINAL){
 						info.setType(info.getType() | FileInfo.WRITE_ALLOWED);
-						sql.updateFileInfo(file, info.getExpiresOnStr(),info.getType(),info.getHash(), FileInfo.UNLOCK);
+						sql.updateFileInfo(file.toString(), info.getExpiresOnStr(),info.getType(),info.getHash(), FileInfo.UNLOCK);
 					}
 					else{
 						logger.i(this, "Prohibited access. Reporting to the owner...");
@@ -353,11 +353,11 @@ public class CyborgController implements IWatchDirHandler, IWatchExpHandler{
 				}
 			}else if(permission.equals("readonly")){
 				Path file = Paths.get(homeDirectory + "/" + fileName);
-				FileInfo info = sql.getFileInfo(file);
+				FileInfo info = sql.getFileInfo(file.toString());
 				if(info != null){
 					if((info.getType() & FileInfo.TYPE_ORIGINAL) == FileInfo.TYPE_ORIGINAL){
 						info.setType(info.getType() & FileInfo.WRITE_PROTECTED);
-						sql.updateFileInfo(file, info.getExpiresOnStr(),info.getType(),info.getHash(), FileInfo.UNLOCK);
+						sql.updateFileInfo(file.toString(), info.getExpiresOnStr(),info.getType(),info.getHash(), FileInfo.UNLOCK);
 					}
 					else{
 						logger.i(this, "The owner allowed write permission, but do you really need to make it readonly??");
@@ -405,9 +405,9 @@ public class CyborgController implements IWatchDirHandler, IWatchExpHandler{
 		String today = StaticUtil.daysAfter(now, 0);
 		String expiresOn = StaticUtil.daysAfter(now, EXPIRES_DAYS_COPIED);
 		//new SQLiteInstance().pushFileInfo(child,
-		FileInfo info = sql.getFileInfo(testPath);
-		if(info != null) sql.deleteFileInfo(testPath);
-		sql.pushFileInfo(testPath, "TestOwner",
+		FileInfo info = sql.getFileInfo(testPath.toString());
+		if(info != null) sql.deleteFileInfo(testPath.toString());
+		sql.pushFileInfo(testPath.toString(), "TestOwner",
 				today,
 				expiresOn,
 				FileInfo.TYPE_COPIED|FileInfo.WRITE_PROTECTED,
@@ -459,9 +459,9 @@ public class CyborgController implements IWatchDirHandler, IWatchExpHandler{
 		String today = StaticUtil.daysAfter(now, 0);
 		String expiresOn = StaticUtil.daysAfter(now, EXPIRES_DAYS_OWNER);
 		//new SQLiteInstance().pushFileInfo(child,
-		FileInfo info = sql.getFileInfo(child);
+		FileInfo info = sql.getFileInfo(child.toString());
 		if(info == null || info.getType() == FileInfo.TYPE_ORIGINAL){
-			sql.pushFileInfo(child, userName, today, expiresOn,
+			sql.pushFileInfo(child.toString(), userName, today, expiresOn,
 					FileInfo.TYPE_ORIGINAL|FileInfo.WRITE_ALLOWED,
 					SHA256Helper.getHashStringFromFile(child));
 			logger.i(this, "Fileinfo successfully created.\nPlease type 'setfile " + child.toFile().getName() + " readwrite' to make it write-allowed for other peers.");
@@ -476,14 +476,14 @@ public class CyborgController implements IWatchDirHandler, IWatchExpHandler{
     	if(child.toFile().exists()){
         	//String filePath = child.toString();
     		logger.d(this, "HASH:" + SHA256Helper.getHashStringFromFile(child));
-    		FileInfo info = sql.getFileInfo(child);
+    		FileInfo info = sql.getFileInfo(child.toString());
     		if(info == null){
     			logger.d(this, "No fileinfo. Creating...");
     			Date now = new Date();
     			String today = StaticUtil.daysAfter(now, 0);
     			String expiresOn = StaticUtil.daysAfter(now, EXPIRES_DAYS_OWNER);
     			//new SQLiteInstance().pushFileInfo(child,
-    			sql.pushFileInfo(child, userName, today, expiresOn,
+    			sql.pushFileInfo(child.toString(), userName, today, expiresOn,
     					FileInfo.TYPE_ORIGINAL|FileInfo.WRITE_ALLOWED,
     					SHA256Helper.getHashStringFromFile(child));
     		}else{
@@ -495,7 +495,7 @@ public class CyborgController implements IWatchDirHandler, IWatchExpHandler{
     					// The user violates the access rule! File should be deleted!!
     					logger.i(this, "Alert! File contents has been attemped to be changed!! Reporting to the owner...");
     					// Lock the file
-    					sql.updateFileInfo(child, info.getExpiresOnStr(), info.getType(), SHA256Helper.getHashStringFromFile(child), FileInfo.LOCK);
+    					sql.updateFileInfo(child.toString(), info.getExpiresOnStr(), info.getType(), SHA256Helper.getHashStringFromFile(child), FileInfo.LOCK);
     					CyborgFileManager.setPermissions(child.toString(), "000");
         				mSocketManager.reportViolation(info.getOwner(), child.toFile().getName(), "WritingReadOnly");
     				}else{
@@ -503,7 +503,7 @@ public class CyborgController implements IWatchDirHandler, IWatchExpHandler{
     					if(info.getLock() == FileInfo.LOCK){
         					logger.i(this, "Alert! This file is locked. Access Denied.");
     					}else{
-        					sql.updateFileInfo(child, info.getExpiresOnStr(), info.getType(), SHA256Helper.getHashStringFromFile(child), FileInfo.UNLOCK);
+        					sql.updateFileInfo(child.toString(), info.getExpiresOnStr(), info.getType(), SHA256Helper.getHashStringFromFile(child), FileInfo.UNLOCK);
     					}
     				}
     			}
@@ -516,7 +516,7 @@ public class CyborgController implements IWatchDirHandler, IWatchExpHandler{
 	public void onFileDeleted(Path child) {
     	if(!child.toFile().exists()){
     		//Logger.d(this, "HASH:" + SHA256Helper.getHashStringFromFile(child));
-    		sql.deleteFileInfo(child);
+    		sql.deleteFileInfo(child.toString());
     	}
 	}
 
@@ -542,7 +542,7 @@ public class CyborgController implements IWatchDirHandler, IWatchExpHandler{
 	@Override
 	public void onFileExpired(Path child) {
 		child.toFile().delete();
-		sql.deleteFileInfo(child);
+		sql.deleteFileInfo(child.toString());
 		logger.i(this, "The file " + child.toString() + " has been expired. deleting...");
 		
 	}

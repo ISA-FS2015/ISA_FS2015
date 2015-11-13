@@ -231,10 +231,10 @@ public class CyborgTcpService extends Thread implements Runnable{
 								cmds[4].equals(sso)){
 								// Do nothing but change the file mode as readwrite
 								Path filePath = Paths.get(mHomeDirectory + "/" + fileName);
-								FileInfo info = sql.getFileInfo(filePath);
+								FileInfo info = sql.getFileInfo(filePath.toString());
 								if(info != null){
 									info.setType(FileInfo.TYPE_ORIGINAL | FileInfo.WRITE_ALLOWED);
-									sql.updateFileInfo(filePath, info.getExpiresOnStr(), info.getType(), info.getHash(), FileInfo.UNLOCK);
+									sql.updateFileInfo(filePath.toString(), info.getExpiresOnStr(), info.getType(), info.getHash(), FileInfo.UNLOCK);
 								}
 								return RESPONSE_REACTION + DELIMITER + REACTION_ALLOW + DELIMITER + fileName;
 							}
@@ -278,7 +278,8 @@ public class CyborgTcpService extends Thread implements Runnable{
     		File file = new File(mHomeDirectory + "/" + fileName);
     		if(file.exists()){
     			if(info.getScore() >= BASE_SCORE){
-        			FileInfo fileInfo = sql.getFileInfo(file.toPath());
+        			FileInfo fileInfo = sql.getFileInfo(file.toPath().toString()
+        					);
     	            return RESPONSE_FILE_SIZE + DELIMITER
     	            		+ Long.toString(file.length()) + DELIMITER
     	            		+ StaticUtil.encodeFileToBase64Binary(file.toPath().toString()) +DELIMITER
@@ -632,7 +633,7 @@ public class CyborgTcpService extends Thread implements Runnable{
 		    			Date now = new Date();
 		    			String today = StaticUtil.daysAfter(now, 0);
 		    			String expiresOn = StaticUtil.daysAfter(now, 1);
-		    			sql.pushFileInfo(Paths.get(mHomeDirectory + "/" + fileName),
+		    			sql.pushFileInfo(Paths.get(mHomeDirectory + "/" + fileName).toString(),
 		    					originalOwner, today, expiresOn,
 		    					fileType,
 		    					SHA256Helper.getHashStringFromBytes(fileContents));
@@ -693,8 +694,8 @@ public class CyborgTcpService extends Thread implements Runnable{
 		    			Path filePath = Paths.get(mHomeDirectory + "/" + fileName);
 		    			//long fileSize = Long.parseLong(reaction[3]);
 		    			byte[] fileContent = StaticUtil.base64ToBytes(reaction[4]);
-		    			FileInfo info = sql.getFileInfo(filePath);
-		    			sql.updateFileInfo(filePath,
+		    			FileInfo info = sql.getFileInfo(filePath.toString());
+		    			sql.updateFileInfo(filePath.toString(),
 		    					info.getExpiresOnStr(), info.getType(),
 		    					SHA256Helper.getHashStringFromBytes(fileContent), FileInfo.UNLOCK);
 		    			Files.write(filePath, fileContent);
@@ -703,9 +704,9 @@ public class CyborgTcpService extends Thread implements Runnable{
 		    			// Just unlock file and update the hash
 		    			String fileName = reaction[2];
 		    			Path filePath = Paths.get(mHomeDirectory + "/" + fileName);
-		    			FileInfo info = sql.getFileInfo(filePath);
+		    			FileInfo info = sql.getFileInfo(filePath.toString());
 		    			info.setType(FileInfo.TYPE_COPIED | FileInfo.WRITE_ALLOWED);
-		    			sql.updateFileInfo(filePath, info.getExpiresOnStr(), info.getType(),
+		    			sql.updateFileInfo(filePath.toString(), info.getExpiresOnStr(), info.getType(),
 		    					SHA256Helper.getHashStringFromFile(filePath), FileInfo.UNLOCK);
 		    			if(handler != null)handler.onReactionPerformed("File allowed modification by owner");
 		    		}else{

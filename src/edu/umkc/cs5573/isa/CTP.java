@@ -272,7 +272,7 @@ public class CTP {
     		try{
         		String fileName = payload.getString(KEY_FILENAME);
         		SQLiteInstance sql = SQLiteInstance.getInstance();
-        		FileInfo info = sql.getFileInfo(Paths.get(homeDirectory + "/" + fileName));
+        		FileInfo info = sql.getFileInfo(Paths.get(homeDirectory + "/" + fileName).toString());
         		if(info == null){
         			return null;
         		}else{

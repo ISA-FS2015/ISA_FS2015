@@ -1,6 +1,5 @@
 package edu.umkc.cs5573.isa;
 
-import java.nio.file.Path;
 import java.util.Date;
 import java.util.List;
 
@@ -39,14 +38,14 @@ public abstract class SQLiteInstanceAbstract {
 	 * @param path
 	 * @return
 	 */
-	public abstract String getFileHash(Path path);
+	public abstract String getFileHash(String path);
 	
 	/**
 	 * Retrieves the file info from the path
 	 * @param path
 	 * @return
 	 */
-	public abstract FileInfo getFileInfo(Path path);
+	public abstract FileInfo getFileInfo(String path);
 	
 	/**
 	 * Get the list of all files
@@ -62,14 +61,14 @@ public abstract class SQLiteInstanceAbstract {
 	 * @param hash
 	 * @param lock
 	 */
-	public abstract void updateFileInfo(Path path, String expiresOn, int type, String hash, int lock);
+	public abstract void updateFileInfo(String path, String expiresOn, int type, String hash, int lock);
 	
 	/**
 	 * Deletes the file info
 	 * @param path
 	 * @return
 	 */
-	public abstract boolean deleteFileInfo(Path path);
+	public abstract boolean deleteFileInfo(String path);
 	
 	/**
 	 * Inserts the file info
@@ -81,7 +80,7 @@ public abstract class SQLiteInstanceAbstract {
 	 * @param hash
 	 * @return
 	 */
-	public abstract boolean pushFileInfo(Path path, String owner, String createdOn, String expiresOn, int type, String hash);
+	public abstract boolean pushFileInfo(String path, String owner, String createdOn, String expiresOn, int type, String hash);
 	/**
 	 * Retrieves the list of file infoes only expired
 	 * @return
