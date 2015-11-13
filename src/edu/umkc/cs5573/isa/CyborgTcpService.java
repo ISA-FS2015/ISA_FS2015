@@ -33,7 +33,8 @@ public class CyborgTcpService extends Thread implements Runnable{
 	/**
 	 * The score increment. Inversely used as decrement by inversion
 	 */
-	private final static int SCORE_INCREMENT = 10;
+	private final static int SCORE_INCREMENT = 1;
+	private final static int SCORE_DECREMENT = 10;
 	private final static String REQTYPE_FILE = "REQ_FILE";
 	private final static String REQTYPE_TRST = "REQ_TRST";
 	private final static String REQTYPE_REPORT_VIOLATION = "REQ_REPORT_VIOLATION";
@@ -157,7 +158,7 @@ public class CyborgTcpService extends Thread implements Runnable{
 		 * @param reqs
 		 * @return
 		 */
-		private String doReaction(String[] reqs)
+		public String doReaction(String[] reqs)
 		{
 			String fileName = reqs[1];
 			String sso = reqs[2];
@@ -188,7 +189,7 @@ public class CyborgTcpService extends Thread implements Runnable{
 								cmds[4].equals(sso)){
 				    			// Decrements the user's trust
 				    			UserInfo info = sql.getUserInfo(sso);
-				    			info.setScore(info.getScore() - SCORE_INCREMENT);
+				    			info.setScore(info.getScore() - SCORE_DECREMENT);
 				    			sql.updateUserInfo(info);
 								// Delete the file remotely
 								return RESPONSE_REACTION + DELIMITER + REACTION_DELETE + DELIMITER + fileName;
@@ -206,7 +207,7 @@ public class CyborgTcpService extends Thread implements Runnable{
 								cmds[4].equals(sso)){
 				    			// Decrements the user's trust
 				    			UserInfo info = sql.getUserInfo(sso);
-				    			info.setScore(info.getScore() - SCORE_INCREMENT/2);
+				    			info.setScore(info.getScore() - SCORE_DECREMENT/2);
 				    			sql.updateUserInfo(info);
 								// Restore the file remotely
 								String fileBase64;

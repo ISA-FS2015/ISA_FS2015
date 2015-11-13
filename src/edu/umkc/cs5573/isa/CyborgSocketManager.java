@@ -14,7 +14,6 @@ public class CyborgSocketManager {
 	private CyborgUdpService udpService;
 	private CyborgTcpService tcpService;
 	private CyborgController controller;
-	private SQLiteInstanceAbstract sql;
 	private ICyborgEventHandler handler;
 	private int tcpPort;
 //	private int udpPort;
@@ -35,8 +34,6 @@ public class CyborgSocketManager {
 		this.tcpService = new CyborgTcpService("TCPThread", controller, tcpPort, sql);
 		this.controller = controller;
 		this.tcpPort = tcpPort;
-//		this.udpPort = udpPort;
-		this.sql = sql;
 	}
 	
 	public void setEventHandler(ICyborgEventHandler handler){
