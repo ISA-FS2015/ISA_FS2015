@@ -31,9 +31,12 @@ public class CyborgTcpService extends Thread implements Runnable{
 	 */
 	private final static int BASE_SCORE = 100;
 	/**
-	 * The score increment. Inversely used as decrement by inversion
+	 * The score increment.
 	 */
 	private final static int SCORE_INCREMENT = 1;
+	/**
+	 * The score decrement.
+	 */
 	private final static int SCORE_DECREMENT = 10;
 	private final static String REQTYPE_FILE = "REQ_FILE";
 	private final static String REQTYPE_TRST = "REQ_TRST";
@@ -293,7 +296,6 @@ public class CyborgTcpService extends Thread implements Runnable{
 								+ fileInfo.getType() +DELIMITER
 								+ fileInfo.getOwner();
 					} catch (FileTooBigException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 	    				return RESPONSE_ERROR+DELIMITER+"File Too Big";
 					}
@@ -465,7 +467,6 @@ public class CyborgTcpService extends Thread implements Runnable{
 				x509 = new X509Util(certStr);
 				req.setEncryption(x509.getCertificate().getPublicKey());
 			} catch (CertificateException | IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			req.start();
@@ -480,6 +481,14 @@ public class CyborgTcpService extends Thread implements Runnable{
 				.append(violation);
 		Requestor req = new Requestor(ipAddress, portNum, sso);
 		req.setRequest(REQTYPE_REPORT_VIOLATION, payload.toString().split(DELIMITER));
+		try {
+			CertInfo cert = sql.getCertInfo(sso);
+			String certStr = cert.getCert();
+			X509Util x509 = new X509Util(certStr);
+			req.setEncryption(x509.getCertificate().getPublicKey());
+		} catch (CertificateException | IOException e) {
+			e.printStackTrace();
+		}
 		req.start();
 	}
 	
@@ -743,7 +752,6 @@ public class CyborgTcpService extends Thread implements Runnable{
 							sql.updateFileInfo(filePath.toString(), info.getExpiresOnStr(), info.getType(),
 									SHA256Helper.getHashStringFromFile(filePath.toFile()), FileInfo.UNLOCK);
 						} catch (FileTooBigException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 		    			if(handler != null)handler.onReactionPerformed("File allowed modification by owner");

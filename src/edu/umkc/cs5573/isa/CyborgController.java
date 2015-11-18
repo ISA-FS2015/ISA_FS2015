@@ -271,13 +271,12 @@ public class CyborgController implements IWatchDirHandler, IWatchExpHandler{
 		sb.append("---Available command list---\n")
 			.append("byby\n")
 			.append("userlist\n")
-			.append("whohas <filename>")
-			.append("requestFile <SSO> <filename>")
-			.append("requestCert <SSO>")
+			.append("whohas <filename>\n")
+			.append("requestFile <SSO> <filename>\n")
+			.append("requestCert <SSO>\n")
 			.append("setmyinfo <Student/Employee> <name> <organization> <e-mail> <phoneNumber>\n")
 			.append("setfile <filename> <type:readwrite/readonly>\n");
 		logger.i(this, sb.toString());
-		
 	}
 
 	private void doUserList() {
