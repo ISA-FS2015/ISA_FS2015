@@ -606,9 +606,9 @@ public class CyborgTcpService extends Thread implements Runnable{
 		        new BufferedReader(
 		            new InputStreamReader(mSocket.getInputStream()));
 	    	StringBuilder payload = new StringBuilder(mReqType).append(DELIMITER);
-	    	payload.append(joinStrs(mPayLoad, DELIMITER)).append("\n");
+	    	payload.append(joinStrs(mPayLoad, DELIMITER));
 	    	logger.d(this, "Sending:" + payload.toString());
-		    out.write(encryptOrAsIs(payload.toString()));
+		    out.write(encryptOrAsIs(payload.toString()) + "\n");
 		    out.flush();
 		    String result = in.readLine();
 	    	logger.d(this, "Received:" + result);
@@ -662,9 +662,9 @@ public class CyborgTcpService extends Thread implements Runnable{
 		        new BufferedReader(
 		            new InputStreamReader(mSocket.getInputStream()));
 	    	StringBuilder payload = new StringBuilder(mReqType).append(DELIMITER);
-	    	payload.append(joinStrs(mPayLoad, DELIMITER)).append("\n");
+	    	payload.append(joinStrs(mPayLoad, DELIMITER));
 	    	logger.d(this, "Sending:" + payload.toString());
-		    out.write(encryptOrAsIs(payload.toString()));
+		    out.write(encryptOrAsIs(payload.toString()) + "\n");
 		    out.flush();
 		    String result = in.readLine();
 	    	logger.d(this, "Received:" + result);
@@ -722,9 +722,9 @@ public class CyborgTcpService extends Thread implements Runnable{
 		        new BufferedReader(
 		            new InputStreamReader(mSocket.getInputStream()));
 	    	StringBuilder payload = new StringBuilder(mReqType).append(DELIMITER);
-	    	payload.append(joinStrs(mPayLoad, DELIMITER)).append("\n");
+	    	payload.append(joinStrs(mPayLoad, DELIMITER));
 	    	logger.d(this, "Sending:" + payload.toString());
-		    out.write(encryptOrAsIs(payload.toString()));
+		    out.write(encryptOrAsIs(payload.toString()) + "\n");
 		    out.flush();
 		    String result = in.readLine();
 	    	logger.d(this, "Received:" + result);
