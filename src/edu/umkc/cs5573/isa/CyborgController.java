@@ -257,6 +257,7 @@ public class CyborgController implements IWatchDirHandler, IWatchExpHandler{
 				}
 			}else if ("help".equals(cmds[0].toLowerCase())){
 				doCommandList();
+			}else if ("".equals(cmds[0].toLowerCase())){
 			}else{
 				logger.i(this, "Unknown command.");
 			}

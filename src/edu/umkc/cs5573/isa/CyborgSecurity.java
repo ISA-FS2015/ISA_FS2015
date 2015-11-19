@@ -7,7 +7,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
+import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -17,25 +19,30 @@ import java.security.PublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 public class CyborgSecurity {
 	/**
-	   * String to hold name of the encryption algorithm.
-	   */
-	  public static final String ALGORITHM = "RSA";
+	 * String to hold name of the encryption algorithm.
+	 */
+	public static final String ALGORITHM = "RSA";
 
-	  /**
-	   * String to hold the name of the private key file.
-	   */
-	  public static final String PRIVATE_KEY_FILE = "C:/keys/private.key";
+	/**
+	 * String to hold the name of the private key file.
+	 */
+	public static final String PRIVATE_KEY_FILE = "C:/keys/private.key";
 
-	  /**
-	   * String to hold name of the public key file.
-	   */
-	  public static final String PUBLIC_KEY_FILE = "C:/keys/public.key";
-	public CyborgSecurity(){
-		
+	/**
+	 * String to hold name of the public key file.
+	 */
+	public static final String PUBLIC_KEY_FILE = "C:/keys/public.key";
+	
+	private Cipher cipher;
+	public CyborgSecurity() throws NoSuchAlgorithmException, NoSuchPaddingException{
+		this.cipher = Cipher.getInstance(ALGORITHM);
 	}
 	public void getPrivateKey(){
 		
@@ -118,20 +125,22 @@ public class CyborgSecurity {
 	   * @param key
 	   *          :The public key
 	   * @return Encrypted text
-	   * @throws java.lang.Exception
+	 * @throws InvalidKeyException 
+	 * @throws BadPaddingException 
+	 * @throws IllegalBlockSizeException 
 	   */
-	  public static byte[] encrypt(String text, PublicKey key) {
-	    byte[] cipherText = null;
-	    try {
-	      // get an RSA cipher object and print the provider
-	      final Cipher cipher = Cipher.getInstance(ALGORITHM);
-	      // encrypt the plain text using the public key
-	      cipher.init(Cipher.ENCRYPT_MODE, key);
-	      cipherText = cipher.doFinal(text.getBytes());
-	    } catch (Exception e) {
-	      e.printStackTrace();
-	    }
-	    return cipherText;
+	public byte[] encrypt(String text, PublicKey key) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+		try {
+			cipher.init(Cipher.ENCRYPT_MODE, key);
+			byte[] bytes = text.getBytes("UTF-8");
+			byte[] encrypted = blockCipher(bytes,Cipher.ENCRYPT_MODE);
+		    return encrypted;
+		} catch (UnsupportedEncodingException e) {
+			// Will never get here
+			e.printStackTrace();
+			return null;
+		}
+
 	  }
 	  
 	  /**
@@ -142,60 +151,116 @@ public class CyborgSecurity {
 	   * @param key
 	   *          :The private key
 	   * @return plain text
+	 * @throws InvalidKeyException 
+	 * @throws BadPaddingException 
+	 * @throws IllegalBlockSizeException 
 	   * @throws java.lang.Exception
 	   */
-	  public static String decrypt(byte[] text, PrivateKey key) {
-	    byte[] dectyptedText = null;
-	    try {
-	      // get an RSA cipher object and print the provider
-	      final Cipher cipher = Cipher.getInstance(ALGORITHM);
+	public String decrypt(byte[] text, PrivateKey key) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+		try {
+			cipher.init(Cipher.DECRYPT_MODE, key);
+			byte[] decrypted = blockCipher(text, Cipher.DECRYPT_MODE);
+			return new String(decrypted,"UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			// Will never get here
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	private byte[] blockCipher(byte[] bytes, int mode) throws IllegalBlockSizeException, BadPaddingException{
+		// string initialize 2 buffers.
+		// scrambled will hold intermediate results
+		byte[] scrambled = new byte[0];
 
-	      // decrypt the text using the private key
-	      cipher.init(Cipher.DECRYPT_MODE, key);
-	      dectyptedText = cipher.doFinal(text);
+		// toReturn will hold the total result
+		byte[] toReturn = new byte[0];
+		// if we encrypt we use 100 byte long blocks. Decryption requires 128 byte long blocks (because of RSA)
+		int length = (mode == Cipher.ENCRYPT_MODE)? 100 : 128;
 
-	    } catch (Exception ex) {
-	      ex.printStackTrace();
-	    }
+		// another buffer. this one will hold the bytes that have to be modified in this step
+		byte[] buffer = new byte[length];
 
-	    return new String(dectyptedText);
-	  }
+		for (int i=0; i< bytes.length; i++){
+
+			// if we filled our buffer array we have our block ready for de- or encryption
+			if ((i > 0) && (i % length == 0)){
+				//execute the operation
+				scrambled = cipher.doFinal(buffer);
+				// add the result to our total result.
+				toReturn = append(toReturn,scrambled);
+				// here we calculate the length of the next buffer required
+				int newlength = length;
+
+				// if newlength would be longer than remaining bytes in the bytes array we shorten it.
+				if (i + length > bytes.length) {
+					 newlength = bytes.length - i;
+				}
+				// clean the buffer array
+				buffer = new byte[newlength];
+			}
+			// copy byte into our buffer.
+			buffer[i%length] = bytes[i];
+		}
+
+		// this step is needed if we had a trailing buffer. should only happen when encrypting.
+		// example: we encrypt 110 bytes. 100 bytes per run means we "forgot" the last 10 bytes. they are in the buffer array
+		scrambled = cipher.doFinal(buffer);
+
+		// final step before we can return the modified data.
+		toReturn = append(toReturn,scrambled);
+
+		return toReturn;
+	}
+	
+	private static byte[] append(byte[] prefix, byte[] suffix){
+		byte[] toReturn = new byte[prefix.length + suffix.length];
+		for (int i=0; i< prefix.length; i++){
+			toReturn[i] = prefix[i];
+		}
+		for (int i=0; i< suffix.length; i++){
+			toReturn[i+prefix.length] = suffix[i];
+		}
+		return toReturn;
+	}
+	
+	
 	  /**
 	   * Test the EncryptionUtil
 	   */
-	  public static void demo(String[] args) {
+	public static void demo(String[] args) {
+		CyborgSecurity sec;
+		try {
+			sec = new CyborgSecurity();
+		      // Check if the pair of keys are present else generate those.
+		      if (!areKeysPresent()) {
+		        // Method generates a pair of keys using the RSA algorithm and stores it
+		        // in their respective files
+		        generateKey();
+		      }
 
-	    try {
+		      final String originalText = "Text to be encrypted ";
+		      ObjectInputStream inputStream = null;
 
-	      // Check if the pair of keys are present else generate those.
-	      if (!areKeysPresent()) {
-	        // Method generates a pair of keys using the RSA algorithm and stores it
-	        // in their respective files
-	        generateKey();
-	      }
+		      // Encrypt the string using the public key
+		      inputStream = new ObjectInputStream(new FileInputStream(PUBLIC_KEY_FILE));
+		      final PublicKey publicKey = (PublicKey) inputStream.readObject();
+		      final byte[] cipherText = sec.encrypt(originalText, publicKey);
+		      inputStream.close();
 
-	      final String originalText = "Text to be encrypted ";
-	      ObjectInputStream inputStream = null;
+		      // Decrypt the cipher text using the private key.
+		      inputStream = new ObjectInputStream(new FileInputStream(PRIVATE_KEY_FILE));
+		      final PrivateKey privateKey = (PrivateKey) inputStream.readObject();
+		      final String plainText = sec.decrypt(cipherText, privateKey);
 
-	      // Encrypt the string using the public key
-	      inputStream = new ObjectInputStream(new FileInputStream(PUBLIC_KEY_FILE));
-	      final PublicKey publicKey = (PublicKey) inputStream.readObject();
-	      final byte[] cipherText = encrypt(originalText, publicKey);
-	      inputStream.close();
-
-	      // Decrypt the cipher text using the private key.
-	      inputStream = new ObjectInputStream(new FileInputStream(PRIVATE_KEY_FILE));
-	      final PrivateKey privateKey = (PrivateKey) inputStream.readObject();
-	      final String plainText = decrypt(cipherText, privateKey);
-
-	      // Printing the Original, Encrypted and Decrypted Text
-	      System.out.println("Original: " + originalText);
-	      System.out.println("Encrypted: " + cipherText.toString());
-	      System.out.println("Decrypted: " + plainText);
-	      inputStream.close();
-	    } catch (Exception e) {
-	      e.printStackTrace();
-	    }finally{
-	    }
+		      // Printing the Original, Encrypted and Decrypted Text
+		      System.out.println("Original: " + originalText);
+		      System.out.println("Encrypted: " + cipherText.toString());
+		      System.out.println("Decrypted: " + plainText);
+		      inputStream.close();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	  }
 }

@@ -12,13 +12,19 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 /**
  * The actual TCP communication is processed here.
@@ -773,7 +779,8 @@ public class CyborgTcpService extends Thread implements Runnable{
 					try {
 						PrivateKey prk;
 						prk = CyborgSecurity.getPrivateKey(StaticUtil.base64ToBytes(info.getPrivateKey()));
-						String decrypted = CyborgSecurity.decrypt(StaticUtil.base64ToBytes(encrypted), prk);
+						CyborgSecurity sec = new CyborgSecurity();
+						String decrypted = sec.decrypt(StaticUtil.base64ToBytes(encrypted), prk);
 						return decrypted;
 					} catch (GeneralSecurityException e) {
 						e.printStackTrace();
@@ -789,9 +796,15 @@ public class CyborgTcpService extends Thread implements Runnable{
 
 		public String encryptOrAsIs(String payload){
 	    	if(isEncrypted){
-	    		String ePayload = StaticUtil.byteToBase64(CyborgSecurity.encrypt(payload.toString(), mPbk));
-	    		String ePacket = HEAD_ENCRYPTION + DELIMITER + this.mSso + DELIMITER + ePayload; 
-			    return ePacket;
+				try {
+					CyborgSecurity sec = new CyborgSecurity();
+		    		String ePayload = StaticUtil.byteToBase64(sec.encrypt(payload.toString(), mPbk));
+		    		String ePacket = HEAD_ENCRYPTION + DELIMITER + this.mSso + DELIMITER + ePayload; 
+				    return ePacket;
+				} catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
+					e.printStackTrace();
+					return payload;
+				}
 	    	}else{
 			    return payload;
 	    	}
@@ -808,8 +821,9 @@ public class CyborgTcpService extends Thread implements Runnable{
 			if(info != null){
 				try {
 					PrivateKey prk;
+					CyborgSecurity sec = new CyborgSecurity();
 					prk = CyborgSecurity.getPrivateKey(StaticUtil.base64ToBytes(info.getPrivateKey()));
-					String decrypted = CyborgSecurity.decrypt(StaticUtil.base64ToBytes(encrypted), prk);
+					String decrypted = sec.decrypt(StaticUtil.base64ToBytes(encrypted), prk);
 					return decrypted;
 				} catch (GeneralSecurityException e) {
 					e.printStackTrace();
@@ -824,9 +838,16 @@ public class CyborgTcpService extends Thread implements Runnable{
 	}
 
 	public String encryptOrAsIs(String payload, String sso, PublicKey pbk){
-		String ePayload = StaticUtil.byteToBase64(CyborgSecurity.encrypt(payload.toString(), pbk));
-		String ePacket = HEAD_ENCRYPTION + DELIMITER + sso + DELIMITER + ePayload; 
-	    return ePacket;
+		try {
+			CyborgSecurity sec = new CyborgSecurity();
+			String ePayload = StaticUtil.byteToBase64(sec.encrypt(payload.toString(), pbk));
+			String ePacket = HEAD_ENCRYPTION + DELIMITER + sso + DELIMITER + ePayload; 
+		    return ePacket;
+		} catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return payload;
+		}
 	}
 	/**
 	 * Join string arrays into one string separated by a delimiter
