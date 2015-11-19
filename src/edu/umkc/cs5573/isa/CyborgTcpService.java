@@ -201,7 +201,10 @@ public class CyborgTcpService extends Thread implements Runnable{
 				    			info.setScore(info.getScore() - SCORE_DECREMENT);
 				    			sql.updateUserInfo(info);
 								// Delete the file remotely
-								return RESPONSE_REACTION + DELIMITER + REACTION_DELETE + DELIMITER + fileName;
+								String lPayload = RESPONSE_REACTION + DELIMITER + REACTION_DELETE + DELIMITER + fileName;
+		    	            	PublicKey pbk = CyborgSecurity.getPublicKey(StaticUtil.base64ToBytes(info.getPublicKey()));
+		    	            	String encrypted = encryptOrAsIs(lPayload, info.getSso(), pbk);
+								return encrypted;
 							}
 						}
 					}else if(msg.startsWith("react restore ")){
@@ -223,11 +226,14 @@ public class CyborgTcpService extends Thread implements Runnable{
 								try {
 									fileBase64 = StaticUtil.encodeFileToBase64Binary(mHomeDirectory + "/" + fileName);
 									File file = new File(mHomeDirectory + "/" + fileName);
-									return RESPONSE_REACTION + DELIMITER
+									String lPayload = RESPONSE_REACTION + DELIMITER
 											+ REACTION_RESTORE + DELIMITER
 											+ fileName + DELIMITER
 											+ Long.toString(file.length()) + DELIMITER
 											+ fileBase64;
+			    	            	PublicKey pbk = CyborgSecurity.getPublicKey(StaticUtil.base64ToBytes(info.getPublicKey()));
+			    	            	String encrypted = encryptOrAsIs(lPayload, info.getSso(), pbk);
+									return encrypted;
 								} catch (IOException | FileTooBigException e) {
 									e.printStackTrace();
 									logger.d(this, e.getMessage());
@@ -251,13 +257,17 @@ public class CyborgTcpService extends Thread implements Runnable{
 									info.setType(FileInfo.TYPE_ORIGINAL | FileInfo.WRITE_ALLOWED);
 									sql.updateFileInfo(filePath.toString(), info.getExpiresOnStr(), info.getType(), info.getHash(), FileInfo.UNLOCK);
 								}
-								return RESPONSE_REACTION + DELIMITER + REACTION_ALLOW + DELIMITER + fileName;
+								UserInfo user = sql.getUserInfo(sso);
+								String lPayload = RESPONSE_REACTION + DELIMITER + REACTION_ALLOW + DELIMITER + fileName;
+		    	            	PublicKey pbk = CyborgSecurity.getPublicKey(StaticUtil.base64ToBytes(user.getPublicKey()));
+		    	            	String encrypted = encryptOrAsIs(lPayload, user.getSso(), pbk);
+								return encrypted;
 							}
 						}
 					}
 					msg = null;
 					Thread.sleep(1000);
-				} catch (InterruptedException e) {
+				} catch (InterruptedException | GeneralSecurityException e) {
 					e.printStackTrace();
 				}
 			}
@@ -296,12 +306,15 @@ public class CyborgTcpService extends Thread implements Runnable{
         			FileInfo fileInfo = sql.getFileInfo(file.toPath().toString()
         					);
     	            try {
-						return RESPONSE_FILE_SIZE + DELIMITER
+    	            	String lPayload = RESPONSE_FILE_SIZE + DELIMITER
 								+ Long.toString(file.length()) + DELIMITER
 								+ StaticUtil.encodeFileToBase64Binary(file.toPath().toString()) +DELIMITER
 								+ fileInfo.getType() +DELIMITER
 								+ fileInfo.getOwner();
-					} catch (FileTooBigException e) {
+    	            	PublicKey pbk = CyborgSecurity.getPublicKey(StaticUtil.base64ToBytes(info.getPublicKey()));
+    	            	String encrypted = encryptOrAsIs(lPayload, info.getSso(), pbk);
+						return encrypted;
+					} catch (FileTooBigException | GeneralSecurityException e) {
 						e.printStackTrace();
 	    				return RESPONSE_ERROR+DELIMITER+"File Too Big";
 					}
@@ -799,7 +812,7 @@ public class CyborgTcpService extends Thread implements Runnable{
 				try {
 					CyborgSecurity sec = new CyborgSecurity();
 		    		String ePayload = StaticUtil.byteToBase64(sec.encrypt(payload.toString(), mPbk));
-		    		String ePacket = HEAD_ENCRYPTION + DELIMITER + this.mSso + DELIMITER + ePayload; 
+		    		String ePacket = HEAD_ENCRYPTION + DELIMITER + mUserName + DELIMITER + ePayload; 
 				    return ePacket;
 				} catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
 					e.printStackTrace();
@@ -844,7 +857,6 @@ public class CyborgTcpService extends Thread implements Runnable{
 			String ePacket = HEAD_ENCRYPTION + DELIMITER + sso + DELIMITER + ePayload; 
 		    return ePacket;
 		} catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return payload;
 		}
