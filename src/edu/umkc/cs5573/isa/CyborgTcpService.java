@@ -749,6 +749,7 @@ public class CyborgTcpService extends Thread implements Runnable{
 		    			String fileName = reaction[2];
 		    			File file = new File(mHomeDirectory + "/" + fileName);
 		    			file.delete();
+		    			logger.d(this, fileName + " has been removed by owner.");
 		    			if(handler != null)handler.onReactionPerformed("File deleted by owner");
 		    		}else if(reaction[1].equals(REACTION_RESTORE)){
 		    			String fileName = reaction[2];
@@ -760,6 +761,7 @@ public class CyborgTcpService extends Thread implements Runnable{
 		    					info.getExpiresOnStr(), info.getType(),
 		    					SHA256Helper.getHashStringFromBytes(fileContent), FileInfo.UNLOCK);
 		    			Files.write(filePath, fileContent);
+		    			logger.d(this, fileName + " has been restored by owner.");
 		    			if(handler != null)handler.onReactionPerformed("File restored by owner");
 		    		}else if(reaction[1].equals(REACTION_ALLOW)){
 		    			// Just unlock file and update the hash
