@@ -160,7 +160,7 @@ public class CyborgSecurity {
 		try {
 			cipher.init(Cipher.DECRYPT_MODE, key);
 			byte[] decrypted = blockCipher(text, Cipher.DECRYPT_MODE);
-			return new String(decrypted,"UTF-8");
+			return new String(decrypted,"UTF-8").trim();
 		} catch (UnsupportedEncodingException e) {
 			// Will never get here
 			e.printStackTrace();
