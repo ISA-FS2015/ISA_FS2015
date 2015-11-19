@@ -817,7 +817,7 @@ public class CyborgTcpService extends Thread implements Runnable{
 			String[] enPayload = result.split(DELIMITER);
 			String sso = enPayload[1];
 			String encrypted = enPayload[2];
-			CertInfo info = sql.getCertInfo(sso);
+			UserInfo info = sql.getUserInfo(sso);
 			if(info != null){
 				try {
 					PrivateKey prk;
