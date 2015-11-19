@@ -812,7 +812,7 @@ public class CyborgTcpService extends Thread implements Runnable{
 				try {
 					CyborgSecurity sec = new CyborgSecurity();
 		    		String ePayload = StaticUtil.byteToBase64(sec.encrypt(payload.toString(), mPbk));
-		    		String ePacket = HEAD_ENCRYPTION + DELIMITER + mUserName + DELIMITER + ePayload; 
+		    		String ePacket = HEAD_ENCRYPTION + DELIMITER + this.mSso + DELIMITER + ePayload; 
 				    return ePacket;
 				} catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
 					e.printStackTrace();
