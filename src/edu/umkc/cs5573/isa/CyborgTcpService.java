@@ -203,7 +203,7 @@ public class CyborgTcpService extends Thread implements Runnable{
 								// Delete the file remotely
 								String lPayload = RESPONSE_REACTION + DELIMITER + REACTION_DELETE + DELIMITER + fileName;
 		    	            	PublicKey pbk = CyborgSecurity.getPublicKey(StaticUtil.base64ToBytes(info.getPublicKey()));
-		    	            	String encrypted = encryptOrAsIs(lPayload, info.getSso(), pbk);
+		    	            	String encrypted = encryptOrAsIs(lPayload, mUserName, pbk);
 								return encrypted;
 							}
 						}
@@ -232,7 +232,7 @@ public class CyborgTcpService extends Thread implements Runnable{
 											+ Long.toString(file.length()) + DELIMITER
 											+ fileBase64;
 			    	            	PublicKey pbk = CyborgSecurity.getPublicKey(StaticUtil.base64ToBytes(info.getPublicKey()));
-			    	            	String encrypted = encryptOrAsIs(lPayload, info.getSso(), pbk);
+			    	            	String encrypted = encryptOrAsIs(lPayload, mUserName, pbk);
 									return encrypted;
 								} catch (IOException | FileTooBigException e) {
 									e.printStackTrace();
@@ -260,7 +260,7 @@ public class CyborgTcpService extends Thread implements Runnable{
 								UserInfo user = sql.getUserInfo(sso);
 								String lPayload = RESPONSE_REACTION + DELIMITER + REACTION_ALLOW + DELIMITER + fileName;
 		    	            	PublicKey pbk = CyborgSecurity.getPublicKey(StaticUtil.base64ToBytes(user.getPublicKey()));
-		    	            	String encrypted = encryptOrAsIs(lPayload, user.getSso(), pbk);
+		    	            	String encrypted = encryptOrAsIs(lPayload, mUserName, pbk);
 								return encrypted;
 							}
 						}
@@ -312,7 +312,7 @@ public class CyborgTcpService extends Thread implements Runnable{
 								+ fileInfo.getType() +DELIMITER
 								+ fileInfo.getOwner();
     	            	PublicKey pbk = CyborgSecurity.getPublicKey(StaticUtil.base64ToBytes(info.getPublicKey()));
-    	            	String encrypted = encryptOrAsIs(lPayload, info.getSso(), pbk);
+    	            	String encrypted = encryptOrAsIs(lPayload, mUserName, pbk);
 						return encrypted;
 					} catch (FileTooBigException | GeneralSecurityException e) {
 						e.printStackTrace();
@@ -812,7 +812,7 @@ public class CyborgTcpService extends Thread implements Runnable{
 				try {
 					CyborgSecurity sec = new CyborgSecurity();
 		    		String ePayload = StaticUtil.byteToBase64(sec.encrypt(payload.toString(), mPbk));
-		    		String ePacket = HEAD_ENCRYPTION + DELIMITER + this.mSso + DELIMITER + ePayload; 
+		    		String ePacket = HEAD_ENCRYPTION + DELIMITER + mUserName + DELIMITER + ePayload; 
 				    return ePacket;
 				} catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
 					e.printStackTrace();
