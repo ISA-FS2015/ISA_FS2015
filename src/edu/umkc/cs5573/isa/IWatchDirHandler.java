@@ -1,6 +1,6 @@
 package edu.umkc.cs5573.isa;
 
-import java.nio.file.Path;
+import java.io.File;
 import java.util.List;
 /**
  * Watch Directory Interface which handles the file change event
@@ -12,25 +12,25 @@ public interface IWatchDirHandler {
 	 * Called when directory or file is registered in WatchDir service
 	 * @param dir The directory or file path
 	 */
-	public void onRegisterCallback(Path dir);
+	public void onRegisterCallback(File file);
 	/**
 	 * Called when directory or file set is registered in WatchDir service
 	 * @param dirs the list of directory or file path
 	 */
-	public void onRegisterCallback(List<Path> dirs);
+	public void onRegisterCallback(List<File> files);
 	/**
 	 * Called when file has been created
 	 * @param child The file or directory path created
 	 */
-	public void onFileCreated(Path child);
+	public void onFileCreated(File child);
 	/**
 	 * Called when file has been modified. Also called when file has been created on some platforms or OSes.
 	 * @param child The file or directory path modified
 	 */
-	public void onFileModified(Path child);
+	public void onFileModified(File child);
 	/**
 	 * Called when file has been deleted
 	 * @param child The file or directory path deleted
 	 */
-	public void onFileDeleted(Path child);
+	public void onFileDeleted(File child);
 }

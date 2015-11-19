@@ -1,0 +1,126 @@
+package edu.umkc.cs5573.isa;
+
+import java.util.Date;
+import java.util.List;
+
+public abstract class SQLiteInstanceAbstract {
+	public final static String TABLE_FILE_INFO = "FileInfo";
+	public final static String TABLE_USER_INFO = "UserInfo";
+	public final static String TABLE_CERT_INFO = "CertInfo";
+	public final static String SQL_CREATE_FILE_INFO = "create table " + TABLE_FILE_INFO + " ("
+			+ "id integer primary key autoincrement, "
+			+ "Filename text not null, "
+			+ "Owner text not null, "
+			+ "CreatedOn text not null, "
+			+ "ExpiresOn text not null, "
+			+ "Type integer not null, "
+			+ "Hash text not null,"
+			+ "Lock integer text"
+			+ ")";
+	public final static String SQL_CREATE_USER_INFO = "create table " + TABLE_USER_INFO + " ("
+			+ "SSO text primary key not null, "
+			+ "Type integer not null, "
+			+ "Name text not null, "
+			+ "Organization text not null, "
+			+ "Email text not null, "
+			+ "PhoneNumber text not null, "
+			+ "Score integer not null, "
+			+ "PrivateKey text not null, "
+			+ "PublicKey text not null"
+			+ ")";
+	public final static String SQL_CREATE_CERT_INFO = "create table " + TABLE_CERT_INFO + " ("
+			+ "SSO text primary key not null, "
+			+ "Cert text not null, "
+			+ "PrivateKey text not null"
+			+ ")";
+	/**
+	 * Retrieves filehash corresponding to the path
+	 * @param path
+	 * @return
+	 */
+	public abstract String getFileHash(String path);
+	
+	/**
+	 * Retrieves the file info from the path
+	 * @param path
+	 * @return
+	 */
+	public abstract FileInfo getFileInfo(String path);
+	
+	/**
+	 * Get the list of all files
+	 * @return
+	 */
+	public abstract List<FileInfo> getFileInfoes();
+	
+	/**
+	 * Update the file info
+	 * @param path
+	 * @param expiresOn
+	 * @param type
+	 * @param hash
+	 * @param lock
+	 */
+	public abstract void updateFileInfo(String path, String expiresOn, int type, String hash, int lock);
+	
+	/**
+	 * Deletes the file info
+	 * @param path
+	 * @return
+	 */
+	public abstract boolean deleteFileInfo(String path);
+	
+	/**
+	 * Inserts the file info
+	 * @param path
+	 * @param owner
+	 * @param createdOn
+	 * @param expiresOn
+	 * @param type
+	 * @param hash
+	 * @return
+	 */
+	public abstract boolean pushFileInfo(String path, String owner, String createdOn, String expiresOn, int type, String hash);
+	/**
+	 * Retrieves the list of file infoes only expired
+	 * @return
+	 */
+	public abstract List<FileInfo> getExpiredFileInfoes();
+	public abstract Date getLastModified(String fileName);
+	/**
+	 * Inserts the user info
+	 * @param info
+	 * @return
+	 */
+	public abstract boolean pushUserInfo(UserInfo info);
+	/**
+	 * Updates the user info
+	 * @param info
+	 */
+	public abstract void updateUserInfo(UserInfo info);
+	/**
+	 * Retrieves the User info
+	 * @param sso
+	 * @return
+	 */
+	public abstract UserInfo getUserInfo(final String sso);
+	/**
+	 * Inserts the cert info
+	 * @param info
+	 * @return
+	 */
+	public abstract boolean pushCertInfo(CertInfo info);
+	
+	/**
+	 * retrieves the cert info
+	 * @param sso
+	 * @return
+	 */
+	public abstract CertInfo getCertInfo(final String sso);
+	
+	/**
+	 * Executes the SQL statements. Used for debugging
+	 * @param sql
+	 */
+	public abstract void execSql(final String sql);
+}

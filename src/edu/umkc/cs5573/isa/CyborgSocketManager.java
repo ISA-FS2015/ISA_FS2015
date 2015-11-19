@@ -14,7 +14,7 @@ public class CyborgSocketManager {
 	private CyborgUdpService udpService;
 	private CyborgTcpService tcpService;
 	private CyborgController controller;
-	private SQLiteInstance sql;
+	private ICyborgEventHandler handler;
 	private int tcpPort;
 //	private int udpPort;
 
@@ -29,19 +29,25 @@ public class CyborgSocketManager {
 	 * @throws IOException
 	 * @throws SQLiteException
 	 */
-	public CyborgSocketManager(CyborgController controller, String userName, String ifName, String homeDirectory, int tcpPort, int udpPort, boolean softBroadcast) throws IOException, SQLiteException{
-		this.udpService = new CyborgUdpService("UDPThread", controller, udpPort, ifName);
-		this.tcpService = new CyborgTcpService("TCPThread", controller, tcpPort);
+	public CyborgSocketManager(CyborgController controller, String userName, String ifName, String homeDirectory, int tcpPort, int udpPort, boolean softBroadcast, SQLiteInstanceAbstract sql) throws IOException{
+		this.udpService = new CyborgUdpService("UDPThread", controller, udpPort, ifName, sql);
+		this.tcpService = new CyborgTcpService("TCPThread", controller, tcpPort, sql);
 		this.controller = controller;
 		this.tcpPort = tcpPort;
-//		this.udpPort = udpPort;
-		this.sql = SQLiteInstance.getInstance();
+	}
+	
+	public void setEventHandler(ICyborgEventHandler handler){
+		this.handler = handler;
 	}
 	
 	/**
 	 * Initialization
 	 */
 	public void init(){
+		if(handler != null){
+			udpService.setEventHandler(handler);
+			tcpService.setEventHandler(handler);
+		}
 		udpService.start();
 		tcpService.start();
 		udpService.reqUserList();
@@ -110,14 +116,8 @@ public class CyborgSocketManager {
 	 */
 	public void reqCert(String sso, UserInfo myInfo)
 	{
-		// Request x509 cert
-		CertInfo info = sql.getCertInfo(sso);
-		if(info == null){
-			Map<String, String> userList = getUserList();
-			String ipAddress = userList.get(sso);
-			if(ipAddress != null) tcpService.reqCert(ipAddress, tcpPort, sso, myInfo);
-		}else{
-			Logger.getInstance().d(this, "The certificate is already exist. Skipping...");
-		}
+		Map<String, String> userList = getUserList();
+		String ipAddress = userList.get(sso);
+		if(ipAddress != null) tcpService.reqCert(ipAddress, tcpPort, sso, myInfo);
 	}
 }

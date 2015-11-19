@@ -2,13 +2,20 @@ package edu.umkc.cs5573.isa;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.security.GeneralSecurityException;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 
 import javax.crypto.Cipher;
 
@@ -33,8 +40,17 @@ public class CyborgSecurity {
 	public void getPrivateKey(){
 		
 	}
+	public static PrivateKey getPrivateKey(byte[] data) throws GeneralSecurityException{
+		KeyFactory kf = KeyFactory.getInstance(ALGORITHM); // or "EC" or whatever
+		PrivateKey prk = kf.generatePrivate(new PKCS8EncodedKeySpec(data));
+		return prk;
+	}
 	public void getPublicKey(){
-		
+	}
+	public static PublicKey getPublicKey(byte[] data) throws GeneralSecurityException{
+		KeyFactory kf = KeyFactory.getInstance(ALGORITHM); // or "EC" or whatever
+		PublicKey pbk = kf.generatePublic(new X509EncodedKeySpec(data));
+		return pbk;
 	}
 	/**
 	   * Generate key which contains a pair of private and public key using 1024

@@ -2,7 +2,6 @@ package edu.umkc.cs5573.isa;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,9 +34,10 @@ public class StaticUtil {
 	 * @param fileName
 	 * @return
 	 * @throws IOException
+	 * @throws FileTooBigException 
 	 */
 	public static String encodeFileToBase64Binary(String fileName)
-			throws IOException {
+			throws IOException, FileTooBigException {
 
 		File file = new File(fileName);
 		byte[] bytes = loadFile(file);
@@ -77,13 +77,16 @@ public class StaticUtil {
 	 * @param file
 	 * @return
 	 * @throws IOException
+	 * @throws FileTooBigException 
 	 */
-	private static byte[] loadFile(File file) throws IOException {
+	public static byte[] loadFile(File file) throws IOException, FileTooBigException {
 	    InputStream is = new FileInputStream(file);
 
 	    long length = file.length();
 	    if (length > Integer.MAX_VALUE) {
 	        // File is too large
+	    	is.close();
+	    	throw new FileTooBigException(file);
 	    }
 	    byte[] bytes = new byte[(int)length];
 	    

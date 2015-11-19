@@ -9,28 +9,27 @@ import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.json.JSONException;
-
-import com.almworks.sqlite4java.SQLiteException;
 /**
  * This class manages peer list through UDP broadcasting.
  * @author Younghwan
  *
  */
-public class CyborgUdpService extends Thread {
+public class CyborgUdpService extends Thread implements Runnable {
 	protected final static int BUFFER_SIZE = 1024;
 	private final static String CHARSET_UTF8 = "UTF-8";
-	//protected final static String KEY_USER = "user";
+
 	protected DatagramSocket socket = null;
     protected BufferedReader in = null;
     private Logger logger;
     private boolean isRunning = false;
     private CyborgController controller;
+    private ICyborgEventHandler handler;
     private String localIpAddress;
     private String broadcastIpAddress;
+    private SQLiteInstanceAbstract sql;
     private int portNum;
     /**
      * For managing peer list. Key will be username and value will be ip address
@@ -40,14 +39,15 @@ public class CyborgUdpService extends Thread {
      * Creates UDP communication thread.
      * @param threadName The name of thread
      * @param controller 
-     * @param userName User name to be userd
+     * @param userName User name to be used
      * @param ifName Name of the interface such as eth0 or wlan0. wlan0 is mainly used.
      * @throws IOException
      */
-    public CyborgUdpService(String threadName, CyborgController controller, int portNum, String ifName) throws IOException {
+    public CyborgUdpService(String threadName, CyborgController controller, int portNum, String ifName, SQLiteInstanceAbstract sql) throws IOException {
         super(threadName + "_" + controller);
         this.controller = controller;
         this.logger = Logger.getInstance();
+        this.sql = sql;
         for(Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces(); e.hasMoreElements();){
         	NetworkInterface iface = e.nextElement();
         	if(iface.getName().equals(ifName)){
@@ -92,10 +92,13 @@ public class CyborgUdpService extends Thread {
 	public boolean isUserExists(String userName){
 		return userList.containsKey(userName);
 	}
-	
+	public void setEventHandler(ICyborgEventHandler handler){
+		this.handler = handler;
+	}
 	/**
 	 * Actually runs here!
 	 */
+	@Override
     public void run() {
     	while(isRunning){
             try {
@@ -132,11 +135,17 @@ public class CyborgUdpService extends Thread {
         	if(ctp.getType() == CTP.CTP_TYPE_REQ){
         		logger.d(this, "REQ: " + ctp.getDataType());
         		if(CTP.REQ_USERLIST.equals(ctp.getDataType())){
-        			return CTP.buildRes_PeerList(userList);
+        			String result = CTP.buildRes_PeerList(userList);
+        			if(handler != null)handler.onUserListResult(userList);
+        			return result;
         		}else if(CTP.REQ_JOINUSER.equals(ctp.getDataType())){
-        			return ctp.buildRes_JoinUser(userList);
+        			String result = ctp.buildRes_JoinUser(userList);
+        			if(handler != null)handler.onUserListResult(userList);
+        			return result;
         		}else if(CTP.REQ_PROBE.equals(ctp.getDataType())){
-        			return ctp.buildRes_Probe(userList);
+        			String result = ctp.buildRes_Probe(userList);
+        			if(handler != null)handler.onUserListResult(userList);
+        			return result;
         		}else if(CTP.REQ_FILE_PROBE.equals(ctp.getDataType())){
         			return ctp.buildRes_File_Probe(controller.getHomeDirectory(), controller.getUserName(), localIpAddress);
         		}else{
@@ -146,11 +155,14 @@ public class CyborgUdpService extends Thread {
         		// process response. return must be null
         		if(CTP.RES_OK.equals(ctp.getDataType())){
         			logger.d(this, "Received: " + ctp.getMessage());
+        			if(handler != null)handler.onOkReceived(ctp.getMessage());
         		}else if(CTP.RES_USERLIST.equals(ctp.getDataType())){
         			logger.d(this, "Received: " + ctp.getMessage());
         			ctp.putPeerList(userList);
+        			if(handler != null)handler.onUserListResult(userList);
         		}else if(CTP.RES_FILE_PROBE.equals(ctp.getDataType())){
         			logger.d(this, "Received: " + ctp.getMessage());
+        			if(handler != null)handler.onFileProbeResult(ctp.getMessage());
         		}else {
         			logger.d(this, "Received: " + ctp.getMessage());
         		}
@@ -300,13 +312,7 @@ public class CyborgUdpService extends Thread {
          * @throws IOException
          */
         public void broadcastFileList() throws IOException{
-            try {
-				SQLiteInstance sql = SQLiteInstance.getInstance();
-				CTP.build_FileList(controller.getUserName(), sql.getFileInfoes());
-			} catch (SQLiteException e) {
-				e.printStackTrace();
-			}
-            
+            CTP.build_FileList(controller.getUserName(), sql.getFileInfoes());
         }
 
         /**

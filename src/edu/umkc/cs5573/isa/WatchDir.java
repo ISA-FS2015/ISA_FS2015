@@ -1,6 +1,14 @@
 package edu.umkc.cs5573.isa;
 
 
+import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
+import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
+
+import java.io.IOException;
+
 /*
  * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
  *
@@ -31,23 +39,25 @@ package edu.umkc.cs5573.isa;
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
- 
-import java.nio.file.*;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.WatchEvent;
 import java.nio.file.WatchEvent.Kind;
-
-import static java.nio.file.StandardWatchEventKinds.*;
-import static java.nio.file.LinkOption.*;
-import java.nio.file.attribute.*;
-import java.io.*;
-import java.util.*;
-
-import com.almworks.sqlite4java.SQLiteException;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.HashMap;
+import java.util.Map;
  
 /**
  * watch a directory (or tree) for changes to files.
  */
  
-public class WatchDir extends Thread{
+public class WatchDir extends Thread implements Runnable {
  
     private final WatchService watcher;
     private final Map<WatchKey,Path> keys;
@@ -78,7 +88,7 @@ public class WatchDir extends Thread{
             }
         }
         if(!dir.toFile().isDirectory()){
-            if(handler != null) handler.onRegisterCallback(dir);
+            if(handler != null) handler.onRegisterCallback(dir.toFile());
         }
         keys.put(key, dir);
     }
@@ -103,7 +113,7 @@ public class WatchDir extends Thread{
     /**
      * Creates a WatchService and registers the given directory
      */
-    WatchDir(String dirPath, boolean recursive, IWatchDirHandler handler) throws IOException {
+    public WatchDir(String dirPath, boolean recursive, IWatchDirHandler handler) throws IOException {
     	Logger logger = Logger.getInstance();
     	logger.d(this, "Starting Directory Watcher...");
 		Path dir = Paths.get(dirPath);
@@ -126,6 +136,7 @@ public class WatchDir extends Thread{
     /**
      * Process all events for keys queued to the watcher
      */
+    @Override
     public void run() {
         while (isRunning) {
  
@@ -202,15 +213,15 @@ public class WatchDir extends Thread{
     // Now handle every file event so that we can control our security!! - Start
     
     public void handleCreateEvent(Path child){
-        if(handler != null) handler.onFileCreated(child);
+        if(handler != null) handler.onFileCreated(child.toFile());
     }
     
     public void handleModifyEvent(Path child){
-        if(handler != null) handler.onFileModified(child);
+        if(handler != null) handler.onFileModified(child.toFile());
     }
     
     public void handleDeleteEvent(Path child){
-        if(handler != null) handler.onFileDeleted(child);
+        if(handler != null) handler.onFileDeleted(child.toFile());
     }
     
     // Now handle every file event so that we can control our security!! - End
